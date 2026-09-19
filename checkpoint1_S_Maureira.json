@@ -1,0 +1,192 @@
+{
+  "name": "Checkpoint 1 - Agente Base de Calificacion de Leads",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {
+          "title": "Asistente de Calificación de Leads",
+          "subtitle": "Contanos qué necesitás y te ayudamos a contactar al equipo comercial."
+        }
+      },
+      "id": "e5f8a588-81c2-4880-bf4c-d4f72c112d38",
+      "name": "Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        280
+      ],
+      "webhookId": "checkpoint1-lead-agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-3-5-sonnet-20241022",
+          "mode": "list",
+          "cachedResultName": "Claude 3.5 Sonnet"
+        },
+        "options": {}
+      },
+      "id": "6bc2c2cc-cd4b-41d9-a967-177d10a3a9bc",
+      "name": "Anthropic Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        -20,
+        520
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "REPLACE_WITH_TU_CREDENCIAL_ANTHROPIC",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usá esta herramienta EXCLUSIVAMENTE para registrar un nuevo lead calificado en la planilla de seguimiento comercial, una vez que ya recolectaste, como mínimo: el nombre de la persona, al menos un dato de contacto (email o teléfono), y una descripción breve de su necesidad o interés. Activá esta herramienta de forma autónoma en el momento exacto en que el usuario te haya provisto esos tres datos dentro de la conversación — no esperes a que el usuario te lo pida explícitamente. NO actives esta herramienta si: (a) todavía falta el nombre o el dato de contacto, (b) el usuario está simplemente pidiendo información general sin intención de ser contactado, (c) ya registraste este mismo lead anteriormente en la conversación actual (para evitar duplicados), o (d) la consulta no corresponde a un lead comercial sino a un reclamo, soporte técnico o consulta fuera de tu ámbito. Los campos a completar son: Fecha (fecha y hora actual), Nombre, Contacto (email o teléfono), Empresa (si el usuario la mencionó, si no dejar vacío), Necesidad (resumen de 1-2 líneas de lo que busca), y Estado (siempre 'Nuevo - Pendiente de contacto').",
+        "resource": "sheet",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_TU_GOOGLE_SHEET_ID",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/REPLACE_WITH_TU_GOOGLE_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultName": "Leads"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+            "Nombre": "={{ $fromAI('Nombre', 'Nombre completo de la persona que consulta', 'string') }}",
+            "Contacto": "={{ $fromAI('Contacto', 'Email o telefono de contacto de la persona', 'string') }}",
+            "Empresa": "={{ $fromAI('Empresa', 'Nombre de la empresa del lead, vacio si no aplica', 'string') }}",
+            "Necesidad": "={{ $fromAI('Necesidad', 'Resumen breve de la necesidad o interes del lead', 'string') }}",
+            "Estado": "Nuevo - Pendiente de contacto"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "b7a04861-218f-432f-85bb-78c1df8c0c8e",
+      "name": "Google Sheets - Registrar Lead",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        140,
+        520
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_WITH_TU_CREDENCIAL_GOOGLE_SHEETS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "agent": "toolsAgent",
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "# ROL\nSos el Asistente de Calificación de Leads de la empresa. Tu trabajo es conversar con personas que llegan a través del chat, entender su interés y calificar si son un lead válido para el equipo de ventas.\n\n# ÁMBITO\n- Atendés consultas de potenciales clientes que preguntan por productos, precios, disponibilidad o quieren agendar una reunión comercial.\n- Trabajás únicamente sobre la información que el usuario te brinda en la conversación actual.\n- NO tenés acceso a bases de datos de clientes existentes, NO podés cerrar ventas, NO podés prometer descuentos, precios finales ni plazos de entrega que no te hayan sido provistos explícitamente.\n- NO podés dar asesoramiento legal, médico ni financiero.\n- NO podés modificar ni eliminar información ya registrada, solo agregar nuevos registros.\n\n# OBJETIVO\n1. Identificar si la persona es un lead con intención real de compra o contratación.\n2. Recolectar de forma conversacional: nombre, email o teléfono de contacto, empresa (si aplica), y una descripción breve de su necesidad.\n3. Cuando tengas al menos nombre + un dato de contacto + necesidad, usar la herramienta 'Registrar Lead en Google Sheets' para dejar constancia del lead calificado.\n4. Confirmarle al usuario que su consulta fue registrada y que el equipo se pondrá en contacto.\n\n# REGLAS Y ESCALAMIENTO\n- Nunca inventes información que el usuario no te dio.\n- Si el usuario pide hablar con una persona humana, o si la conversación se sale de tu ámbito (reclamos, soporte técnico grave, temas legales), avisale que vas a escalar la conversación a un humano y no intentes resolverlo vos mismo.\n- Si después de 3 intercambios no lograste obtener datos de contacto, agradecé la conversación y cerrá amablemente sin insistir.\n- Sé breve, profesional y cordial en todas tus respuestas.\n- Cada vez que uses una herramienta, hacelo de forma justificada: no registres leads incompletos ni dupliques registros dentro de la misma conversación.",
+          "maxIterations": 8,
+          "returnIntermediateSteps": true
+        }
+      },
+      "id": "66d12b26-ab57-49fa-8beb-3ade6f41a221",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        60,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "smmaureira@gmail.com",
+        "subject": "=🔔 Log de Auditoría - Agente de Calificación de Leads ({{ $now.format('yyyy-MM-dd HH:mm') }})",
+        "message": "=Se ejecutó el Agente de Calificación de Leads.\n\nMensaje del usuario:\n{{ $('Chat Trigger').item.json.chatInput }}\n\nRespuesta del agente:\n{{ $json.output }}\n\n---\nWorkflow: {{ $workflow.name }}\nExecution ID: {{ $execution.id }}\nFecha: {{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+        "options": {}
+      },
+      "id": "04d2b5ef-8d92-4402-8d44-94538f99294e",
+      "name": "Gmail - Log de Auditoria",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        360,
+        280
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_WITH_TU_CREDENCIAL_GMAIL",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Registrar Lead": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Log de Auditoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "checkpoint1-lead-agent-instance"
+  },
+  "id": "cf123000-6b0e-4f6c-8997-7d1d459fb1b0",
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
