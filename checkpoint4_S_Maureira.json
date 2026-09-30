@@ -21,7 +21,7 @@
           "downloadAttachments": false
         }
       },
-      "id": "fe09bd86-5cda-465f-ae6d-6f3ea344dc91",
+      "id": "75a24c79-d7d9-44a5-ab93-7d7e4110c4d4",
       "name": "Gmail Trigger - Casilla de Soporte",
       "type": "n8n-nodes-base.gmailTrigger",
       "typeVersion": 1.2,
@@ -47,7 +47,7 @@
           },
           "conditions": [
             {
-              "id": "7e8b3254-24a2-4b39-8c13-c1b4a952fcb6",
+              "id": "7be6ebae-80e0-432a-8e05-0212d717bfb2",
               "leftValue": "={{ $json.subject || '' }}",
               "rightValue": "Auto-reply",
               "operator": {
@@ -56,7 +56,7 @@
               }
             },
             {
-              "id": "8465b5dd-0484-4d63-a0ac-168fc04dd3c6",
+              "id": "97e87abd-a099-4bc5-ad81-9f65b6658ba6",
               "leftValue": "={{ $json.subject || '' }}",
               "rightValue": "Automatic reply",
               "operator": {
@@ -65,7 +65,7 @@
               }
             },
             {
-              "id": "eefc571d-5052-43d4-9bbb-847bdde0ac3c",
+              "id": "1c6e60d5-ee22-4078-8584-ee81c9e65a35",
               "leftValue": "={{ $json.subject || '' }}",
               "rightValue": "Out of office",
               "operator": {
@@ -74,7 +74,7 @@
               }
             },
             {
-              "id": "395d270a-4346-4ede-8202-b6d431ca0687",
+              "id": "cd46e448-b5f5-41d3-b7fa-022383231aca",
               "leftValue": "={{ $json.subject || '' }}",
               "rightValue": "Undeliverable",
               "operator": {
@@ -83,7 +83,7 @@
               }
             },
             {
-              "id": "b4ce1492-46ef-424a-aa2a-3a170b51516c",
+              "id": "1d171da6-c5e0-440c-923e-58404e63b29b",
               "leftValue": "={{ $json.subject || '' }}",
               "rightValue": "Delivery Status Notification",
               "operator": {
@@ -92,7 +92,7 @@
               }
             },
             {
-              "id": "99376590-0e2a-432f-8093-d636951393cd",
+              "id": "e7382102-6692-466f-b9bb-f9a8e3aa4920",
               "leftValue": "={{ $json.subject || '' }}",
               "rightValue": "Respuesta automática",
               "operator": {
@@ -101,7 +101,7 @@
               }
             },
             {
-              "id": "a96aa8d8-2651-4959-9337-7ba202a16afc",
+              "id": "3cb5675f-dea9-435e-a3dd-e6cb3295a839",
               "leftValue": "={{ $json.subject || '' }}",
               "rightValue": "Fuera de la oficina",
               "operator": {
@@ -110,7 +110,7 @@
               }
             },
             {
-              "id": "3d72fd71-2cc0-4e59-943e-beb3fa2f60bb",
+              "id": "f6f42aa8-bc38-4ed2-9278-f321a86ee74e",
               "leftValue": "={{ $json.from?.value?.[0]?.address || '' }}",
               "rightValue": "no-reply",
               "operator": {
@@ -119,7 +119,7 @@
               }
             },
             {
-              "id": "5b0bbd16-e24c-41f1-8eab-9224b5946b62",
+              "id": "bb01aa11-555b-403f-9249-6868ec043107",
               "leftValue": "={{ $json.from?.value?.[0]?.address || '' }}",
               "rightValue": "noreply",
               "operator": {
@@ -128,7 +128,7 @@
               }
             },
             {
-              "id": "a4f40180-2aff-4499-b8b5-594336f477d8",
+              "id": "03c4f325-dbf4-4de4-b6ac-2f1d8aec4796",
               "leftValue": "={{ $json.from?.value?.[0]?.address || '' }}",
               "rightValue": "mailer-daemon",
               "operator": {
@@ -137,7 +137,7 @@
               }
             },
             {
-              "id": "2db42cc4-cc7c-411e-8a6d-2650f0861a88",
+              "id": "fa2ca714-f502-4e78-94c0-f0207ed08018",
               "leftValue": "={{ $json.from?.value?.[0]?.address || '' }}",
               "rightValue": "postmaster",
               "operator": {
@@ -153,7 +153,7 @@
           "ignoreCase": true
         }
       },
-      "id": "02717771-ac0f-4ba2-9f83-92e2cab45dc5",
+      "id": "e22df39c-473a-4ec6-a660-6a3d2ad285cf",
       "name": "① IF - ¿Es auto-reply?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -164,7 +164,7 @@
     },
     {
       "parameters": {},
-      "id": "2bf35861-caf7-495a-97ed-6a5afa52cf3c",
+      "id": "8b720d49-7adf-4678-ad54-c50039ab7492",
       "name": "Stop - Auto-reply ignorado",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -183,7 +183,7 @@
           "maxIterations": 5
         }
       },
-      "id": "46910cee-55ed-44a7-ade3-45ec8877e135",
+      "id": "179cf634-45da-4e85-a31a-c491db4250b2",
       "name": "AI Agent - Clasifica y redacta",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.9,
@@ -204,7 +204,7 @@
           "temperature": 0.3
         }
       },
-      "id": "164990ff-9811-4183-b35d-636ded78b28a",
+      "id": "6c5a0e14-f814-4248-8c1e-2571fadd335c",
       "name": "Anthropic Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.3,
@@ -225,7 +225,7 @@
         "sessionKey": "={{ $('Gmail Trigger - Casilla de Soporte').item.json.threadId }}",
         "contextWindowLength": 10
       },
-      "id": "61b3998c-cea5-4542-8a78-0014917f62d5",
+      "id": "477b1fe3-781d-4c6a-9b36-c28063c9503c",
       "name": "Memoria por hilo (Módulo 3)",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
@@ -238,7 +238,7 @@
       "parameters": {
         "jsonSchemaExample": "{\n  \"categoria\": \"reclamo\",\n  \"prioridad\": \"alta\",\n  \"nombre\": \"Ana Pérez\",\n  \"resumen\": \"Pedido #1234 llegó dañado, pide cambio.\",\n  \"respuesta\": \"Hola Ana, lamentamos lo ocurrido con tu pedido...\\n\\nEquipo de Soporte\"\n}"
       },
-      "id": "2aba7049-c9e6-4288-afe4-6af118fd87d3",
+      "id": "69815eed-a154-4b14-8c87-46b1051e7e9d",
       "name": "Structured Output Parser",
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.2,
@@ -252,55 +252,55 @@
         "assignments": {
           "assignments": [
             {
-              "id": "b836adc3-c79a-4fde-8992-cf8dfafe2901",
+              "id": "95f8bca8-3bd9-4b7e-ab16-4cb585bdcef3",
               "name": "From",
               "value": "={{ ($('Gmail Trigger - Casilla de Soporte').item.json.from?.value?.[0]?.address || '').trim().toLowerCase() }}",
               "type": "string"
             },
             {
-              "id": "ad7ca0e2-fe64-4e92-8c75-84bf576df4dd",
+              "id": "20c723bb-62f6-4853-a812-edaa442d1061",
               "name": "FromName",
               "value": "={{ $json.output.nombre || $('Gmail Trigger - Casilla de Soporte').item.json.from?.value?.[0]?.name || '' }}",
               "type": "string"
             },
             {
-              "id": "8ff5d695-f425-41d1-890c-c804981190a2",
+              "id": "91ef0a39-90be-42f4-9a49-d2dd5c4d8f9b",
               "name": "Subject",
               "value": "={{ $('Gmail Trigger - Casilla de Soporte').item.json.subject || '(sin asunto)' }}",
               "type": "string"
             },
             {
-              "id": "d6541919-81f6-4b5c-8c4c-09b3832abdcb",
+              "id": "fc63e1a7-6848-4394-8fdb-4cd0379e2e81",
               "name": "BodyText",
               "value": "={{ ($('Gmail Trigger - Casilla de Soporte').item.json.text || '').slice(0, 2000) }}",
               "type": "string"
             },
             {
-              "id": "308235ea-2085-48e2-b505-af9a40db061e",
+              "id": "3dd5d94c-7feb-4e00-975d-b64870318042",
               "name": "ThreadId",
               "value": "={{ $('Gmail Trigger - Casilla de Soporte').item.json.threadId }}",
               "type": "string"
             },
             {
-              "id": "e145cc18-57ff-4372-9b79-7e860daa10a1",
+              "id": "76150240-f699-4d34-a974-2ed788312976",
               "name": "Categoria",
               "value": "={{ $json.output.categoria }}",
               "type": "string"
             },
             {
-              "id": "baefa499-003d-46aa-8946-eedca39362fe",
+              "id": "1f0e59f4-3c12-4d5b-bda7-f6004e1fca2c",
               "name": "Prioridad",
               "value": "={{ $json.output.prioridad }}",
               "type": "string"
             },
             {
-              "id": "94a6aeed-12e1-4ff9-8ad8-fc01c821aef8",
+              "id": "2bce0acf-0ac4-4a9a-aa20-e9b50449e03f",
               "name": "Resumen",
               "value": "={{ $json.output.resumen }}",
               "type": "string"
             },
             {
-              "id": "6a32d925-a624-4d3e-ba72-6cb725742198",
+              "id": "ed4a3de7-0139-47a8-9a48-adf52ae68d53",
               "name": "RespuestaIA",
               "value": "={{ $json.output.respuesta }}",
               "type": "string"
@@ -309,7 +309,7 @@
         },
         "options": {}
       },
-      "id": "0dfd399d-7947-4597-8c2b-cbccecf32a3b",
+      "id": "8e5fe675-d36b-40e1-b07c-eca03a2c3fc4",
       "name": "④ Set - Limpiar y validar payload",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
@@ -329,7 +329,7 @@
           },
           "conditions": [
             {
-              "id": "53434302-1496-4084-9c7a-759115135322",
+              "id": "be4f63d7-2600-4e24-993e-e42ef8793472",
               "leftValue": "={{ $json.From }}",
               "rightValue": "",
               "operator": {
@@ -339,7 +339,7 @@
               }
             },
             {
-              "id": "c30de4a1-e796-40c1-b6b1-46a3234b7157",
+              "id": "a6c56cb8-7619-46e4-a727-a4dd7a41f1ba",
               "leftValue": "={{ $json.From }}",
               "rightValue": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
               "operator": {
@@ -355,7 +355,7 @@
           "ignoreCase": true
         }
       },
-      "id": "c44599ea-f20e-4c78-a51b-fc42169b1390",
+      "id": "fb28b9cd-c6d1-4a2a-9b80-495ed6782128",
       "name": "IF - ¿Email válido? (evita 400)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -366,7 +366,7 @@
     },
     {
       "parameters": {},
-      "id": "d6a3f72f-a6ae-4603-9f45-c0da8e2e7a87",
+      "id": "50d70c53-a92c-4093-8216-a4194cdfe9bd",
       "name": "Stop - Email vacío o inválido",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -377,7 +377,7 @@
     },
     {
       "parameters": {
-        "authentication": "oAuth2",
+        "authentication": "appToken",
         "resource": "contact",
         "operation": "search",
         "limit": 1,
@@ -404,7 +404,7 @@
           ]
         }
       },
-      "id": "79e5067d-bc31-4ab7-a096-3f473083c572",
+      "id": "8304e6df-5848-4d4d-8df9-2b4ee8e34818",
       "name": "② Look up - ¿Contacto existe en HubSpot?",
       "type": "n8n-nodes-base.hubspot",
       "typeVersion": 2.1,
@@ -413,9 +413,9 @@
         380
       ],
       "credentials": {
-        "hubspotOAuth2Api": {
+        "hubspotAppToken": {
           "id": "REPLACE_WITH_TU_CREDENCIAL_HUBSPOT",
-          "name": "HubSpot OAuth2 - CRM Tienda"
+          "name": "HubSpot Clave de Servicio - CRM Tienda"
         }
       },
       "alwaysOutputData": true
@@ -431,7 +431,7 @@
           },
           "conditions": [
             {
-              "id": "bfb76e14-f90e-4da9-b702-8a0eb2d027ed",
+              "id": "c6abd7c7-1f72-42ed-9455-921dba161760",
               "leftValue": "={{ $json.id }}",
               "rightValue": "",
               "operator": {
@@ -448,7 +448,7 @@
           "ignoreCase": true
         }
       },
-      "id": "995730dc-adf5-4770-8cec-ad29c77b22e3",
+      "id": "af981c98-b10a-4419-abac-341f43862510",
       "name": "IF - ¿Existe en el CRM?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -459,7 +459,7 @@
     },
     {
       "parameters": {
-        "authentication": "oAuth2",
+        "authentication": "appToken",
         "resource": "contact",
         "operation": "upsert",
         "email": "={{ $('④ Set - Limpiar y validar payload').item.json.From }}",
@@ -467,7 +467,7 @@
           "message": "=[{{ $now.format('yyyy-MM-dd') }}] {{ $('④ Set - Limpiar y validar payload').item.json.Categoria }} / {{ $('④ Set - Limpiar y validar payload').item.json.Prioridad }}: {{ $('④ Set - Limpiar y validar payload').item.json.Resumen }}"
         }
       },
-      "id": "ea25b9f9-a5fb-4468-bcb5-14d373c3eafb",
+      "id": "c2bb5dc7-81ba-4724-a787-60f8cd9e33e5",
       "name": "HubSpot - Update contacto",
       "type": "n8n-nodes-base.hubspot",
       "typeVersion": 2.1,
@@ -476,15 +476,15 @@
         280
       ],
       "credentials": {
-        "hubspotOAuth2Api": {
+        "hubspotAppToken": {
           "id": "REPLACE_WITH_TU_CREDENCIAL_HUBSPOT",
-          "name": "HubSpot OAuth2 - CRM Tienda"
+          "name": "HubSpot Clave de Servicio - CRM Tienda"
         }
       }
     },
     {
       "parameters": {
-        "authentication": "oAuth2",
+        "authentication": "appToken",
         "resource": "contact",
         "operation": "upsert",
         "email": "={{ $('④ Set - Limpiar y validar payload').item.json.From }}",
@@ -494,7 +494,7 @@
           "message": "=[{{ $now.format('yyyy-MM-dd') }}] {{ $('④ Set - Limpiar y validar payload').item.json.Categoria }} / {{ $('④ Set - Limpiar y validar payload').item.json.Prioridad }}: {{ $('④ Set - Limpiar y validar payload').item.json.Resumen }}"
         }
       },
-      "id": "07af727d-bfa5-4b21-a6c0-af078c7d5632",
+      "id": "2ff0138d-84c2-49c1-9c69-78d17c6278a1",
       "name": "HubSpot - Create contacto",
       "type": "n8n-nodes-base.hubspot",
       "typeVersion": 2.1,
@@ -503,9 +503,9 @@
         480
       ],
       "credentials": {
-        "hubspotOAuth2Api": {
+        "hubspotAppToken": {
           "id": "REPLACE_WITH_TU_CREDENCIAL_HUBSPOT",
-          "name": "HubSpot OAuth2 - CRM Tienda"
+          "name": "HubSpot Clave de Servicio - CRM Tienda"
         }
       }
     },
@@ -521,7 +521,7 @@
           "threadId": "={{ $('④ Set - Limpiar y validar payload').item.json.ThreadId }}"
         }
       },
-      "id": "20e0875e-3bff-46e8-9cd5-fdd908630774",
+      "id": "4deb04e0-2147-408d-81c4-7dfca4aaf20d",
       "name": "③ Gmail - Create Draft (HITL)",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -541,43 +541,43 @@
         "assignments": {
           "assignments": [
             {
-              "id": "8ae1034f-f390-4961-bba3-8395987d954e",
+              "id": "5da76328-d337-4f4e-a2e2-750e940a9502",
               "name": "cliente",
               "value": "={{ $('④ Set - Limpiar y validar payload').item.json.FromName || $('④ Set - Limpiar y validar payload').item.json.From }}",
               "type": "string"
             },
             {
-              "id": "4a318609-8857-40fe-88df-cd50c3ea8272",
+              "id": "5634e2b7-b206-4c43-84ea-27eb3e0a1103",
               "name": "email",
               "value": "={{ $('④ Set - Limpiar y validar payload').item.json.From }}",
               "type": "string"
             },
             {
-              "id": "bd18e5d4-edad-4642-bff4-50cefd0e747c",
+              "id": "4cb72d32-de76-4204-b531-d2c3c39fe75b",
               "name": "asunto",
               "value": "={{ $('④ Set - Limpiar y validar payload').item.json.Subject.slice(0, 120) }}",
               "type": "string"
             },
             {
-              "id": "bd99a868-2557-42e3-a378-9541e9b4b3bf",
+              "id": "e229232b-1f1d-4885-9168-0642e017f908",
               "name": "categoria",
               "value": "={{ $('④ Set - Limpiar y validar payload').item.json.Categoria }}",
               "type": "string"
             },
             {
-              "id": "af356c4b-e486-44be-a2df-b3fbe3f04059",
+              "id": "5ca2027d-7a60-4127-88f6-b6aaaaac1bee",
               "name": "prioridad",
               "value": "={{ $('④ Set - Limpiar y validar payload').item.json.Prioridad }}",
               "type": "string"
             },
             {
-              "id": "2d253848-302f-4b86-ac57-51b2f82cb985",
+              "id": "25460aa7-d9bc-4916-b89b-abfbfb03350e",
               "name": "resumen",
               "value": "={{ $('④ Set - Limpiar y validar payload').item.json.Resumen.slice(0, 280) }}",
               "type": "string"
             },
             {
-              "id": "681417ba-0f7c-4d4a-9406-239a89e58fbe",
+              "id": "1d3f2774-c57c-4ed0-9be2-a3f2e461c1d7",
               "name": "estadoCRM",
               "value": "={{ $('IF - ¿Existe en el CRM?').item.json.id ? 'Contacto existente actualizado' : 'Contacto nuevo creado' }}",
               "type": "string"
@@ -586,7 +586,7 @@
         },
         "options": {}
       },
-      "id": "c6017881-ca06-4194-ae98-a7aac1444eaa",
+      "id": "904d7fc1-40d4-421c-8468-bc54445b0504",
       "name": "Set - Payload mínimo para Slack",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
@@ -609,7 +609,7 @@
           "includeLinkToWorkflow": false
         }
       },
-      "id": "1603f2ff-cc70-49eb-ae5e-6d5dc404c77c",
+      "id": "d1f2b690-ffda-4152-95a7-f0bec9828edf",
       "name": "Slack - Aviso a #operaciones",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.3,
@@ -626,12 +626,12 @@
     },
     {
       "parameters": {
-        "content": "## Checkpoint 4 — Sincronización del Cerebro Agéntico\n**Autora:** S. Maureira · Evoluciona el workflow de los módulos 1–3 (agente + memoria).\n\n**Stack:** HubSpot OAuth2 (CRM) · Gmail OAuth2 (casilla de soporte) · Slack Bot Token `xoxb-` emitido por OAuth (#operaciones). Slack no acepta redirect http://localhost, por eso en n8n local se usa el Bot Token.\n\n**Mínimo privilegio (scopes):**\n- Gmail: `gmail.readonly` (trigger) + `gmail.compose` (solo borradores). Sin `gmail.send`.\n- HubSpot: `crm.objects.contacts.read` + `crm.objects.contacts.write`.\n- Slack (Bot Token Scopes): `chat:write` + `channels:read`.\n\n**Controles:** ① IF anti auto-reply · ② Look up antes de Create (409) · ③ Create Draft HITL · ④ Set de limpieza (400)",
+        "content": "## Checkpoint 4 — Sincronización del Cerebro Agéntico\n**Autora:** S. Maureira · Evoluciona el workflow de los módulos 1–3 (agente + memoria).\n\n**Stack:** Gmail OAuth2 (casilla de soporte) · HubSpot clave de servicio (CRM) · Slack Bot Token `xoxb-` (#operaciones).\nEn n8n local: HubSpot ya no permite apps OAuth \"anteriores\" y Slack no acepta redirect http://localhost, así que ambos usan tokens con scopes acotados.\n\n**Mínimo privilegio (scopes):**\n- Gmail: `gmail.readonly` (trigger) + `gmail.compose` (solo borradores). Sin `gmail.send`.\n- HubSpot: `crm.objects.contacts.read` + `crm.objects.contacts.write`.\n- Slack (Bot Token Scopes): `chat:write` + `channels:read`.\n\n**Controles:** ① IF anti auto-reply · ② Look up antes de Create (409) · ③ Create Draft HITL · ④ Set de limpieza (400)",
         "height": 320,
         "width": 620,
         "color": 4
       },
-      "id": "aa51cbf2-21a9-49b3-a1aa-117c96677f1e",
+      "id": "c6b67aa4-7279-4120-bb19-fc6a0361af14",
       "name": "Nota 1",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -647,7 +647,7 @@
         "width": 220,
         "color": 3
       },
-      "id": "17e211d5-5b6c-4681-8f16-4b6b32395f9b",
+      "id": "66a546a8-a8c2-42ec-b8a7-75269d5a7b45",
       "name": "Nota 2",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -663,7 +663,7 @@
         "width": 380,
         "color": 5
       },
-      "id": "2cba65dd-508d-4076-83cb-69c4236f0ac9",
+      "id": "dff8f4d6-1897-46c3-843e-ee65b864cac2",
       "name": "Nota 3",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -679,7 +679,7 @@
         "width": 420,
         "color": 6
       },
-      "id": "dcfa9dfb-b86f-4517-bbd8-bbe8a9866854",
+      "id": "7ab5fac1-83dd-44a1-ab6f-4311c4985689",
       "name": "Nota 4",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -695,7 +695,7 @@
         "width": 480,
         "color": 4
       },
-      "id": "3e121974-edae-4ada-9f70-426f3284d691",
+      "id": "d42b5ffe-4238-4c3b-88c7-c19a0540541c",
       "name": "Nota 5",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
