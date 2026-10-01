@@ -14,7 +14,7 @@ Gmail Trigger (casilla de soporte, no leídos, sin adjuntos)
    │
 ① IF ¿es auto-reply? ── Sí ─▶ Stop (corta el bucle infinito)
    │ No
-AI Agent (Claude + memoria por hilo + salida estructurada)
+AI Agent (Groq + memoria por hilo + salida estructurada)
    │
 ④ Set: limpia el payload (From, Subject, BodyText recortado y salida de la IA)
    │
@@ -38,12 +38,22 @@ Slack: aviso en #operaciones
 4. **Set de limpieza**: deja solo los campos necesarios. Además, un IF valida el formato del email antes de llamar al CRM.
 
 ### Mínimo privilegio (scopes)
-- **Gmail**: `gmail.readonly` para el trigger y `gmail.compose` para crear borradores. No se pide `gmail.send`.
+- **Gmail** (OAuth2, casilla de soporte autoprueban8n@gmail.com): el flujo solo lee correos no leídos (trigger) y crea borradores. No hay ningún nodo que envíe correos.
 - **HubSpot** (clave de servicio): `crm.objects.contacts.read` y `crm.objects.contacts.write`.
 - **Slack** (Bot Token Scopes): `chat:write` y `channels:read`.
 
 ### Cómo importarlo
 1. En n8n, ir a *Workflows › Import from File* y elegir `checkpoint4_S_Maureira.json`.
-2. Reemplazar las credenciales de ejemplo (`REPLACE_WITH_...`) por las propias: Gmail OAuth2, HubSpot App Token (clave de servicio de HubSpot), Slack API (Bot Token `xoxb-`) y Anthropic. En n8n local, HubSpot ya no permite crear apps OAuth "anteriores" y Slack no acepta el redirect `http://localhost`, por eso esos dos usan tokens con scopes acotados. Hay que confirmar que cada una quede en verde.
+2. Reemplazar las credenciales de ejemplo (`REPLACE_WITH_...`) por las propias: Gmail OAuth2, HubSpot (clave de servicio, credencial *HubSpot Service Key* / App Token), Slack API (Bot Token `xoxb-`) y Groq. En n8n local, HubSpot ya no permite crear apps OAuth "anteriores" y Slack no acepta el redirect `http://localhost`, por eso esos dos usan tokens con scopes acotados. Hay que confirmar que cada una quede en verde.
 3. Elegir el canal de Slack (por defecto `#operaciones`).
 4. Hacer el test de regresión con *Execute Workflow* y *Test step* en cada nodo.
+
+### Test de regresión realizado (1 de octubre de 2026)
+| Prueba | Resultado |
+|---|---|
+| Cliente nuevo → Create, borrador y aviso en Slack | ✅ |
+| Cliente repetido → Update, sin duplicar (409) | ✅ |
+| Correo automático no-reply → Stop - Auto-reply ignorado | ✅ |
+| Remitente inválido (simulado) → Stop - Email vacío o inválido (400) | ✅ |
+| Correo sin asunto ni cuerpo → la IA pide reenviar la consulta | ✅ |
+| Varios clientes → una ficha por cliente en HubSpot | ✅ |

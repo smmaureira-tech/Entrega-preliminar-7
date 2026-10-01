@@ -3,41 +3,6 @@
   "nodes": [
     {
       "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "simple": false,
-        "filters": {
-          "labelIds": [
-            "INBOX"
-          ],
-          "readStatus": "unread"
-        },
-        "options": {
-          "downloadAttachments": false
-        }
-      },
-      "id": "75a24c79-d7d9-44a5-ab93-7d7e4110c4d4",
-      "name": "Gmail Trigger - Casilla de Soporte",
-      "type": "n8n-nodes-base.gmailTrigger",
-      "typeVersion": 1.2,
-      "position": [
-        -1200,
-        300
-      ],
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "REPLACE_WITH_TU_CREDENCIAL_GMAIL",
-          "name": "Gmail OAuth2 - Soporte"
-        }
-      }
-    },
-    {
-      "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": false,
@@ -153,98 +118,71 @@
           "ignoreCase": true
         }
       },
-      "id": "e22df39c-473a-4ec6-a660-6a3d2ad285cf",
+      "id": "a369c544-d5b2-4b6d-a9d9-3d30e8af8c00",
       "name": "① IF - ¿Es auto-reply?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -980,
-        300
+        368,
+        496
       ]
     },
     {
       "parameters": {},
-      "id": "8b720d49-7adf-4678-ad54-c50039ab7492",
+      "id": "c5644ac7-18ae-4b9c-b3cb-2a5a286c2a82",
       "name": "Stop - Auto-reply ignorado",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        -760,
-        120
-      ]
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "hasOutputParser": true,
-        "text": "=Remitente: {{ $json.from?.value?.[0]?.name || '' }} <{{ $json.from?.value?.[0]?.address || '' }}>\nAsunto: {{ $json.subject || '(sin asunto)' }}\n\nCuerpo del correo:\n{{ ($json.text || '').slice(0, 4000) }}",
-        "options": {
-          "systemMessage": "# ROL\nSos el Agente de Soporte y Calificación de la tienda e-commerce. Leés los correos que llegan a la casilla de soporte, los clasificás y redactás una respuesta en borrador.\n\n# ÁMBITO\n- Solo trabajás con el contenido del correo recibido y el historial de la conversación (memoria por hilo).\n- NO enviás correos: tu respuesta queda como BORRADOR y una persona del equipo la revisa y aprueba (Human-in-the-loop).\n- NO prometés reembolsos, descuentos, precios finales ni plazos de entrega que no figuren en el correo.\n- NO das asesoramiento legal, médico ni financiero.\n\n# OBJETIVO\n1. Clasificar el correo en una categoría: venta, pedido, reclamo, devolucion, soporte u otro.\n2. Asignar prioridad: alta (reclamo/urgencia/cliente molesto), media o baja.\n3. Extraer el nombre del remitente si aparece en el correo.\n4. Redactar una respuesta breve, cordial y profesional en español, firmada como \"Equipo de Soporte\".\n5. Escribir un resumen de una línea para el equipo de operaciones.\n\n# REGLAS\n- Nunca inventes datos que no estén en el correo.\n- Si el caso excede tu ámbito (legal, amenaza, fraude), marcá prioridad alta y en la respuesta indicá que un responsable humano se va a comunicar.\n- Respondé SIEMPRE con el formato estructurado solicitado.",
-          "maxIterations": 5
-        }
-      },
-      "id": "179cf634-45da-4e85-a31a-c491db4250b2",
-      "name": "AI Agent - Clasifica y redacta",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.9,
-      "position": [
-        -740,
+        592,
         400
       ]
     },
     {
       "parameters": {
-        "model": {
-          "__rl": true,
-          "value": "claude-3-5-sonnet-20241022",
-          "mode": "list",
-          "cachedResultName": "Claude 3.5 Sonnet"
-        },
+        "promptType": "define",
+        "text": "=Remitente: {{ $json.from?.value?.[0]?.name || '' }} <{{ $json.from?.value?.[0]?.address || '' }}>\nAsunto: {{ $json.subject || '(sin asunto)' }}\n\nCuerpo del correo:\n{{ ($json.text || '').slice(0, 4000) }}",
+        "hasOutputParser": true,
         "options": {
-          "temperature": 0.3
+          "systemMessage": "# ROL\nSos el Agente de Soporte y Calificación de la tienda e-commerce. Leés los correos que llegan a la casilla de soporte, los clasificás y redactás una respuesta en borrador.\n\n# ÁMBITO\n- Solo trabajás con el contenido del correo recibido y el historial de la conversación (memoria por hilo).\n- NO enviás correos: tu respuesta queda como BORRADOR y una persona del equipo la revisa y aprueba (Human-in-the-loop).\n- NO prometés reembolsos, descuentos, precios finales ni plazos de entrega que no figuren en el correo.\n- NO das asesoramiento legal, médico ni financiero.\n\n# OBJETIVO\n1. Clasificar el correo en una categoría: venta, pedido, reclamo, devolucion, soporte u otro.\n2. Asignar prioridad: alta (reclamo/urgencia/cliente molesto), media o baja.\n3. Extraer el nombre del remitente si aparece en el correo.\n4. Redactar una respuesta breve, cordial y profesional en español, firmada como \"Equipo de Soporte\".\n5. Escribir un resumen de una línea para el equipo de operaciones.\n\n# REGLAS\n- Nunca inventes datos que no estén en el correo.\n- Si el caso excede tu ámbito (legal, amenaza, fraude), marcá prioridad alta y en la respuesta indicá que un responsable humano se va a comunicar.\n- Respondé SIEMPRE con el formato estructurado solicitado.",
+          "maxIterations": 5
         }
       },
-      "id": "6c5a0e14-f814-4248-8c1e-2571fadd335c",
-      "name": "Anthropic Chat Model",
-      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
-      "typeVersion": 1.3,
+      "id": "0accc6cb-728f-4c78-9e94-9859471989a4",
+      "name": "AI Agent - Clasifica y redacta",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
       "position": [
-        -820,
-        640
-      ],
-      "credentials": {
-        "anthropicApi": {
-          "id": "REPLACE_WITH_TU_CREDENCIAL_ANTHROPIC",
-          "name": "Anthropic account"
-        }
-      }
+        544,
+        592
+      ]
     },
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "={{ $('Gmail Trigger - Casilla de Soporte').item.json.threadId }}",
+        "sessionKey": "={{ $('Gmail Trigger - Soporte Tienda').item.json.threadId }}",
         "contextWindowLength": 10
       },
-      "id": "477b1fe3-781d-4c6a-9b36-c28063c9503c",
+      "id": "7bb00210-92fd-4c46-a5b0-db357be65a45",
       "name": "Memoria por hilo (Módulo 3)",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        -680,
-        640
+        608,
+        832
       ]
     },
     {
       "parameters": {
         "jsonSchemaExample": "{\n  \"categoria\": \"reclamo\",\n  \"prioridad\": \"alta\",\n  \"nombre\": \"Ana Pérez\",\n  \"resumen\": \"Pedido #1234 llegó dañado, pide cambio.\",\n  \"respuesta\": \"Hola Ana, lamentamos lo ocurrido con tu pedido...\\n\\nEquipo de Soporte\"\n}"
       },
-      "id": "69815eed-a154-4b14-8c87-46b1051e7e9d",
+      "id": "699ce439-57e1-4426-9047-8b99973fe3a4",
       "name": "Structured Output Parser",
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.2,
       "position": [
-        -540,
-        640
+        736,
+        832
       ]
     },
     {
@@ -254,31 +192,31 @@
             {
               "id": "95f8bca8-3bd9-4b7e-ab16-4cb585bdcef3",
               "name": "From",
-              "value": "={{ ($('Gmail Trigger - Casilla de Soporte').item.json.from?.value?.[0]?.address || '').trim().toLowerCase() }}",
+              "value": "={{ ($('Gmail Trigger - Soporte Tienda').item.json.from?.value?.[0]?.address || '').trim().toLowerCase() }}",
               "type": "string"
             },
             {
               "id": "20c723bb-62f6-4853-a812-edaa442d1061",
               "name": "FromName",
-              "value": "={{ $json.output.nombre || $('Gmail Trigger - Casilla de Soporte').item.json.from?.value?.[0]?.name || '' }}",
+              "value": "={{ $json.output.nombre || $('Gmail Trigger - Soporte Tienda').item.json.from?.value?.[0]?.name || '' }}",
               "type": "string"
             },
             {
               "id": "91ef0a39-90be-42f4-9a49-d2dd5c4d8f9b",
               "name": "Subject",
-              "value": "={{ $('Gmail Trigger - Casilla de Soporte').item.json.subject || '(sin asunto)' }}",
+              "value": "={{ $('Gmail Trigger - Soporte Tienda').item.json.subject || '(sin asunto)' }}",
               "type": "string"
             },
             {
               "id": "fc63e1a7-6848-4394-8fdb-4cd0379e2e81",
               "name": "BodyText",
-              "value": "={{ ($('Gmail Trigger - Casilla de Soporte').item.json.text || '').slice(0, 2000) }}",
+              "value": "={{ ($('Gmail Trigger - Soporte Tienda').item.json.text || '').slice(0, 2000) }}",
               "type": "string"
             },
             {
               "id": "3dd5d94c-7feb-4e00-975d-b64870318042",
               "name": "ThreadId",
-              "value": "={{ $('Gmail Trigger - Casilla de Soporte').item.json.threadId }}",
+              "value": "={{ $('Gmail Trigger - Soporte Tienda').item.json.threadId }}",
               "type": "string"
             },
             {
@@ -302,20 +240,20 @@
             {
               "id": "ed4a3de7-0139-47a8-9a48-adf52ae68d53",
               "name": "RespuestaIA",
-              "value": "={{ $json.output.respuesta }}",
+              "value": "={{ $json.output.respuesta || 'Hola, gracias por escribirnos. Recibimos tu mensaje y un integrante de nuestro equipo te responderá a la brevedad.\\n\\nSaludos cordiales,\\nEquipo de Soporte' }}",
               "type": "string"
             }
           ]
         },
         "options": {}
       },
-      "id": "8e5fe675-d36b-40e1-b07c-eca03a2c3fc4",
+      "id": "3c03bb40-7303-4a7f-b8d8-995c04b87a18",
       "name": "④ Set - Limpiar y validar payload",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -380,
-        400
+        896,
+        592
       ]
     },
     {
@@ -355,30 +293,29 @@
           "ignoreCase": true
         }
       },
-      "id": "fb28b9cd-c6d1-4a2a-9b80-495ed6782128",
+      "id": "dfae76fa-85ef-4353-82a1-160878b15dbe",
       "name": "IF - ¿Email válido? (evita 400)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -160,
-        400
+        1120,
+        592
       ]
     },
     {
       "parameters": {},
-      "id": "50d70c53-a92c-4093-8216-a4194cdfe9bd",
+      "id": "d74a385c-0fa5-4834-8da9-f15bea119567",
       "name": "Stop - Email vacío o inválido",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        60,
-        560
+        1344,
+        752
       ]
     },
     {
       "parameters": {
         "authentication": "appToken",
-        "resource": "contact",
         "operation": "search",
         "limit": 1,
         "filterGroupsUi": {
@@ -388,7 +325,6 @@
                 "filterValues": [
                   {
                     "propertyName": "email|string",
-                    "operator": "EQ",
                     "value": "={{ $json.From }}"
                   }
                 ]
@@ -404,21 +340,21 @@
           ]
         }
       },
-      "id": "8304e6df-5848-4d4d-8df9-2b4ee8e34818",
+      "id": "096b5cc7-c5fb-48ee-9e71-c7dfe9377965",
       "name": "② Look up - ¿Contacto existe en HubSpot?",
       "type": "n8n-nodes-base.hubspot",
       "typeVersion": 2.1,
       "position": [
-        60,
-        380
+        1344,
+        576
       ],
+      "alwaysOutputData": true,
       "credentials": {
         "hubspotAppToken": {
-          "id": "REPLACE_WITH_TU_CREDENCIAL_HUBSPOT",
-          "name": "HubSpot Clave de Servicio - CRM Tienda"
+          "id": "Egf4Y8y4r891icEg",
+          "name": "HubSpot Service Key account"
         }
-      },
-      "alwaysOutputData": true
+      }
     },
     {
       "parameters": {
@@ -448,91 +384,88 @@
           "ignoreCase": true
         }
       },
-      "id": "af981c98-b10a-4419-abac-341f43862510",
+      "id": "089113cd-7d16-4b7f-aa27-94332641fe5f",
       "name": "IF - ¿Existe en el CRM?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        280,
-        380
+        1568,
+        576
       ]
     },
     {
       "parameters": {
         "authentication": "appToken",
-        "resource": "contact",
-        "operation": "upsert",
         "email": "={{ $('④ Set - Limpiar y validar payload').item.json.From }}",
         "additionalFields": {
           "message": "=[{{ $now.format('yyyy-MM-dd') }}] {{ $('④ Set - Limpiar y validar payload').item.json.Categoria }} / {{ $('④ Set - Limpiar y validar payload').item.json.Prioridad }}: {{ $('④ Set - Limpiar y validar payload').item.json.Resumen }}"
-        }
+        },
+        "options": {}
       },
-      "id": "c2bb5dc7-81ba-4724-a787-60f8cd9e33e5",
+      "id": "474bab95-b227-47ed-9367-3f9e18b3260c",
       "name": "HubSpot - Update contacto",
       "type": "n8n-nodes-base.hubspot",
       "typeVersion": 2.1,
       "position": [
-        500,
-        280
+        1776,
+        480
       ],
       "credentials": {
         "hubspotAppToken": {
-          "id": "REPLACE_WITH_TU_CREDENCIAL_HUBSPOT",
-          "name": "HubSpot Clave de Servicio - CRM Tienda"
+          "id": "Egf4Y8y4r891icEg",
+          "name": "HubSpot Service Key account"
         }
       }
     },
     {
       "parameters": {
         "authentication": "appToken",
-        "resource": "contact",
-        "operation": "upsert",
         "email": "={{ $('④ Set - Limpiar y validar payload').item.json.From }}",
         "additionalFields": {
           "firstName": "={{ $('④ Set - Limpiar y validar payload').item.json.FromName }}",
           "lifeCycleStage": "lead",
           "message": "=[{{ $now.format('yyyy-MM-dd') }}] {{ $('④ Set - Limpiar y validar payload').item.json.Categoria }} / {{ $('④ Set - Limpiar y validar payload').item.json.Prioridad }}: {{ $('④ Set - Limpiar y validar payload').item.json.Resumen }}"
-        }
+        },
+        "options": {}
       },
-      "id": "2ff0138d-84c2-49c1-9c69-78d17c6278a1",
+      "id": "52edf5fa-939d-45e0-ab26-8415f7ac98d8",
       "name": "HubSpot - Create contacto",
       "type": "n8n-nodes-base.hubspot",
       "typeVersion": 2.1,
       "position": [
-        500,
-        480
+        1776,
+        672
       ],
       "credentials": {
         "hubspotAppToken": {
-          "id": "REPLACE_WITH_TU_CREDENCIAL_HUBSPOT",
-          "name": "HubSpot Clave de Servicio - CRM Tienda"
+          "id": "Egf4Y8y4r891icEg",
+          "name": "HubSpot Service Key account"
         }
       }
     },
     {
       "parameters": {
         "resource": "draft",
-        "operation": "create",
         "subject": "=Re: {{ $('④ Set - Limpiar y validar payload').item.json.Subject }}",
-        "emailType": "text",
         "message": "={{ $('④ Set - Limpiar y validar payload').item.json.RespuestaIA }}",
         "options": {
-          "sendTo": "={{ $('④ Set - Limpiar y validar payload').item.json.From }}",
-          "threadId": "={{ $('④ Set - Limpiar y validar payload').item.json.ThreadId }}"
+          "threadId": "={{ $('④ Set - Limpiar y validar payload').item.json.ThreadId }}",
+          "sendTo": "={{ $('④ Set - Limpiar y validar payload').item.json.From }}"
         }
       },
-      "id": "4deb04e0-2147-408d-81c4-7dfca4aaf20d",
+      "id": "ce5cb08b-0c19-4a7c-8372-f87b8af0a38f",
       "name": "③ Gmail - Create Draft (HITL)",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        740,
-        380
+        2016,
+        576
       ],
+      "webhookId": "897d3a69-df02-412b-81e2-75338de4f71d",
       "credentials": {
         "gmailOAuth2": {
-          "id": "REPLACE_WITH_TU_CREDENCIAL_GMAIL",
-          "name": "Gmail OAuth2 - Soporte"
+          "id": "OlDbdrvmu1pIQO36",
+          "name": "Gmail account"
         }
       }
     },
@@ -586,74 +519,73 @@
         },
         "options": {}
       },
-      "id": "904d7fc1-40d4-421c-8468-bc54445b0504",
+      "id": "619fb261-eaa8-4010-ae99-29d90534e801",
       "name": "Set - Payload mínimo para Slack",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        960,
-        380
+        2208,
+        576
       ]
     },
     {
       "parameters": {
-        "authentication": "accessToken",
         "select": "channel",
         "channelId": {
           "__rl": true,
-          "value": "#operaciones",
-          "mode": "name"
+          "mode": "list",
+          "value": "#operaciones"
         },
         "text": "=:envelope_with_arrow: *Nuevo correo de soporte* — borrador listo para revisión\n*Cliente:* {{ $json.cliente }} ({{ $json.email }})\n*Asunto:* {{ $json.asunto }}\n*Categoría:* {{ $json.categoria }} | *Prioridad:* {{ $json.prioridad }}\n*Resumen:* {{ $json.resumen }}\n*CRM:* {{ $json.estadoCRM }}\n:warning: La respuesta quedó en *Borradores* de Gmail: revisar y enviar manualmente.",
         "otherOptions": {
           "includeLinkToWorkflow": false
         }
       },
-      "id": "d1f2b690-ffda-4152-95a7-f0bec9828edf",
+      "id": "6a12e835-bdfc-448d-b96e-7c03a46d5225",
       "name": "Slack - Aviso a #operaciones",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.3,
       "position": [
-        1180,
-        380
+        2368,
+        576
       ],
+      "webhookId": "5e2f3ac3-5b1d-4528-9a93-4092f600ad6d",
       "credentials": {
         "slackApi": {
-          "id": "REPLACE_WITH_TU_CREDENCIAL_SLACK",
-          "name": "Slack Bot Token - Operaciones"
+          "id": "67MDo3tqFFRkPp2v",
+          "name": "Slack account"
         }
       }
     },
     {
       "parameters": {
         "content": "## Checkpoint 4 — Sincronización del Cerebro Agéntico\n**Autora:** S. Maureira · Evoluciona el workflow de los módulos 1–3 (agente + memoria).\n\n**Stack:** Gmail OAuth2 (casilla de soporte) · HubSpot clave de servicio (CRM) · Slack Bot Token `xoxb-` (#operaciones).\nEn n8n local: HubSpot ya no permite apps OAuth \"anteriores\" y Slack no acepta redirect http://localhost, así que ambos usan tokens con scopes acotados.\n\n**Mínimo privilegio (scopes):**\n- Gmail: `gmail.readonly` (trigger) + `gmail.compose` (solo borradores). Sin `gmail.send`.\n- HubSpot: `crm.objects.contacts.read` + `crm.objects.contacts.write`.\n- Slack (Bot Token Scopes): `chat:write` + `channels:read`.\n\n**Controles:** ① IF anti auto-reply · ② Look up antes de Create (409) · ③ Create Draft HITL · ④ Set de limpieza (400)",
-        "height": 320,
-        "width": 620,
+        "height": 288,
+        "width": 796,
         "color": 4
       },
-      "id": "c6b67aa4-7279-4120-bb19-fc6a0361af14",
+      "id": "db663922-12b1-4092-9aea-83d21b671b38",
       "name": "Nota 1",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -1260,
-        -240
+        176,
+        -64
       ]
     },
     {
       "parameters": {
         "content": "### ① Resiliencia\nCorta el bucle infinito: ignora Auto-reply, Out of office, Undeliverable y remitentes no-reply@ / mailer-daemon.",
-        "height": 160,
         "width": 220,
         "color": 3
       },
-      "id": "66a546a8-a8c2-42ec-b8a7-75269d5a7b45",
+      "id": "8eee2ca6-8469-437d-a1de-d00bf3bc8ce0",
       "name": "Nota 2",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -1020,
-        120
+        176,
+        304
       ]
     },
     {
@@ -663,13 +595,13 @@
         "width": 380,
         "color": 5
       },
-      "id": "dff8f4d6-1897-46c3-843e-ee65b864cac2",
+      "id": "0fd709ca-8d80-405e-a540-c838560e7d4b",
       "name": "Nota 3",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -420,
-        140
+        848,
+        288
       ]
     },
     {
@@ -679,13 +611,13 @@
         "width": 420,
         "color": 6
       },
-      "id": "7ab5fac1-83dd-44a1-ab6f-4311c4985689",
+      "id": "d39cb1e7-ee3f-4762-91d5-84a2ca3d21a9",
       "name": "Nota 4",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        40,
-        120
+        1328,
+        288
       ]
     },
     {
@@ -695,28 +627,73 @@
         "width": 480,
         "color": 4
       },
-      "id": "d42b5ffe-4238-4c3b-88c7-c19a0540541c",
+      "id": "2683acc6-c5fb-4259-9cd5-ffc5189fec18",
       "name": "Nota 5",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        720,
-        120
-      ]
-    }
-  ],
-  "connections": {
-    "Gmail Trigger - Casilla de Soporte": {
-      "main": [
-        [
-          {
-            "node": "① IF - ¿Es auto-reply?",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        2000,
+        272
       ]
     },
+    {
+      "parameters": {
+        "model": "qwen/qwen3.8-27b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        448,
+        816
+      ],
+      "id": "6de27679-d62a-485d-b641-63543eaa7d42",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "AuvuiipfFaDEt9hP",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "labelIds": [
+            "INBOX"
+          ],
+          "readStatus": "unread"
+        },
+        "options": {
+          "downloadAttachments": false
+        }
+      },
+      "id": "cea041f0-235c-497c-936f-e3d08073ea8a",
+      "name": "Gmail Trigger - Soporte Tienda",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        544
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "OlDbdrvmu1pIQO36",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
     "① IF - ¿Es auto-reply?": {
       "main": [
         [
@@ -730,17 +707,6 @@
           {
             "node": "AI Agent - Clasifica y redacta",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Anthropic Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent - Clasifica y redacta",
-            "type": "ai_languageModel",
             "index": 0
           }
         ]
@@ -880,16 +846,40 @@
           }
         ]
       ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Clasifica y redacta",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger - Soporte Tienda": {
+      "main": [
+        [
+          {
+            "node": "① IF - ¿Es auto-reply?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "pinData": {},
   "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate"
   },
+  "versionId": "82683002-574f-4909-94dc-ea17e9d7a639",
   "meta": {
-    "instanceId": "checkpoint4-soporte-ecommerce-instance"
+    "templateCredsSetupCompleted": true,
+    "instanceId": "59559cad081d8ad9c0cd1183bf11982417183d3d824bcc6df0a1a33e6516677b"
   },
-  "id": "c4a7e2b1-3f5d-4c8e-9a61-2b7d8e0f4c44",
+  "id": "bF0ontsPEQR9U30O",
   "tags": []
 }
