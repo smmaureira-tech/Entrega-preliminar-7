@@ -1,0 +1,693 @@
+{
+  "name": "Checkpoint 6 - NEXA DIGITAL - Asistente de Voz (STT/TTS) + RAG",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "download": true
+        }
+      },
+      "id": "034c7021-83d0-533e-88df-0c2ca3a4e3bd",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        400
+      ],
+      "webhookId": "7c1e0a72-78c1-54b8-8745-3115fee19f76",
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_CRED_ID",
+          "name": "Telegram NEXA Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "binaryPropertyName": "data",
+        "options": {
+          "language": "es",
+          "temperature": 0
+        }
+      },
+      "id": "20dea3d8-07b4-54aa-a1e6-8f9aba5bd7c1",
+      "name": "OpenAI Whisper (STT)",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        240,
+        400
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CRED_ID",
+          "name": "OpenAI NEXA"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ee5bb550-e800-548f-b57c-5c8f7e648f3e",
+              "leftValue": "={{ ($json.text || '').trim() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "e8ad83ef-903a-54cd-9427-ed6bf1e9c83b",
+              "leftValue": "={{ ($json.text || '').trim().length }}",
+              "rightValue": 3,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "6ab514e9-2a13-556c-b99f-dbfa3cd96acc",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "92ac887c-7b39-59f7-846e-1c5fc012b48d",
+      "name": "IF - Transcripción válida",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "No logré escuchar bien tu audio. ¿Podés grabarlo de nuevo en un lugar más silencioso o escribirme tu consulta? 🎧",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c5528422-8b62-50ba-8fe3-dd865ac6a115",
+      "name": "Telegram - Aviso Audio No Válido",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        760,
+        80
+      ],
+      "webhookId": "a07472bc-ff25-5a7d-8d3f-664840f2acc2",
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_CRED_ID",
+          "name": "Telegram NEXA Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "agent": "toolsAgent",
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "# ROL\nSos el Asistente de Voz de NEXA DIGITAL, agencia de marketing digital. Atendés notas de voz de potenciales clientes por Telegram, entendés su necesidad y calificás si son un lead para el equipo comercial.\n\n# CONTENCIÓN FINANCIERA (REGLA OBLIGATORIA)\n- Limitá SIEMPRE la longitud de cada respuesta escrita a un MÁXIMO DE 200 CARACTERES (espacios incluidos). Es una regla de negocio imperativa: cada carácter se convierte en audio y se factura en la API de ElevenLabs.\n- Una sola idea y, como mucho, una pregunta por turno. Si necesitás más datos, pedilos en el turno siguiente.\n\n# DISEÑO CONVERSACIONAL PARA VOZ (VUI)\n- Tu respuesta se va a escuchar, no a leer: frases cortas, lenguaje natural, tono cálido y profesional.\n- PROHIBIDO usar emojis, viñetas, tablas, markdown, URLs, asteriscos o símbolos: el sintetizador los lee mal.\n- Escribí los números como se dicen (ej.: \"quinientos mil pesos\").\n- No repitas datos sensibles completos (email o teléfono) en voz alta; confirmá solo \"ya tengo tu contacto\".\n\n# ÁMBITO Y BASE DE CONOCIMIENTO (RAG)\n- Para preguntas sobre servicios, planes, precios de referencia o procesos de NEXA DIGITAL usá SIEMPRE la herramienta base_conocimiento_nexa y respondé solo con lo que ella devuelva. Si no encontrás el dato, decí que un asesor lo confirmará.\n- NO cerrás ventas, NO prometés descuentos ni plazos, NO das asesoramiento legal, médico ni financiero.\n\n# CALIFICACIÓN Y REGISTRO\n1. Recolectá de forma conversacional: nombre, email o teléfono, empresa (si aplica), necesidad, presupuesto y plazo.\n2. Puntaje 0-100: necesidad clara +30, presupuesto declarado +30, plazo menor a 30 días +25, contacto completo +15. Categoría: Caliente (70 o más), Tibio (40 a 69), Frío (menos de 40), Consulta (no es lead).\n3. Con nombre + un contacto + necesidad, usá la herramienta Registrar Lead en CRM una sola vez por conversación.\n4. Confirmá en una frase breve que el equipo lo contactará.\n\n# ESCALAMIENTO\n- Si pide hablar con una persona, o el tema es reclamo, soporte grave o legal, avisá que derivás a un humano y marcá Escalar_a_humano = Sí.\n- Nunca inventes información que el usuario no dio.",
+          "maxIterations": 6
+        }
+      },
+      "id": "d6e70cb3-239f-5568-834a-997c80706384",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        760,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {
+          "maxTokensToSample": 150,
+          "temperature": 0.3
+        }
+      },
+      "id": "1659f153-579d-5b9c-907a-6b4f9e982568",
+      "name": "Anthropic Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        800
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "ANTHROPIC_CRED_ID",
+          "name": "Anthropic NEXA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "contextWindowLength": 6
+      },
+      "id": "ebef6999-c618-57ae-98a4-b1b4b06e5627",
+      "name": "Memoria Conversacional",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        740,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "base_conocimiento_nexa",
+        "toolDescription": "Base de conocimiento oficial de NEXA DIGITAL (Módulo 5 - RAG): servicios, planes, precios de referencia, plazos y preguntas frecuentes. Consultala antes de responder cualquier pregunta sobre la oferta de la agencia.",
+        "tableName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "documents",
+          "cachedResultName": "documents"
+        },
+        "topK": 4,
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "id": "fe72841e-166f-5d34-b6f4-ece229d32980",
+      "name": "RAG - Base de Conocimiento NEXA",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.1,
+      "position": [
+        920,
+        800
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED_ID",
+          "name": "Supabase NEXA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "id": "47d7a741-dea8-5102-a411-ebf7534d0dd2",
+      "name": "Embeddings OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        960,
+        1000
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CRED_ID",
+          "name": "OpenAI NEXA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Registra UNA vez por conversación un lead en el CRM de NEXA DIGITAL cuando ya tenés nombre + email o teléfono + necesidad. No lo uses para consultas generales, reclamos o leads ya registrados.",
+        "resource": "sheet",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1PPkW5HmffF4rrlFuSnKKLHjVEVaNUrbLXPyNNBrkl4U",
+          "cachedResultName": "NEXA_DIGITAL_CRM_Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PPkW5HmffF4rrlFuSnKKLHjVEVaNUrbLXPyNNBrkl4U"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultName": "Leads"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ $now.format('dd-MM-yyyy HH:mm') }}",
+            "Nombre": "={{ $fromAI('Nombre', 'Nombre completo del lead', 'string') }}",
+            "Email": "={{ $fromAI('Email', 'Email del lead o No informado', 'string') }}",
+            "Telefono": "={{ $fromAI('Telefono', 'Telefono del lead o No informado', 'string') }}",
+            "Empresa": "={{ $fromAI('Empresa', 'Empresa o emprendimiento, o No informado', 'string') }}",
+            "Necesidad": "={{ $fromAI('Necesidad', 'Resumen breve de la necesidad', 'string') }}",
+            "Presupuesto": "={{ $fromAI('Presupuesto', 'Presupuesto declarado o No informado', 'string') }}",
+            "Plazo": "={{ $fromAI('Plazo', 'Plazo declarado o No informado', 'string') }}",
+            "Puntaje": "={{ $fromAI('Puntaje', 'Puntaje de calificacion 0 a 100', 'number') }}",
+            "Categoria": "={{ $fromAI('Categoria', 'Caliente, Tibio, Frio o Consulta', 'string') }}",
+            "Escalar_a_humano": "={{ $fromAI('Escalar_a_humano', 'Si o No', 'string') }}",
+            "Notas": "=Canal: Telegram voz. {{ $fromAI('Notas', 'Notas breves del agente', 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "d68d18c0-1730-59da-9f9b-d636cf164f00",
+      "name": "Registrar Lead en CRM",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        1240,
+        800
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GSHEETS_CRED_ID",
+          "name": "Google Sheets NEXA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "853778d7-852b-577a-a884-847caec89879",
+              "name": "respuesta",
+              "type": "string",
+              "value": "={{ (() => { const t = ($json.output || '').replace(/[*_#`>\\[\\]]/g, '').replace(/\\s+/g, ' ').trim(); if (t.length <= 200) return t; const c = t.slice(0, 200); const p = Math.max(c.lastIndexOf('. '), c.lastIndexOf('? '), c.lastIndexOf('! ')); return p > 80 ? c.slice(0, p + 1) : c.slice(0, c.lastIndexOf(' ')) + '...'; })() }}"
+            },
+            {
+              "id": "978576dc-4c91-570a-b62d-dc52efdb27d2",
+              "name": "caracteres_tts",
+              "type": "number",
+              "value": "={{ $json.output.length }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1e6d2844-fea0-5861-8f3a-4be14e162e56",
+      "name": "Contención 200 caracteres",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1100,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "speech",
+        "operation": "textToSpeech",
+        "voice": {
+          "__rl": true,
+          "mode": "list",
+          "value": "EXAVITQu4vr4xnSDxMaL",
+          "cachedResultName": "Sarah"
+        },
+        "text": "={{ $json.respuesta }}",
+        "additionalOptions": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "eleven_multilingual_v2",
+            "cachedResultName": "Eleven Multilingual v2"
+          },
+          "outputFormat": "mp3_44100_64",
+          "voiceSettings": "{\n  \"stability\": 0.6,\n  \"similarity_boost\": 0.8,\n  \"style\": 0.15,\n  \"use_speaker_boost\": true,\n  \"speed\": 1\n}"
+        }
+      },
+      "id": "af76cc24-75b1-51db-b3b3-369fc4ebbc96",
+      "name": "ElevenLabs (TTS)",
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        400
+      ],
+      "credentials": {
+        "elevenLabsApi": {
+          "id": "ELEVENLABS_CRED_ID",
+          "name": "ElevenLabs NEXA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAudio",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "binaryData": true,
+        "binaryPropertyName": "data",
+        "additionalFields": {
+          "caption": "={{ $('Contención 200 caracteres').item.json.respuesta }}",
+          "title": "NEXA DIGITAL - Asistente de voz"
+        }
+      },
+      "id": "37532a07-3e75-5521-aad4-feda965ce137",
+      "name": "Telegram - Send Audio",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1540,
+        400
+      ],
+      "webhookId": "de8c5ab7-a542-5017-935d-2030c709ea3b",
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_CRED_ID",
+          "name": "Telegram NEXA Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// COMPLIANCE - DESTRUCCIÓN BINARIA\n// Se descartan TODOS los payloads binarios (nota de voz del cliente y audio TTS).\n// Solo sobreviven metadatos mínimos, sin audio, para la auditoría.\nlet respuesta = '';\nlet estado = 'contingencia_audio_no_valido';\ntry {\n  respuesta = $('Contención 200 caracteres').first().json.respuesta;\n  estado = 'respondido_por_voz';\n} catch (e) {}\n\nconst msg = $('Telegram Trigger').first().json.message || {};\nlet transcripcion = '';\ntry { transcripcion = $('OpenAI Whisper (STT)').first().json.text || ''; } catch (e) {}\n\n// Se devuelven items SOLO con json: n8n no propaga ninguna propiedad \"binary\".\nreturn [{\n  json: {\n    chat_id: msg.chat ? msg.chat.id : null,\n    duracion_audio_seg: msg.voice ? msg.voice.duration : null,\n    transcripcion,\n    respuesta,\n    caracteres_tts: respuesta.length,\n    estado,\n    binarios_destruidos: true,\n    procesado: $now.toISO(),\n  },\n}];"
+      },
+      "id": "8049ac7e-4095-5e9a-8cea-28137e9e5fb3",
+      "name": "Compliance - Destrucción Binaria",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "smmaureira@gmail.com",
+        "subject": "=Log Voice AI NEXA - {{ $json.estado }} ({{ $now.format('yyyy-MM-dd HH:mm') }})",
+        "emailType": "text",
+        "message": "=Ejecución del Asistente de Voz NEXA DIGITAL\n\nEstado: {{ $json.estado }}\nChat ID: {{ $json.chat_id }}\nDuración del audio (s): {{ $json.duracion_audio_seg }}\n\nTranscripción (Whisper):\n{{ $json.transcripcion }}\n\nRespuesta enviada ({{ $json.caracteres_tts }}/200 caracteres):\n{{ $json.respuesta }}\n\nBinarios de voz destruidos: {{ $json.binarios_destruidos }}\n---\nWorkflow: {{ $workflow.name }} | Execution ID: {{ $execution.id }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "33d6e329-0c9b-5d51-84ba-e57c1b8c3a72",
+      "name": "Gmail - Log de Auditoría",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1980,
+        400
+      ],
+      "webhookId": "e568ef0d-52b8-520f-b238-23b737a011a4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GMAIL_CRED_ID",
+          "name": "Gmail NEXA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 1. Oídos del agente (STT)\n**Telegram Trigger** recibe la nota de voz y la descarga como binario `data` (Download = ON).\n\n**OpenAI Whisper** → Input Binary Property: `data` · Language: `es` (menos latencia).\n\nSi Whisper falla, el flujo sigue (On Error = Continue) y lo resuelve el IF.",
+        "height": 380,
+        "width": 500,
+        "color": 7
+      },
+      "id": "c25ab556-a99f-568d-8619-26039710224f",
+      "name": "Nota - Entrada",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Ruta de contingencia no-code\n**IF - Transcripción válida**: texto no vacío, mínimo 3 caracteres y sin error de Whisper.\n\nFALSE (audio corrupto, ruido extremo, transcripción vacía, mensaje sin audio) → aviso por texto pidiendo regrabar. **No se gasta** LLM ni ElevenLabs.",
+        "height": 360,
+        "width": 560,
+        "color": 3
+      },
+      "id": "46d81814-da08-5a1d-a7a0-b35ef514e485",
+      "name": "Nota - Contingencia",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        540,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 2. Cerebro (Tools Agent) + RAG del Módulo 5\nModelo Claude (máx. 150 tokens) · memoria por chat · RAG Supabase · CRM Google Sheets.\n\n**Contención financiera:** el System Message ordena respuestas de **máx. 200 caracteres**, sin emojis ni markdown (VUI).",
+        "height": 580,
+        "width": 900,
+        "color": 6
+      },
+      "id": "a141602e-7465-51b2-8c4d-f684af467048",
+      "name": "Nota - Cerebro",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        500,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 3. Voz del agente (TTS)\n**Contención 200 caracteres** = guardia dura: corta en la última oración completa antes de enviar a ElevenLabs.\n\n**ElevenLabs** · Eleven Multilingual v2 · Stability 0.60 · Clarity (similarity) 0.80 · Style 0.15 → voz cálida y estable de marca.\n\n**Telegram Send Audio** usa el binario `data` generado.",
+        "height": 400,
+        "width": 600,
+        "color": 4
+      },
+      "id": "8678669f-c321-55c7-bf65-6d88c7ee73a3",
+      "name": "Nota - Voz",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1060,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 4. Compliance y destrucción binaria\n- El Code node devuelve solo JSON: los audios no pasan al log.\n- Settings del workflow: **Save successful / failed / manual executions = No guardar**. Nada queda en el historial.\n- Servidor: `N8N_DEFAULT_BINARY_DATA_MODE=default` (binarios en memoria volátil, no en disco) + `EXECUTIONS_DATA_PRUNE=true`.\n- El log de Gmail no lleva audio.",
+        "height": 440,
+        "width": 460,
+        "color": 2
+      },
+      "id": "e5d45343-1ba3-503b-87e9-f542bddc50ed",
+      "name": "Nota - Compliance",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1720,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Whisper (STT)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Whisper (STT)": {
+      "main": [
+        [
+          {
+            "node": "IF - Transcripción válida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Transcripción válida": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram - Aviso Audio No Válido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria Conversacional": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG - Base de Conocimiento NEXA": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Lead en CRM": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "RAG - Base de Conocimiento NEXA",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Contención 200 caracteres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contención 200 caracteres": {
+      "main": [
+        [
+          {
+            "node": "ElevenLabs (TTS)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ElevenLabs (TTS)": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Send Audio": {
+      "main": [
+        [
+          {
+            "node": "Compliance - Destrucción Binaria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Aviso Audio No Válido": {
+      "main": [
+        [
+          {
+            "node": "Compliance - Destrucción Binaria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compliance - Destrucción Binaria": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Log de Auditoría",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none",
+    "saveManualExecutions": false,
+    "saveExecutionProgress": false,
+    "executionTimeout": 120,
+    "timezone": "America/Santiago",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "tags": [],
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
