@@ -1,0 +1,251 @@
+{
+  "name": "Pre Entrega Modulo 5 - Agente RAG con Conocimiento Organizacional (LlamaCloud)",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {
+          "title": "Asistente Comercial Nexo Digital",
+          "subtitle": "Preguntá por planes, precios, soporte o integraciones de NexoCRM."
+        }
+      },
+      "id": "e5f8a588-81c2-4880-bf4c-d4f72c112d38",
+      "name": "Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        280
+      ],
+      "webhookId": "checkpoint1-lead-agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-sonnet-5-5",
+          "mode": "list",
+          "cachedResultName": "Claude Sonnet 5.5"
+        },
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "6bc2c2cc-cd4b-41d9-a967-177d10a3a9bc",
+      "name": "Anthropic Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        -20,
+        520
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "REPLACE_WITH_TU_CREDENCIAL_ANTHROPIC",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usá esta herramienta EXCLUSIVAMENTE para registrar un nuevo lead calificado en la planilla de seguimiento comercial, una vez que ya recolectaste, como mínimo: el nombre de la persona, al menos un dato de contacto (email o teléfono), y una descripción breve de su necesidad o interés. Activá esta herramienta de forma autónoma en el momento exacto en que el usuario te haya provisto esos tres datos dentro de la conversación — no esperes a que el usuario te lo pida explícitamente. NO actives esta herramienta si: (a) todavía falta el nombre o el dato de contacto, (b) el usuario está simplemente pidiendo información general sin intención de ser contactado, (c) ya registraste este mismo lead anteriormente en la conversación actual (para evitar duplicados), o (d) la consulta no corresponde a un lead comercial sino a un reclamo, soporte técnico o consulta fuera de tu ámbito. Los campos a completar son: Fecha (fecha y hora actual), Nombre, Contacto (email o teléfono), Empresa (si el usuario la mencionó, si no dejar vacío), Necesidad (resumen de 1-2 líneas de lo que busca), y Estado (siempre 'Nuevo - Pendiente de contacto').",
+        "resource": "sheet",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_TU_GOOGLE_SHEET_ID",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/REPLACE_WITH_TU_GOOGLE_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultName": "Leads"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+            "Nombre": "={{ $fromAI('Nombre', 'Nombre completo de la persona que consulta', 'string') }}",
+            "Contacto": "={{ $fromAI('Contacto', 'Email o telefono de contacto de la persona', 'string') }}",
+            "Empresa": "={{ $fromAI('Empresa', 'Nombre de la empresa del lead, vacio si no aplica', 'string') }}",
+            "Necesidad": "={{ $fromAI('Necesidad', 'Resumen breve de la necesidad o interes del lead', 'string') }}",
+            "Estado": "Nuevo - Pendiente de contacto"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "b7a04861-218f-432f-85bb-78c1df8c0c8e",
+      "name": "Google Sheets - Registrar Lead",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        300,
+        520
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_WITH_TU_CREDENCIAL_GOOGLE_SHEETS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "agent": "toolsAgent",
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "# ROL\nSos el Asistente Comercial de Nexo Digital S.A. Conversás con potenciales clientes que llegan por el chat, respondés sus dudas sobre NexoCRM y calificás si son un lead válido para el equipo de ventas.\n\n# FUENTE ÚNICA DE VERDAD (RAG)\n- Tu ÚNICA fuente de información sobre la empresa es el \"Manual de Políticas Comerciales y FAQ v3.1\", al que accedés con la herramienta `consultar_manual_comercial`.\n- ANTES de responder cualquier pregunta sobre planes, precios, pagos, cuotas, prueba gratuita, implementación, soporte, cancelaciones, reembolsos, seguridad o integraciones, SIEMPRE llamá a `consultar_manual_comercial`. Si el usuario usa palabras informales o sinónimos (\"la guita\", \"darme de baja\", \"se cae el sistema\"), reformulá la búsqueda con el vocabulario formal del manual (reembolso, cancelación, incidente crítico).\n- Basá tus respuestas al 100% en los fragmentos que devuelve la herramienta. Está PROHIBIDO usar tu conocimiento general, suponer, redondear, extrapolar o combinar datos que no estén escritos en los fragmentos.\n- Citá SIEMPRE la fuente al final de cada dato con el formato: (Fuente: Manual Comercial v3.1, §<número de sección>).\n\n# REGLA DORADA DE CONTINGENCIA: \"No sé\"\n- Si la herramienta no devuelve fragmentos, o si los fragmentos no contienen el dato exacto que se preguntó, tu respuesta DEBE empezar textualmente con: \"No sé\".\n- Formato obligatorio: \"No sé: ese dato no figura en la documentación disponible. Si querés, tomo tus datos y un asesor comercial te responde.\"\n- Nunca reemplaces el \"No sé\" por una estimación, una respuesta parcial inventada o información de otra sección que \"se parece\".\n- Si el fragmento recuperado habla de un tema parecido pero NO del que se preguntó (por ejemplo: cancelación vs. derecho de arrepentimiento), volvé a consultar la herramienta con otros términos; si sigue sin aparecer, respondé \"No sé\".\n\n# CALIFICACIÓN DE LEADS (herramienta heredada del Checkpoint 1)\n1. Si la persona muestra intención real de compra, recolectá de forma conversacional: nombre, email o teléfono, empresa (si aplica) y necesidad.\n2. Con nombre + contacto + necesidad, usá `Registrar Lead en Google Sheets` una sola vez por conversación.\n3. Confirmale que un asesor se va a comunicar.\n\n# LÍMITES Y ESCALAMIENTO\n- No cerrás ventas, no prometés descuentos ni plazos que no estén en el manual, no das asesoramiento legal, médico ni financiero.\n- Reclamos, soporte técnico de clientes actuales o pedidos de hablar con una persona: avisá que escalás a un humano.\n- Respuestas breves (máximo 4 oraciones), cordiales, en español rioplatense.\n",
+          "maxIterations": 8,
+          "returnIntermediateSteps": true
+        }
+      },
+      "id": "66d12b26-ab57-49fa-8beb-3ade6f41a221",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        60,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "smmaureira@gmail.com",
+        "subject": "=🔔 Log de Auditoría - Agente RAG Comercial ({{ $now.format('yyyy-MM-dd HH:mm') }})",
+        "message": "=Se ejecutó el Agente RAG Comercial (Manual v3.1 en LlamaCloud).\n\nMensaje del usuario:\n{{ $('Chat Trigger').item.json.chatInput }}\n\nRespuesta del agente:\n{{ $json.output }}\n\n---\nWorkflow: {{ $workflow.name }}\nExecution ID: {{ $execution.id }}\nFecha: {{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+        "options": {}
+      },
+      "id": "04d2b5ef-8d92-4402-8d44-94538f99294e",
+      "name": "Gmail - Log de Auditoria",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        360,
+        280
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_WITH_TU_CREDENCIAL_GMAIL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Busca en el Manual de Políticas Comerciales y FAQ v3.1 de Nexo Digital (base de conocimiento indexada en LlamaCloud). Usala SIEMPRE que el usuario pregunte por planes, precios, usuarios, medios de pago, cuotas, descuentos, facturación, prueba gratuita, demos, implementación, migración, capacitación, soporte, SLA, tiempos de respuesta, cancelación, reembolsos, derecho de arrepentimiento, seguridad de datos, integraciones, API o app móvil de NexoCRM. Devuelve los fragmentos más relevantes con su puntaje. NO la uses para registrar leads ni para saludos o charla general.",
+        "method": "POST",
+        "url": "https://api.cloud.llamaindex.ai/api/v1/pipelines/REPLACE_WITH_TU_PIPELINE_ID/retrieve",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"{{ $fromAI('consulta', 'Pregunta del usuario reformulada con el vocabulario formal del manual comercial (ej: reembolso, cancelacion, incidente critico, cuotas)', 'string') }}\",\n  \"dense_similarity_top_k\": 4,\n  \"dense_similarity_cutoff\": 0.55,\n  \"enable_reranking\": false,\n  \"retrieval_mode\": \"chunks\"\n}",
+        "options": {},
+        "optimizeResponse": true,
+        "fieldsToInclude": "selected",
+        "fields": "retrieval_nodes"
+      },
+      "id": "b7f1c2d3-0a1b-4c5d-9e8f-55aa66bb77cc",
+      "name": "consultar_manual_comercial",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        140,
+        520
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_TU_CREDENCIAL_LLAMACLOUD",
+          "name": "LlamaCloud API Key (Authorization: Bearer llx-...)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Pre Entrega Módulo 5 - RAG\n**Data Source / Index LlamaCloud:** `manual-comercial-nexo-v3-1`\nParseo: LlamaParse (markdown, tablas como celdas)\nChunking: semántico por títulos, 512 tokens, overlap 64\n\n**Retrieve Tool:** Top-K = **4** · Minimum Score = **0.55**\nTool name: `consultar_manual_comercial`\n\nReemplazar `REPLACE_WITH_TU_PIPELINE_ID` y la credencial LlamaCloud.",
+        "height": 260,
+        "width": 380,
+        "color": 4
+      },
+      "id": "c1d2e3f4-1111-2222-3333-444455556666",
+      "name": "Nota - Configuracion RAG",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Registrar Lead": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Log de Auditoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_manual_comercial": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "modulo5-rag-agent-instance"
+  },
+  "id": "cf123000-6b0e-4f6c-8997-7d1d459fb1b5",
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
