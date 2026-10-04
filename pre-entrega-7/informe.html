@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Pre-entrega 7 · Sistema Agéntico Vertical · S. Maureira</title>
+<style>
+  @page { size: A4; margin: 13mm 13mm 14mm 13mm; }
+  :root {
+    --ink: #1c2430;
+    --muted: #5a6573;
+    --line: #d5dbe3;
+    --soft: #f3f5f8;
+    --accent: #1f4e79;
+    --accent-soft: #e6eef6;
+    --green: #2e7d4f;  --green-soft: #e5f3ea;
+    --amber: #a86a00;  --amber-soft: #fbf1dc;
+    --red: #b3261e;    --red-soft: #fbe6e4;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #fff; color: var(--ink); }
+  body { font-family: "Liberation Sans", "DejaVu Sans", Arial, sans-serif; font-size: 8.3pt; line-height: 1.34; }
+  h1 { font-size: 19pt; margin: 0 0 2mm; color: var(--accent); letter-spacing: -0.2px; }
+  h2 { font-size: 12.5pt; margin: 0 0 2.5mm; color: var(--accent); padding-bottom: 1.2mm; border-bottom: 1.5px solid var(--accent); }
+  h2 .pg { font-size: 8pt; font-weight: normal; color: var(--muted); float: right; margin-top: 4px; }
+  h3 { font-size: 9.6pt; margin: 3.2mm 0 1.4mm; color: var(--ink); }
+  h4 { font-size: 8.8pt; margin: 2mm 0 1mm; }
+  p { margin: 0 0 1.6mm; }
+  ul, ol { margin: 0 0 1.6mm; padding-left: 4.5mm; }
+  li { margin-bottom: 0.6mm; }
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  .avoid { break-inside: avoid; }
+  table { width: 100%; border-collapse: collapse; margin: 1mm 0 2mm; font-size: 7.6pt; break-inside: auto; }
+  tr { break-inside: avoid; }
+  th, td { border: 0.6px solid var(--line); padding: 0.9mm 1.3mm; vertical-align: top; text-align: left; }
+  th { background: var(--accent-soft); color: var(--accent); font-weight: bold; }
+  td.c, th.c { text-align: center; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .muted { color: var(--muted); }
+  .small { font-size: 7.6pt; }
+  .tag { display: inline-block; padding: 0 1.4mm; border-radius: 2px; font-size: 7.3pt; font-weight: bold; white-space: nowrap; }
+  .g { background: var(--green-soft); color: var(--green); }
+  .a { background: var(--amber-soft); color: var(--amber); }
+  .r { background: var(--red-soft); color: var(--red); }
+  .box { border: 0.8px solid var(--line); background: var(--soft); border-radius: 3px; padding: 2mm 2.6mm; margin: 1.5mm 0 2mm; }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 1.8mm 2.6mm; margin: 1.5mm 0 2mm; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
+  .agent { border: 0.8px solid var(--line); border-radius: 3px; padding: 1.5mm 2.4mm; margin-bottom: 1.6mm; break-inside: avoid; }
+  .agent h4 { margin: 0 0 1mm; color: var(--accent); font-size: 9pt; }
+  .agent .meta { color: var(--muted); font-size: 7.5pt; margin-bottom: 1mm; }
+  .prompt { font-family: "DejaVu Sans Mono", monospace; font-size: 6.6pt; background: #f7f8fa; border: 0.6px solid var(--line); padding: 1mm 1.6mm; white-space: pre-wrap; margin: 1mm 0; line-height: 1.32; }
+  code, .mono { font-family: "DejaVu Sans Mono", monospace; font-size: 7pt; }
+  .cover-band { background: var(--accent); color: #fff; padding: 5mm 7mm 4.5mm; border-radius: 3px; margin-bottom: 3mm; }
+  .cover-band h1 { color: #fff; font-size: 20pt; }
+  .cover-band .sub { font-size: 10.5pt; opacity: .92; }
+  .kv { display: grid; grid-template-columns: 34mm 1fr; gap: 1mm 3mm; margin: 1mm 0 2mm; }
+  .kv div:nth-child(odd) { color: var(--muted); }
+  .slack { border: 0.8px solid #c9ced6; border-left: 4px solid var(--red); border-radius: 3px; padding: 2mm 2.6mm; background: #fff; font-size: 7.8pt; }
+  .slack .btn { display: inline-block; border: 0.8px solid #b8bec7; border-radius: 3px; padding: 0.6mm 2mm; margin: 1.2mm 1.2mm 0 0; font-weight: bold; font-size: 7.4pt; }
+  .slack .btn.p { background: #2e7d4f; color: #fff; border-color: #2e7d4f; }
+  .slack .btn.d { color: var(--red); border-color: var(--red); }
+  .footer-note { font-size: 7.2pt; color: var(--muted); border-top: 0.6px solid var(--line); padding-top: 1.5mm; margin-top: 3mm; }
+  svg text { font-family: "Liberation Sans", Arial, sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- ============================ PORTADA + PÁGINA 1 ============================ -->
+<section class="page">
+  <div class="cover-band">
+    <div class="sub">Pre-entrega 7 · Informe de consultoría</div>
+    <h1>Diseño Arquitectónico de un Sistema Agéntico Vertical</h1>
+    <div class="sub">Vertical: <b>Sales Ops &amp; Customer Success</b> en una empresa SaaS B2B · Enfoque 100% No-Code (n8n + conectores nativos)</div>
+  </div>
+  <div class="kv">
+    <div>Autora / consultora</div><div>S. Maureira</div>
+    <div>Cliente</div><div>"SaaS-Gestión" (nombre ficticio; datos anonimizados). Software de gestión para PyMEs, ~45 empleados, ~600 cuentas con suscripción, ~350 leads entrantes por mes.</div>
+    <div>Punto de partida</div><div>Checkpoint 1: agente de calificación de leads en n8n (chat → Claude → Google Sheets, con log de auditoría por Gmail). Este informe lo escala a una red multi-agente gobernada.</div>
+    <div>Estructura</div><div>1) Relevamiento y priorización · 2) Arquitectura y permisos · 3) Propuesta de valor y semáforo de riesgo (HITL) · 4) Scorecards y versión de portafolio.</div>
+  </div>
+
+  <h2>1. Relevamiento del Proceso y Framework de Priorización <span class="pg">Página 1</span></h2>
+
+  <h3>1.1 Industria, problema operativo y justificación</h3>
+  <p><b>Industria:</b> software B2B por suscripción (SaaS) para PyMEs. Los ingresos dependen de dos motores: <b>captar</b> cuentas nuevas (Sales Ops) y <b>retener</b> las existentes (Customer Success). Cada punto de churn mensual equivale a perder ~6 cuentas por mes.</p>
+  <p><b>Problema:</b> los dos motores dependen de tareas administrativas manuales y repetitivas: leer y clasificar mensajes entrantes, copiar datos al CRM, hacer seguimiento, revisar cuentas en riesgo y conciliar de dónde vino cada venta. El cuello de botella no está en vender, sino en <b>todo lo que pasa antes y después</b> de la conversación comercial. Hoy los leads esperan más de un día la primera respuesta, el 30% nunca recibe un segundo contacto y el riesgo de baja se detecta cuando el cliente ya pidió cancelar.</p>
+  <p><b>Por qué una solución agéntica (y no solo automatización clásica):</b> la información llega en lenguaje libre (chat, emails, tickets) y hay que interpretar intención, urgencia y tono, algo que las reglas fijas o un RPA no resuelven. Un LLM con herramientas puede leer, razonar con una rúbrica explícita y dejar registro estructurado. En cambio, las decisiones con impacto económico o legal (reembolsos, descuentos, precios de renovación, reclamos) <b>quedan siempre en manos humanas</b> mediante un circuito de aprobación en Slack.</p>
+
+  <h3>1.2 Framework de priorización del asesor</h3>
+  <p class="small muted">Escala 1–5 (5 = mejor). Ponderación: Impacto en operaciones/ingresos 40% · Viabilidad técnica no-code 25% · Adopción probable por la organización 25% · Riesgo de accesos regulados 10% (5 = sin datos sensibles ni dinero).</p>
+  <table>
+    <tr><th>Proceso candidato</th><th class="c">Impacto</th><th class="c">Viabilidad no-code</th><th class="c">Adopción</th><th class="c">Riesgo de acceso</th><th class="c">Puntaje</th><th>Decisión</th></tr>
+    <tr><td>A. Calificación y registro de leads entrantes</td><td class="c">5</td><td class="c">5</td><td class="c">5</td><td class="c">4</td><td class="num"><b>4,90</b></td><td><span class="tag g">Fase 1</span> base ya validada en Checkpoint 1</td></tr>
+    <tr><td>B. Detección temprana de churn (health score)</td><td class="c">5</td><td class="c">3</td><td class="c">4</td><td class="c">3</td><td class="num"><b>4,05</b></td><td><span class="tag g">Fase 1</span> solo lectura + alertas</td></tr>
+    <tr><td>C. Seguimiento de leads y manejo de objeciones</td><td class="c">4</td><td class="c">4</td><td class="c">4</td><td class="c">4</td><td class="num"><b>4,00</b></td><td><span class="tag g">Fase 1</span> plantillas aprobadas</td></tr>
+    <tr><td>D. Auditoría de atribución de ingresos</td><td class="c">3</td><td class="c">4</td><td class="c">3</td><td class="c">3</td><td class="num"><b>3,25</b></td><td><span class="tag a">Fase 2</span> requiere datos limpios de A</td></tr>
+    <tr><td>E. Reembolsos y cambios de precio de renovación</td><td class="c">3</td><td class="c">3</td><td class="c">2</td><td class="c">1</td><td class="num"><b>2,55</b></td><td><span class="tag r">No se automatiza</span> solo detección + HITL</td></tr>
+    <tr><td>F. Conciliación contable de facturación</td><td class="c">2</td><td class="c">2</td><td class="c">3</td><td class="c">1</td><td class="num"><b>2,15</b></td><td><span class="tag r">Fuera de alcance</span></td></tr>
+  </table>
+  <p><b>Lectura crítica:</b> A y C tienen máximo impacto con mínimo riesgo: trabajan con datos que el propio prospecto entrega. B tiene alto impacto en ingresos, pero su viabilidad baja porque los datos de uso viven en exportes; por eso arranca en <i>solo lectura</i>. E se descarta como automatización: mueve dinero y tiene baja aceptación interna. El sistema solo la <i>detecta</i> y la escala a una persona.</p>
+
+  <h3>1.3 Baseline: punto de partida manual</h3>
+  <table>
+    <tr><th style="width:17%">Proceso</th><th style="width:33%">Qué se hace hoy</th><th style="width:15%">Quién</th><th style="width:15%">Tiempo</th><th>Dolor medible</th></tr>
+    <tr><td>Triage de leads</td><td>Se leen chat, formulario y email; se copian datos a una planilla y al CRM; la prioridad se define "a ojo".</td><td>2 SDR</td><td>~8 min/lead → ~47 h/mes</td><td>1ª respuesta mediana: 26 h hábiles; ~40% de registros incompletos</td></tr>
+    <tr><td>Seguimiento y objeciones</td><td>Emails manuales desde plantillas sueltas; recordatorios en agendas personales.</td><td>2 SDR + 1 AE</td><td>~30 h/mes</td><td>30% de leads sin 2º contacto</td></tr>
+    <tr><td>Salud de cuentas</td><td>Revisión mensual de exportes de uso y tickets en Excel.</td><td>1 CSM</td><td>~16 h/mes</td><td>70% del churn se detecta cuando ya llegó el pedido de baja</td></tr>
+    <tr><td>Atribución de ingresos</td><td>Cruce manual de CRM + facturación + UTMs al cierre de mes.</td><td>1 analista RevOps</td><td>~12 h/mes</td><td>Reporte con 3 días de demora; cifras discutidas</td></tr>
+    <tr><td>Reembolsos y reclamos</td><td>Llegan mezclados con soporte y se derivan a mano a Finanzas o Legal.</td><td>Soporte</td><td>sin registro</td><td>Derivación promedio: 2 días; sin SLA ni trazabilidad</td></tr>
+    <tr><td colspan="3"><b>Total administrativo estimado</b></td><td><b>~105 h/mes</b></td><td>≈ 0,65 FTE dedicado a copiar, clasificar y conciliar</td></tr>
+  </table>
+  <p class="small muted">Valores relevados en entrevistas con el equipo y muestreo de 2 semanas de registros; se recalibran en la semana 0 de la implementación.</p>
+</section>
+
+<!-- ============================ PÁGINA 2 ============================ -->
+<section class="page">
+  <h2>2. Arquitectura del Sistema Multi-Agente y Mapa de Permisos <span class="pg">Página 2</span></h2>
+
+  <h3>2.1 Coreografía multi-agente</h3>
+  <svg viewBox="0 0 760 452" width="86%" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 1mm">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"/></marker>
+      <marker id="arR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b3261e"/></marker>
+      <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7a8594"/></marker>
+    </defs>
+
+    <!-- Column labels -->
+    <text x="75" y="14" font-size="10" font-weight="bold" fill="#5a6573" text-anchor="middle">ENTRADAS</text>
+    <text x="240" y="14" font-size="10" font-weight="bold" fill="#5a6573" text-anchor="middle">ORQUESTACIÓN</text>
+    <text x="465" y="14" font-size="10" font-weight="bold" fill="#5a6573" text-anchor="middle">ESPECIALISTAS QUIRÚRGICOS</text>
+    <text x="685" y="14" font-size="10" font-weight="bold" fill="#5a6573" text-anchor="middle">GOBERNANZA</text>
+
+    <!-- Entradas -->
+    <g font-size="9.5" fill="#1c2430">
+      <rect x="10" y="30"  width="130" height="34" rx="4" fill="#f3f5f8" stroke="#c3cad4"/><text x="75" y="45" text-anchor="middle">Chat web</text><text x="75" y="57" text-anchor="middle" font-size="8" fill="#5a6573">(Checkpoint 1)</text>
+      <rect x="10" y="74"  width="130" height="34" rx="4" fill="#f3f5f8" stroke="#c3cad4"/><text x="75" y="95" text-anchor="middle">Formulario web</text>
+      <rect x="10" y="118" width="130" height="34" rx="4" fill="#f3f5f8" stroke="#c3cad4"/><text x="75" y="133" text-anchor="middle">Gmail entrante</text><text x="75" y="145" text-anchor="middle" font-size="8" fill="#5a6573">ventas@ / soporte@</text>
+      <rect x="10" y="162" width="130" height="34" rx="4" fill="#f3f5f8" stroke="#c3cad4"/><text x="75" y="177" text-anchor="middle">Webhook HubSpot</text><text x="75" y="189" text-anchor="middle" font-size="8" fill="#5a6573">cambios de deal</text>
+      <rect x="10" y="206" width="130" height="34" rx="4" fill="#f3f5f8" stroke="#c3cad4"/><text x="75" y="221" text-anchor="middle">Schedule (cron)</text><text x="75" y="233" text-anchor="middle" font-size="8" fill="#5a6573">diario · semanal</text>
+    </g>
+    <g stroke="#1f4e79" stroke-width="1.2" fill="none" marker-end="url(#ar)">
+      <path d="M140,47 L175,110"/><path d="M140,91 L175,125"/><path d="M140,135 L175,140"/><path d="M140,179 L175,155"/><path d="M140,223 L175,170"/>
+    </g>
+
+    <!-- Orquestador -->
+    <rect x="175" y="80" width="130" height="120" rx="5" fill="#1f4e79"/>
+    <text x="240" y="100" text-anchor="middle" font-size="9" fill="#cfe0f0" font-weight="bold">A0</text>
+    <text x="240" y="115" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">Orquestador</text>
+    <text x="240" y="129" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">Comercial</text>
+    <text x="240" y="147" text-anchor="middle" font-size="8.2" fill="#dbe7f3">clasifica intención</text>
+    <text x="240" y="159" text-anchor="middle" font-size="8.2" fill="#dbe7f3">detecta flags críticos</text>
+    <text x="240" y="171" text-anchor="middle" font-size="8.2" fill="#dbe7f3">delega por contrato JSON</text>
+    <text x="240" y="189" text-anchor="middle" font-size="7.6" fill="#a9c3dc">Claude Haiku 4.5</text>
+
+    <!-- Especialistas -->
+    <g font-size="8" fill="#5a6573">
+      <rect x="345" y="26" width="240" height="56" rx="4" fill="#fff" stroke="#1f4e79" stroke-width="1.2"/>
+      <text x="355" y="42" font-size="10.5" font-weight="bold" fill="#1f4e79">A1 · Calificación de Leads</text>
+      <text x="355" y="56">Scorecard de leads · conversa y registra</text>
+      <text x="355" y="70">Sheets (append) · HubSpot (crear) · Calendar</text>
+
+      <rect x="345" y="92" width="240" height="56" rx="4" fill="#fff" stroke="#1f4e79" stroke-width="1.2"/>
+      <text x="355" y="108" font-size="10.5" font-weight="bold" fill="#1f4e79">A2 · Seguimiento y Objeciones</text>
+      <text x="355" y="122">Playbook de objeciones · secuencias</text>
+      <text x="355" y="136">Gmail (borrador/plantilla) · Drive (L) · HubSpot nota</text>
+
+      <rect x="345" y="158" width="240" height="56" rx="4" fill="#fff" stroke="#1f4e79" stroke-width="1.2"/>
+      <text x="355" y="174" font-size="10.5" font-weight="bold" fill="#1f4e79">A3 · Centinela de Retención (CS)</text>
+      <text x="355" y="188">Health Score · churn · reembolsos · legal</text>
+      <text x="355" y="202">Uso (L) · Zendesk (L) · Stripe (L) · HubSpot prop.</text>
+
+      <rect x="345" y="224" width="240" height="56" rx="4" fill="#fff" stroke="#1f4e79" stroke-width="1.2"/>
+      <text x="355" y="240" font-size="10.5" font-weight="bold" fill="#1f4e79">A4 · Auditor de Atribución y Cumplimiento</text>
+      <text x="355" y="254">Ingresos por canal · auditoría de logs (10%)</text>
+      <text x="355" y="268">HubSpot deals (L) · Stripe (L) · Sheets (append)</text>
+    </g>
+    <g stroke="#1f4e79" stroke-width="1.2" fill="none" marker-end="url(#ar)">
+      <path d="M305,105 L325,105 L325,54 L345,54"/>
+      <path d="M305,120 L345,120"/>
+      <path d="M305,165 L325,165 L325,186 L345,186"/>
+      <path d="M305,185 L318,185 L318,252 L345,252"/>
+    </g>
+
+    <!-- Log de auditoría -->
+    <rect x="620" y="26" width="130" height="62" rx="4" fill="#f3f5f8" stroke="#7a8594" stroke-dasharray="4 3"/>
+    <text x="685" y="44" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#1c2430">Log de auditoría</text>
+    <text x="685" y="58" text-anchor="middle" font-size="8" fill="#5a6573">Google Sheets</text>
+    <text x="685" y="70" text-anchor="middle" font-size="8" fill="#5a6573">append-only + Gmail</text>
+    <text x="685" y="82" text-anchor="middle" font-size="7.4" fill="#5a6573">(event_id, acción, semáforo)</text>
+    <g stroke="#7a8594" stroke-width="1" fill="none" stroke-dasharray="3 3" marker-end="url(#arG)">
+      <path d="M585,54 L620,54"/><path d="M585,120 L602,120 L602,66 L620,66"/><path d="M585,186 L606,186 L606,76 L620,76"/>
+    </g>
+    <path d="M620,84 L612,84 L612,262 L585,262" stroke="#7a8594" stroke-width="1" fill="none" stroke-dasharray="3 3" marker-end="url(#arG)"/>
+
+    <!-- Gate HITL -->
+    <rect x="620" y="150" width="130" height="78" rx="5" fill="#fbe6e4" stroke="#b3261e" stroke-width="1.4"/>
+    <text x="685" y="168" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#b3261e">Gate HITL</text>
+    <text x="685" y="182" text-anchor="middle" font-size="8" fill="#1c2430">sub-workflow determinístico</text>
+    <text x="685" y="194" text-anchor="middle" font-size="8" fill="#1c2430">(sin LLM) · congela acción</text>
+    <text x="685" y="206" text-anchor="middle" font-size="8" fill="#1c2430">único con credenciales</text>
+    <text x="685" y="218" text-anchor="middle" font-size="8" fill="#1c2430">de acción sensible</text>
+    <g stroke="#b3261e" stroke-width="1.3" fill="none" marker-end="url(#arR)">
+      <path d="M585,200 L620,200"/>
+      <path d="M585,130 L596,130 L596,170 L620,170"/>
+      <path d="M240,200 L240,305 L660,305 L660,228" />
+    </g>
+    <text x="450" y="299" text-anchor="middle" font-size="8" fill="#b3261e">flags críticos detectados en la entrada (reembolso · legal · baja) → escalado forzado directo</text>
+
+    <!-- Slack & humanos -->
+    <rect x="345" y="360" width="240" height="78" rx="5" fill="#fff" stroke="#b3261e" stroke-width="1.2"/>
+    <text x="465" y="377" text-anchor="middle" font-size="10" font-weight="bold" fill="#1c2430">Slack #escalamientos-revops</text>
+    <rect x="356" y="386" width="52" height="18" rx="3" fill="#2e7d4f"/><text x="382" y="398" font-size="8" fill="#fff" text-anchor="middle">Aprobar</text>
+    <rect x="413" y="386" width="52" height="18" rx="3" fill="#fff" stroke="#7a8594"/><text x="439" y="398" font-size="8" text-anchor="middle">Editar</text>
+    <rect x="470" y="386" width="52" height="18" rx="3" fill="#fff" stroke="#b3261e"/><text x="496" y="398" font-size="8" fill="#b3261e" text-anchor="middle">Rechazar</text>
+    <rect x="527" y="386" width="52" height="18" rx="3" fill="#fff" stroke="#7a8594"/><text x="553" y="398" font-size="8" text-anchor="middle">Tomar caso</text>
+    <text x="465" y="424" text-anchor="middle" font-size="7.8" fill="#5a6573">Fallback: Gmail a responsable si no hay respuesta en SLA</text>
+
+    <rect x="620" y="360" width="130" height="78" rx="5" fill="#f3f5f8" stroke="#c3cad4"/>
+    <text x="685" y="378" text-anchor="middle" font-size="10" font-weight="bold">Humanos</text>
+    <text x="685" y="393" text-anchor="middle" font-size="8" fill="#5a6573">CSM / Head of CS</text>
+    <text x="685" y="405" text-anchor="middle" font-size="8" fill="#5a6573">Finanzas (reembolsos)</text>
+    <text x="685" y="417" text-anchor="middle" font-size="8" fill="#5a6573">Legal / Gerencia</text>
+    <text x="685" y="429" text-anchor="middle" font-size="8" fill="#5a6573">AE asignado</text>
+
+    <g stroke="#b3261e" stroke-width="1.3" fill="none" marker-end="url(#arR)">
+      <path d="M705,228 L705,342 L520,342 L520,358"/>
+    </g>
+    <text x="700" y="270" font-size="7.4" fill="#b3261e" text-anchor="end">mensaje Block Kit</text>
+    <g stroke="#1f4e79" stroke-width="1.2" fill="none" marker-end="url(#ar)">
+      <path d="M585,399 L620,399"/>
+      <path d="M738,360 L738,228"/>
+    </g>
+    <text x="746" y="300" font-size="7.4" fill="#1f4e79" transform="rotate(-90 746 300)" text-anchor="middle">decisión (webhook)</text>
+  </svg>
+  <p class="small muted">Línea azul = delegación con contrato JSON · Línea roja = escalado forzado/HITL · Punteada = escritura append-only en el log (A4 lo lee para auditar). Los mensajes entre componentes siguen los contratos JSON de 2.2 (<code>evento_ruteado</code>, <code>escalado</code>). Cada especialista es un sub-workflow de n8n (<i>Execute Workflow</i>) con su propio nodo AI Agent, su memoria y sus credenciales. Los agentes no se hablan entre sí: todo pasa por el orquestador o el log, trazable por <code>event_id</code>.</p>
+
+  <h3>2.2 Descripción de cada agente</h3>
+
+  <div class="agent">
+    <h4>A0 · Orquestador Comercial (router)</h4>
+    <div class="meta">Disparo: cualquier entrada · Modelo: Claude Haiku 4.5 (rápido, bajo costo) · Herramientas: Execute Workflow (A1–A4, Gate), HubSpot <i>buscar contacto</i> (lectura)</div>
+    <p><b>Misión:</b> recibir cada evento, identificar si el remitente es prospecto o cliente, clasificar la intención y delegar en <b>un solo</b> especialista. No responde temas de negocio. Ante una palabra crítica (reembolso, abogado, cancelar) deriva <b>directamente</b> al Gate HITL sin pasar por especialistas.</p>
+    <div class="prompt"># ROL  Sos el Orquestador Comercial. Clasificás y derivás; NUNCA respondés ni ejecutás acciones de negocio.
+# SALIDA  Devolvé SOLO el JSON del contrato. Intenciones válidas: lead_nuevo | seguimiento | cliente_existente | reembolso | legal | baja | otro.
+# REGLAS  Si el texto menciona dinero a devolver, acciones legales o cancelación → flags_criticos y destino="gate_hitl".
+Si la confianza es < 0.7 → destino="gate_hitl" con motivo "clasificación dudosa". No inventes datos del contacto.</div>
+    <p class="small"><b>Entrega a A1–A4 / Gate:</b> <code>{"event_id","canal","contacto_id","es_cliente","intencion","confianza","flags_criticos":[],"destino","resumen"}</code></p>
+  </div>
+
+  <div class="agent">
+    <h4>A1 · Agente de Calificación de Leads (evolución del Checkpoint 1)</h4>
+    <div class="meta">Disparo: intención lead_nuevo · Modelo: Claude Sonnet 5.5 · Memoria: buffer de 10 turnos por sesión · Herramientas: Google Sheets <i>append</i> (Leads), HubSpot <i>crear contacto/lead</i>, Google Calendar <i>disponibilidad + crear evento</i></div>
+    <p><b>Misión:</b> conversar, recolectar nombre, contacto, empresa y necesidad, aplicar la <b>Scorecard de Leads</b> (Sección 4.1) citando evidencia textual, registrar y, si el lead es A, ofrecer y agendar una reunión exploratoria con el AE de turno.</p>
+    <div class="prompt"># ROL  Sos el Agente de Calificación de Leads de SaaS-Gestión. Conversás con prospectos y los calificás con la Scorecard v1.
+# ÁMBITO  Solo información que el usuario da en esta conversación. NO prometés precios finales, descuentos ni plazos.
+# PROCESO  1) Recolectá nombre + contacto + necesidad. 2) Puntuá cada criterio CITANDO la frase del usuario; sin evidencia = 0.
+3) Registrá UNA vez (Sheets + HubSpot). 4) Si categoría A, ofrecé 2 horarios del calendario del AE.
+# ESCALAMIENTO  Reclamos, reembolsos, temas legales o pedido de humano → devolvé destino="gate_hitl" y no sigas el tema.</div>
+    <p class="small"><b>Entrega al orquestador y al log:</b> <code>{"event_id","lead_id","puntaje":0-100,"categoria":"A|B|C|DQ","evidencias":[{"criterio","cita"}],"proxima_accion","reunion_agendada":bool}</code></p>
+  </div>
+
+  <div class="agent">
+    <h4>A2 · Agente de Seguimiento y Objeciones</h4>
+    <div class="meta">Disparo: lead sin respuesta a las 48 h (cron) o respuesta del prospecto · Modelo: Claude Sonnet 5.5 · Herramientas: Gmail <i>crear borrador / enviar plantilla aprobada</i>, Google Drive <i>lectura</i> (carpeta Playbooks), HubSpot <i>leer deal + crear nota/tarea</i></div>
+    <p><b>Misión:</b> mantener vivo el seguimiento. Clasifica cada objeción con el <b>Playbook de Objeciones</b> (4.2) y responde <b>solo</b> con argumentos aprobados. Las plantillas sin cambios se envían de forma autónoma; los mensajes personalizados quedan como borrador para aprobación.</p>
+    <div class="prompt"># ROL  Sos el Agente de Seguimiento. Usás EXCLUSIVAMENTE los argumentos del Playbook de Objeciones v1 (Drive).
+# REGLAS  Máximo 3 contactos por lead en 14 días. Nunca menciones descuentos, precios no publicados ni fechas de entrega.
+Si la objeción es "descuento", "contrato" o "seguridad de datos" → no respondas: destino="gate_hitl".
+# SALIDA  Clasificá la objeción, elegí plantilla_id y explicá por qué con la cita del prospecto.</div>
+    <p class="small"><b>Entrega:</b> <code>{"event_id","lead_id","objecion":"precio|timing|competencia|funcionalidad|legal","cita","plantilla_id","modo":"envio_auto|borrador","semaforo"}</code></p>
+  </div>
+
+  <div class="agent">
+    <h4>A3 · Centinela de Retención (Customer Success)</h4>
+    <div class="meta">Disparo: cron diario 7:00 + emails de clientes ruteados por A0 · Modelo: Claude Sonnet 5.5 · Herramientas: Google Sheets <i>lectura</i> (export de uso), Zendesk <i>lectura</i> de tickets, Stripe <i>lectura</i> (estado de suscripción), HubSpot <i>escribir solo la propiedad health_score</i></div>
+    <p><b>Misión:</b> calcular el <b>Health Score</b> (4.3) de cada cuenta, detectar señales de churn, pedidos de reembolso y reclamos legales, y crear tareas para el CSM dueño de la cuenta. Nunca contacta al cliente por iniciativa propia ni ofrece compensaciones.</p>
+    <div class="prompt"># ROL  Sos el Centinela de Retención. Calculás Health Score v1 con datos de los últimos 90 días; cada componente cita su fuente.
+# REGLAS  Si score &lt; 40 y MRR ≥ USD 500, o hay mención de baja, reembolso o acción legal → destino="gate_hitl" (escalado forzado).
+NO redactes ofertas, NO prometas reintegros, NO modifiques planes. Solo podés escribir health_score y crear tareas internas.</div>
+    <p class="small"><b>Entrega:</b> <code>{"event_id","cuenta_id","health_score","banda":"verde|amarillo|rojo","componentes":{...},"señales_criticas":[],"mrr","renovacion","accion_sugerida"}</code></p>
+  </div>
+
+  <div class="agent">
+    <h4>A4 · Auditor de Atribución de Ingresos y Cumplimiento</h4>
+    <div class="meta">Disparo: cron semanal (lunes) y cierre de mes · Modelo: Claude Sonnet 5.5 · Herramientas: HubSpot <i>lectura</i> de deals, Stripe <i>lectura</i> (clave restringida), Google Sheets <i>append</i> en las pestañas "Atribución" y "Auditoría"</div>
+    <p><b>Misión:</b> (1) atribuir cada ingreso cerrado a su canal de origen cruzando el deal, el lead original y la factura pagada; (2) auditar una muestra del 10% de las acciones de A1–A3 contra sus rúbricas y reportar desvíos. Es el "control de calidad" del sistema.</p>
+    <div class="prompt"># ROL  Sos el Auditor. Solo leés y reportás; nunca corregís registros.
+# REGLAS  Un ingreso se atribuye solo si existe cadena completa lead_id → deal_id → invoice_id; si falta un eslabón: "sin_atribucion".
+Marcá como desvío toda acción sin evidencia citada, fuera de semáforo o con JSON inválido. Conformidad &lt; 90% → alerta.</div>
+    <p class="small"><b>Entrega a Sheets y a RevOps:</b> <code>{"periodo","ingresos_por_canal":{...},"sin_atribucion":[],"muestra_auditada":n,"conformidad_pct","desvios":[{"event_id","agente","regla"}]}</code></p>
+  </div>
+
+  <h3>2.3 Mapa de permisos (principio de mínimo privilegio)</h3>
+  <table class="small">
+    <tr><th>Conector / recurso</th><th class="c">A0 Orq.</th><th class="c">A1 Calif.</th><th class="c">A2 Seguim.</th><th class="c">A3 Centinela</th><th class="c">A4 Auditor</th><th class="c">Gate HITL</th></tr>
+    <tr><td>Google Sheets · pestaña Leads</td><td class="c">—</td><td class="c"><b>E</b> append</td><td class="c">L</td><td class="c">—</td><td class="c">L</td><td class="c">—</td></tr>
+    <tr><td>Google Sheets · Log de auditoría</td><td class="c">E append</td><td class="c">E append</td><td class="c">E append</td><td class="c">E append</td><td class="c">L + E append</td><td class="c">E append</td></tr>
+    <tr><td>Google Sheets · Export de uso de producto</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">L</td><td class="c">—</td><td class="c">—</td></tr>
+    <tr><td>HubSpot · Contactos</td><td class="c">L</td><td class="c"><b>E</b> crear</td><td class="c">L</td><td class="c">L</td><td class="c">L</td><td class="c">—</td></tr>
+    <tr><td>HubSpot · Deals / notas / tareas</td><td class="c">—</td><td class="c">—</td><td class="c">L + <b>E</b> nota/tarea</td><td class="c">L + <b>E</b> tarea</td><td class="c">L</td><td class="c"><b>E</b> etapa (post-aprob.)</td></tr>
+    <tr><td>HubSpot · Empresas (prop. health_score)</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c"><b>E</b> 1 propiedad</td><td class="c">L</td><td class="c">—</td></tr>
+    <tr><td>Gmail</td><td class="c">L (entrada)</td><td class="c">—</td><td class="c"><b>E</b> borrador + plantillas</td><td class="c">L (soporte@)</td><td class="c">—</td><td class="c"><b>E</b> envío aprobado</td></tr>
+    <tr><td>Google Calendar (AE de turno)</td><td class="c">—</td><td class="c">L + <b>E</b> crear evento</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td></tr>
+    <tr><td>Google Drive · carpeta Playbooks</td><td class="c">—</td><td class="c">L</td><td class="c">L</td><td class="c">L</td><td class="c">L</td><td class="c">—</td></tr>
+    <tr><td>Zendesk · tickets</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">L</td><td class="c">—</td><td class="c">—</td></tr>
+    <tr><td>Stripe · suscripciones y facturas</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">L (estado)</td><td class="c">L (clave restringida)</td><td class="c">— <span class="muted">(reembolso lo ejecuta Finanzas)</span></td></tr>
+    <tr><td>Slack · #escalamientos-revops</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c"><b>E</b> postear + webhook</td></tr>
+  </table>
+  <p class="small"><b>L</b> = lectura · <b>E</b> = escritura acotada · — = sin acceso. <b>Reglas transversales:</b> (1) ninguna credencial tiene permiso de <i>borrar</i>; (2) una credencial de n8n por agente con scopes OAuth mínimos (p. ej. <code>gmail.compose</code> y no <code>gmail.modify</code> para A2); (3) Stripe solo con <i>restricted keys</i> de lectura: <b>ningún componente del sistema puede mover dinero</b>; (4) las pestañas del Sheet tienen rangos protegidos y el log es append-only; (5) el Gate HITL es el único con permisos de acción sensible y solo los usa con una aprobación humana registrada.</p>
+
+  <h3>2.4 Estrategia de Context Engineering por sub-workflow</h3>
+  <table class="small">
+    <tr><th style="width:12%">Agente</th><th style="width:38%">Contexto que recibe (historial + señales)</th><th style="width:25%">Se excluye deliberadamente</th><th>Técnica</th></tr>
+    <tr><td>A0</td><td>Mensaje actual + canal + metadatos; resultado de búsqueda del contacto (existe / cliente / plan).</td><td>Historial completo, datos de facturación.</td><td>Sin memoria; clasificación de un solo paso.</td></tr>
+    <tr><td>A1</td><td>Últimos 10 turnos de la sesión; campos del formulario si existen; resumen del catálogo público (Drive); Scorecard v1.</td><td>Datos de otros clientes, precios no publicados.</td><td>Window Buffer Memory por <code>sessionId</code>; rúbrica en el system prompt.</td></tr>
+    <tr><td>A2</td><td>Resumen de los últimos 5 emails del hilo; JSON de A1 (puntaje, evidencias); etapa del deal; objeciones previas; Playbook v1.</td><td>Notas internas de AE, info de otras cuentas.</td><td>Resumen previo con LLM liviano; recuperación de la sección del playbook por categoría.</td></tr>
+    <tr><td>A3</td><td>Agregados de uso a 90 días (logins semanales, adopción de 3 features clave); tickets de 60 días (asunto + sentimiento); último NPS; estado de pago; MRR; fecha de renovación.</td><td>Datos de tarjeta, contenido completo de tickets, PII de usuarios finales.</td><td>Pre-agregación en nodos Code/Sheets <i>antes</i> del LLM; redacción de PII.</td></tr>
+    <tr><td>A4</td><td>Deals cerrados del período (id, monto, fecha, UTM); facturas pagadas (id, monto); muestra aleatoria del 10% del log.</td><td>Conversaciones completas.</td><td>Join determinístico por IDs; el LLM solo explica desvíos.</td></tr>
+  </table>
+  <p class="small">Principios: <b>contratos JSON validados</b> (nodo de validación de esquema antes de cada delegación; si falla, se reintenta una vez y luego va a HITL), <b>trazabilidad</b> por <code>event_id</code> de punta a punta, <b>minimización de PII</b> según la Ley 25.326 de Protección de Datos Personales, y <b>contexto mínimo suficiente</b>: cada agente ve solo lo que su rúbrica necesita.</p>
+</section>
+
+<!-- ============================ PÁGINA 3 ============================ -->
+<section class="page">
+  <h2>3. Propuesta de Valor y Semáforo de Riesgo (HITL) <span class="pg">Página 3</span></h2>
+
+  <h3>3.1 Propuesta de valor para el comité directivo</h3>
+  <div class="callout">
+    <p><b>Responder a cada prospecto en minutos, no en días, y enterarnos de que un cliente se quiere ir con un mes de anticipación, no cuando ya decidió.</b></p>
+    <p>Hoy el equipo comercial y de Customer Success destina unas 105 horas por mes a leer, copiar, clasificar y conciliar información. La propuesta es un equipo de asistentes digitales especializados que hacen ese trabajo administrativo las 24 horas, con las mismas reglas que usaría un vendedor experimentado y dejando registro de cada decisión. Las personas recuperan alrededor de dos tercios de ese tiempo para vender y retener.</p>
+    <p>El sistema <b>no toca dinero ni compromete a la empresa</b>: reembolsos, descuentos, cambios de precio y reclamos legales se detienen automáticamente y se presentan a la persona responsable en Slack, con el caso resumido y un botón para decidir. La inversión es baja: se construye sobre las herramientas que la empresa ya usa (Google Workspace, HubSpot, Slack, Stripe), sin desarrollo a medida.</p>
+  </div>
+
+  <h3>3.2 Criterios de éxito: KPIs comerciales (medidos antes de implementar)</h3>
+  <table>
+    <tr><th>KPI</th><th class="c">Baseline</th><th class="c">Meta a 90 días</th><th>Cómo se mide</th></tr>
+    <tr><td>Tiempo de primera respuesta a leads</td><td class="c">26 h hábiles</td><td class="c">&lt; 5 min (chat) · &lt; 1 h (email)</td><td>Timestamp de entrada vs. primera respuesta (log)</td></tr>
+    <tr><td>Leads con registro completo en CRM</td><td class="c">~60%</td><td class="c">≥ 95%</td><td>Campos obligatorios no vacíos en HubSpot</td></tr>
+    <tr><td>Leads sin segundo contacto</td><td class="c">30%</td><td class="c">&lt; 5%</td><td>Leads B/A sin 2º toque a los 7 días</td></tr>
+    <tr><td>Tasa de resolución autónoma</td><td class="c">n/a</td><td class="c">≥ 70% de eventos</td><td>Eventos cerrados en semáforo verde / total</td></tr>
+    <tr><td>Horas administrativas Sales Ops + CS</td><td class="c">~105 h/mes</td><td class="c">≤ 35 h/mes (−65%)</td><td>Registro de tiempos en muestreo de 2 semanas</td></tr>
+    <tr><td>Cuentas en riesgo detectadas ≥ 30 días antes de renovar</td><td class="c">~30%</td><td class="c">≥ 80%</td><td>Fecha de alerta vs. fecha de renovación/baja</td></tr>
+    <tr><td>Churn mensual de cuentas</td><td class="c">2,4%</td><td class="c">1,8% (a 6 meses)</td><td>Bajas / cuentas activas al inicio del mes (Stripe)</td></tr>
+    <tr><td>Precisión de la Scorecard de leads</td><td class="c">n/a</td><td class="c">≥ 85% de concordancia</td><td>Revisión humana ciega de 30 leads/mes</td></tr>
+    <tr><td>Escalamientos HITL atendidos en SLA</td><td class="c">sin SLA (2 días)</td><td class="c">≥ 95%</td><td>Tiempo entre post en Slack y clic de decisión</td></tr>
+    <tr><td>Reporte de atribución de ingresos</td><td class="c">día hábil 3</td><td class="c">día hábil 1 · ≥ 90% atribuido</td><td>Fecha de publicación; % de ingresos con cadena completa</td></tr>
+    <tr><td>Acciones sensibles ejecutadas sin aprobación</td><td class="c">—</td><td class="c"><b>0</b> (tolerancia cero)</td><td>Auditoría A4 + log del Gate</td></tr>
+  </table>
+
+  <h3>3.3 Semáforo operativo: frontera exacta de la autonomía</h3>
+  <table>
+    <tr><th style="width:17%">Nivel</th><th style="width:48%">Acciones de salida</th><th>Comportamiento del sistema</th></tr>
+    <tr><td><span class="tag g">VERDE · 100% autónomo</span></td>
+      <td>Registrar leads (append en Sheets, crear en HubSpot) · escribir logs y estados fijos · actualizar <i>health_score</i> · crear notas y tareas internas · etiquetar emails · responder preguntas generales con información pública aprobada · agendar reunión exploratoria en horario libre del AE · enviar plantillas de seguimiento aprobadas <b>sin modificar</b>.</td>
+      <td>Ejecuta y registra en el log con <code>event_id</code>. A4 audita el 10% semanalmente.</td></tr>
+    <tr><td><span class="tag a">AMARILLO · borrador + aprobación</span></td>
+      <td>Emails personalizados a prospectos A · respuesta a objeciones de competencia o funcionalidad · cambio de etapa de un deal · reasignación de cuenta a otro AE o CSM · cualquier mensaje a un cliente con health score amarillo o rojo · clasificaciones con confianza &lt; 0,7.</td>
+      <td>El agente prepara la acción y la deja <b>pendiente</b>; el responsable aprueba o edita en Slack. SLA: 4 h hábiles. Sin respuesta se reasigna al líder; <b>nunca se auto-aprueba</b>.</td></tr>
+    <tr><td><span class="tag r">ROJO · congelado + escalado forzado</span></td>
+      <td>Reembolsos, devoluciones o contracargos · transferencias de dinero · descuentos o cambios de precio de renovación · cancelaciones o bajas · reclamos legales, cartas documento o menciones a Defensa del Consumidor · solicitudes de acceso o borrado de datos personales · riesgo de churn crítico · cualquier borrado de información.</td>
+      <td>El bot <b>no ejecuta ni promete nada</b>. Envía al cliente un mensaje de contención fijo y congela el caso (<code>estado=HITL_PENDIENTE</code>). Escalado obligatorio a Slack con botones. SLA: 1 h hábil.</td></tr>
+  </table>
+
+  <h3>3.4 Protocolo de escalado forzado a humanos (Slack con botones)</h3>
+  <div class="grid2">
+    <div>
+      <h4>Variables críticas que disparan el escalado</h4>
+      <ul class="small">
+        <li><b>Churn:</b> Health Score &lt; 40 con MRR ≥ USD 500; caída de uso &gt; 50% en 30 días; o expresiones de baja ("cancelar", "dar de baja", "nos pasamos a…").</li>
+        <li><b>Reembolso:</b> cualquier pedido de devolución, reintegro o contracargo, <b>sin importar el monto</b>.</li>
+        <li><b>Legal:</b> menciones a abogado, carta documento, demanda, incumplimiento contractual, Defensa del Consumidor o datos personales.</li>
+      </ul>
+      <h4>Secuencia</h4>
+      <ol class="small">
+        <li><b>Detección</b> por A0 (en la entrada) o A3 (en el monitoreo) → <code>escalado.json</code>.</li>
+        <li><b>Congelamiento:</b> estado <code>HITL_PENDIENTE</code> en HubSpot; el agente deja de tratar el tema y responde: <i>"Tu solicitud fue derivada a una persona del equipo, que te contactará dentro de las próximas horas hábiles."</i></li>
+        <li><b>Notificación</b> en Slack (Block Kit) con resumen, evidencia citada, MRR, renovación y acción sugerida. Se menciona al responsable según el ruteo: churn → CSM + Head of CS; reembolso → Finanzas; legal → Legal/Gerencia.</li>
+        <li><b>Espera:</b> el nodo n8n <i>Wait → On Webhook Call</i> retoma el flujo con el botón presionado y el ID de Slack de quien decidió.</li>
+        <li><b>Ejecución:</b> el Gate ejecuta solo lo aprobado (p. ej. enviar email aprobado o mover etapa). Los reembolsos los procesa Finanzas en Stripe; el Gate solo registra la decisión.</li>
+        <li><b>SLA y re-escalado:</b> sin respuesta en 1 h (rojo) o 4 h (amarillo) → recordatorio + Gmail al líder del área. Nunca hay auto-aprobación por timeout.</li>
+        <li><b>Auditoría:</b> quién decidió, cuándo, qué y con qué evidencia, en el log append-only.</li>
+      </ol>
+    </div>
+    <div>
+      <h4>Mensaje tipo en Slack</h4>
+      <div class="slack">
+        <b>🔴 Escalado ROJO · Riesgo de churn + pedido de reembolso</b><br>
+        <span class="muted">event_id ev-2026-10-0412 · detectado por A3 Centinela</span><br><br>
+        <b>Cuenta:</b> Cliente #C-0187 (Distribución, 35 usuarios)<br>
+        <b>MRR:</b> USD 1.250 · <b>Renovación:</b> 28 días<br>
+        <b>Health Score:</b> 32/100 (uso −58% en 30 días; 4 tickets negativos)<br>
+        <b>Evidencia:</b> "Si no lo resuelven esta semana pedimos la baja y el reintegro del último mes" (ticket #8841)<br>
+        <b>Acción sugerida:</b> llamada del CSM dentro de 24 h. <i>El sistema no ofreció compensación.</i><br>
+        <span class="btn p">✅ Aprobar sugerencia</span><span class="btn">✏️ Editar y aprobar</span><span class="btn d">❌ Rechazar</span><span class="btn">🙋 Tomar caso</span>
+        <div class="muted small" style="margin-top:1.2mm">SLA 1 h hábil · responsables: @csm-dueño @head-cs @finanzas</div>
+      </div>
+      <p class="small" style="margin-top:2mm"><b>Efecto de cada botón:</b> <i>Aprobar</i> → el Gate ejecuta la acción sugerida y registra al aprobador · <i>Editar y aprobar</i> → modal de edición, se ejecuta la versión editada · <i>Rechazar</i> → motivo obligatorio, caso cerrado para el bot · <i>Tomar caso</i> → se asigna en HubSpot a quien presiona y el bot no vuelve a intervenir en el hilo.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PÁGINA 4 ============================ -->
+<section class="page">
+  <h2>4. Diseño de Scorecards y Versión de Portafolio <span class="pg">Página 4</span></h2>
+  <p><b>Regla de evidencia común a todas las rúbricas:</b> cada puntaje se asigna <b>solo</b> si el agente puede citar una evidencia documental firme: frase textual del usuario, campo del formulario, registro del CRM, ticket o métrica del export. Sin evidencia el puntaje es 0 y se marca <code>"sin_evidencia"</code>; el agente <b>no infiere</b>. Así, dos ejecuciones con los mismos datos dan el mismo resultado y A4 puede auditarlas.</p>
+
+  <h3>4.1 Scorecard de Calificación de Leads v1 (A1): 100 puntos</h3>
+  <table>
+    <tr><th style="width:17%">Criterio (peso)</th><th>Máximo</th><th>Intermedio</th><th>Bajo / nulo</th><th style="width:20%">Evidencia válida</th></tr>
+    <tr><td><b>Fit de perfil</b> (25)</td><td>25: PyME de 10–200 empleados en industria objetivo (distribución, servicios, retail)</td><td>15: industria objetivo, fuera de rango de tamaño</td><td>5: particular o sin empresa · 0: sin datos</td><td>Dato declarado o dominio corporativo del email</td></tr>
+    <tr><td><b>Necesidad explícita</b> (25)</td><td>25: problema concreto que el producto resuelve (facturación, stock, cobranzas)</td><td>15: interés genérico ("quiero info")</td><td>0: sin necesidad expresada</td><td>Cita textual del prospecto</td></tr>
+    <tr><td><b>Urgencia</b> (20)</td><td>20: plazo ≤ 30 días o evento disparador (cambio de sistema, auditoría)</td><td>10: 1–3 meses</td><td>0: sin plazo</td><td>Cita textual con fecha o evento</td></tr>
+    <tr><td><b>Autoridad</b> (15)</td><td>15: decisor (dueño, gerente, director)</td><td>8: influenciador o usuario</td><td>0: desconocido</td><td>Cargo declarado</td></tr>
+    <tr><td><b>Contactabilidad</b> (15)</td><td>15: email corporativo + teléfono</td><td>10: email corporativo</td><td>5: solo email gratuito o teléfono · 0: ninguno</td><td>Datos entregados en la conversación</td></tr>
+  </table>
+  <p class="small"><b>Categorías y acción:</b> <span class="tag g">A ≥ 70</span> reunión con AE en ≤ 24 h (agenda autónoma) · <span class="tag a">B 40–69</span> secuencia de seguimiento de A2 · <span class="tag a">C &lt; 40</span> respuesta informativa y registro · <span class="tag r">DQ</span> spam, soporte o reclamo → derivación (reclamo = Gate HITL). <b>Desempate:</b> ante duda entre dos niveles se asigna el inferior.</p>
+
+  <div class="grid2">
+    <div>
+      <h3>4.2 Playbook de Objeciones v1 (A2)</h3>
+      <table class="small">
+        <tr><th>Objeción · señales</th><th>Respuesta permitida</th><th class="c">Nivel</th></tr>
+        <tr><td><b>Precio</b>: "caro", "no hay presupuesto"</td><td>Caso de ROI público + plan inferior de la lista pública</td><td class="c"><span class="tag g">V</span></td></tr>
+        <tr><td><b>Pide descuento</b></td><td>Ninguna; se escala al AE</td><td class="c"><span class="tag r">R</span></td></tr>
+        <tr><td><b>Timing</b>: "más adelante"</td><td>Plantilla de recontacto + tarea con fecha</td><td class="c"><span class="tag g">V</span></td></tr>
+        <tr><td><b>Competencia</b>: "ya uso X"</td><td>Borrador con comparativa aprobada</td><td class="c"><span class="tag a">A</span></td></tr>
+        <tr><td><b>Funcionalidad faltante</b></td><td>Borrador; el AE confirma el roadmap</td><td class="c"><span class="tag a">A</span></td></tr>
+        <tr><td><b>Contrato / seguridad de datos</b></td><td>Ninguna; derivación a Legal</td><td class="c"><span class="tag r">R</span></td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>4.3 Health Score v1 (A3): 100 puntos</h3>
+      <table class="small">
+        <tr><th>Componente</th><th class="c">Pts</th><th>Regla (fuente)</th></tr>
+        <tr><td>Uso activo</td><td class="c">30</td><td>Logins semanales vs. su propio promedio de 90 días: ≥ 90% = 30 · 60–89% = 15 · &lt; 60% = 0 (export de uso)</td></tr>
+        <tr><td>Adopción</td><td class="c">20</td><td>3 features clave en uso = 20 · 2 = 12 · ≤ 1 = 0</td></tr>
+        <tr><td>Soporte</td><td class="c">20</td><td>0 tickets negativos en 60 días = 20 · 1–2 = 10 · ≥ 3 = 0 (Zendesk)</td></tr>
+        <tr><td>Pagos</td><td class="c">15</td><td>Al día = 15 · 1 pago fallido = 5 · ≥ 2 = 0 (Stripe)</td></tr>
+        <tr><td>Satisfacción</td><td class="c">15</td><td>NPS 9–10 = 15 · 7–8 = 8 · ≤ 6 o sin dato = 0</td></tr>
+      </table>
+      <p class="small"><span class="tag g">≥ 70 verde</span> monitoreo · <span class="tag a">40–69 amarillo</span> tarea al CSM · <span class="tag r">&lt; 40 rojo</span> escalado si MRR ≥ USD 500. <b>Override:</b> mención explícita de baja, reembolso o acción legal = rojo, sin importar el puntaje.</p>
+    </div>
+  </div>
+
+  <h3>4.4 Rúbrica de auditoría (A4)</h3>
+  <p class="small">Sobre una muestra aleatoria del 10% de los eventos de la semana se verifican 5 controles binarios: (1) cada puntaje tiene evidencia citada y verificable en la fuente; (2) la acción ejecutada corresponde a su nivel del semáforo; (3) el JSON de salida cumple el contrato; (4) no hubo duplicados (mismo contacto, misma acción, 24 h); (5) el tono y el contenido respetan el playbook. <b>Conformidad = controles OK / controles totales.</b> Si es &lt; 90% se envía una alerta a RevOps y se congela el auto-envío de plantillas hasta revisar los prompts.</p>
+
+  <h3>4.5 Versión de portafolio profesional (anonimizada)</h3>
+  <div class="box">
+    <p><b>Red de agentes de IA para Sales Ops &amp; Customer Success · SaaS B2B (PyME, LATAM)</b></p>
+    <p><b>Desafío:</b> un equipo comercial y de retención destinaba ~100 horas mensuales a clasificar leads, cargar el CRM, hacer seguimiento y revisar cuentas en riesgo; los prospectos esperaban más de un día la primera respuesta y las bajas se detectaban tarde.</p>
+    <p><b>Solución:</b> diseño de una red no-code (n8n) de un orquestador y cuatro agentes especializados: calificación de leads, seguimiento de objeciones, centinela de retención y auditor de atribución. Cada agente trabaja con rúbricas explícitas basadas en evidencia, permisos de mínimo privilegio y contratos de datos JSON. Un semáforo de riesgo define qué se automatiza por completo y qué se congela para aprobación humana en Slack: reembolsos, descuentos, precios y reclamos legales nunca se automatizan.</p>
+    <p><b>Resultados esperados:</b> primera respuesta en minutos, −65% de horas administrativas, ≥ 80% de cuentas en riesgo detectadas con un mes de anticipación y cero acciones sensibles sin aprobación.</p>
+    <p class="small muted"><b>Rol:</b> relevamiento, priorización, arquitectura multi-agente, diseño de gobernanza y rúbricas · <b>Stack:</b> n8n, Claude (Anthropic), Google Workspace, HubSpot, Slack, Stripe, Zendesk.</p>
+  </div>
+
+  <div class="footer-note">Pre-entrega 7 · S. Maureira · Documento de diseño: los nombres de cliente, cuentas y montos de los ejemplos son ficticios. Los valores de baseline se validan en la semana 0 de implementación.</div>
+</section>
+
+</body>
+</html>
