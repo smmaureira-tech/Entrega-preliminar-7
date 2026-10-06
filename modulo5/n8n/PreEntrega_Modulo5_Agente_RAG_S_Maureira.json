@@ -44,7 +44,7 @@
     {
       "parameters": {
         "descriptionType": "manual",
-        "toolDescription": "Usá esta herramienta EXCLUSIVAMENTE para registrar un nuevo lead calificado en la planilla de seguimiento comercial, una vez que ya recolectaste, como mínimo: el nombre de la persona, al menos un dato de contacto (email o teléfono), y una descripción breve de su necesidad o interés. Activá esta herramienta de forma autónoma en el momento exacto en que el usuario te haya provisto esos tres datos dentro de la conversación — no esperes a que el usuario te lo pida explícitamente. NO actives esta herramienta si: (a) todavía falta el nombre o el dato de contacto, (b) el usuario está simplemente pidiendo información general sin intención de ser contactado, (c) ya registraste este mismo lead anteriormente en la conversación actual (para evitar duplicados), o (d) la consulta no corresponde a un lead comercial sino a un reclamo, soporte técnico o consulta fuera de tu ámbito. Los campos a completar son: Fecha (fecha y hora actual), Nombre, Contacto (email o teléfono), Empresa (si el usuario la mencionó, si no dejar vacío), Necesidad (resumen de 1-2 líneas de lo que busca), y Estado (siempre 'Nuevo - Pendiente de contacto').",
+        "toolDescription": "Usá esta herramienta EXCLUSIVAMENTE para registrar un nuevo lead calificado en la planilla de seguimiento comercial, una vez que ya recolectaste, como mínimo: el nombre de la persona, al menos un dato de contacto (email o teléfono), y una descripción breve de su necesidad o interés. Activá esta herramienta de forma autónoma en el momento exacto en que el usuario te haya provisto esos tres datos dentro de la conversación — no esperes a que el usuario te lo pida explícitamente. NO actives esta herramienta si: (a) todavía falta el nombre o el dato de contacto, (b) el usuario está simplemente pidiendo información general sin intención de ser contactado, (c) ya registraste este mismo lead anteriormente en la conversación actual (para evitar duplicados), o (d) la consulta no corresponde a un lead comercial sino a un reclamo, soporte técnico o consulta fuera de tu ámbito. Los campos a completar son: Fecha (fecha y hora actual), Nombre, Contacto (email o teléfono), Empresa (si el usuario la mencionó, si no dejar vacío), Necesidad (resumen de 1-2 líneas de lo que busca), y Estado (elegí SOLO uno según la intención de compra: 'Nuevo - Interés alto' si quiere comprar o contratar pronto, 'Nuevo - Interés medio' si está comparando opciones, o 'Nuevo - Solo consulta' si únicamente pide información).",
         "resource": "sheet",
         "operation": "append",
         "documentId": {
@@ -67,7 +67,7 @@
             "Contacto": "={{ $fromAI('Contacto', 'Email o telefono de contacto de la persona', 'string') }}",
             "Empresa": "={{ $fromAI('Empresa', 'Nombre de la empresa del lead, vacio si no aplica', 'string') }}",
             "Necesidad": "={{ $fromAI('Necesidad', 'Resumen breve de la necesidad o interes del lead', 'string') }}",
-            "Estado": "Nuevo - Pendiente de contacto"
+            "Estado": "={{ $fromAI('Estado', 'Elegí SOLO uno: Nuevo - Interés alto, Nuevo - Interés medio o Nuevo - Solo consulta, según la intención de compra del usuario', 'string') }}"
           },
           "matchingColumns": [],
           "schema": []
