@@ -5,6 +5,7 @@ Continuación del Checkpoint 1 (`../checkpoint1_S_Maureira.json`): el mismo agen
 | Archivo | Para qué |
 |---|---|
 | `base_conocimiento/Manual_Comercial_NexoDigital_v3.1.pdf` | Documento maestro: se parsea en LlamaCloud → Parse (LlamaParse, tier Agentic) y se descarga el Markdown |
+| `base_conocimiento/Manual_Comercial_parseado.md` | Markdown del manual con el orden de tablas corregido: es el que se sube con el formulario |
 | `n8n/PreEntrega_Modulo5_Agente_RAG_S_Maureira.json` | Workflow para importar en n8n (Groq + formulario de carga + Simple Vector Store con embeddings de Gemini; herramienta `consultar_manual_comercial`, Top-K 4) |
 | `n8n/system_prompt_RAG.md` | System prompt del agente (citas + regla "No sé") |
 | `planilla/Leads_NexoDigital.xlsx` | Planilla para Google Sheets: hoja `Leads` (la usa el agente) y hoja `Bateria_Validacion` (para anotar las 5 preguntas) |

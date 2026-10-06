@@ -56,6 +56,7 @@
     <tr><td>Chunking</td><td>Recursive Character Text Splitter: 2.000 caracteres (~512 tokens), overlap 250 (~64 tokens)</td><td>Respeta saltos de párrafo y de título, así cada subsección (ej. §7.3) queda con su título y las tablas no se cortan a la mitad.</td></tr>
     <tr><td>Embeddings</td><td>Google Gemini (<code>gemini-embedding-001</code>)</td><td>Buen rendimiento en español y capa gratuita.</td></tr>
   </table>
+  <p><b>Hallazgo del parseo:</b> LlamaParse respetó la jerarquía de títulos y leyó todas las tablas como celdas, pero <b>reubicó la tabla de §3.1 “Medios de pago aceptados”</b> por encima de §2.2 “Usuarios adicionales”, dentro de la sección 2. Si se indexaba así, el chunk de §3.1 quedaba sin su tabla y la de medios de pago se mezclaba con los planes, lo que habría hecho fallar preguntas como “¿puedo pagar con Mercado Pago?”. <b>Corrección:</b> antes de cargar la base, devolví la tabla a su sección y verifiqué el orden contra el PDF original (archivo <code>Manual_Comercial_parseado.md</code>).</p>
   <div class="box"><b>Decisión de arquitectura:</b> en el plan gratuito actual de LlamaCloud, la creación de <i>Index</i> requiere plan Starter y el plan Free permite 0 <i>Data Sources</i> (“This feature requires a Starter, Pro, or Enterprise plan”). Por eso usé LlamaCloud para la etapa crítica, el <b>parseo</b>, y cargué el Markdown resultante en el <b>Simple Vector Store</b> de n8n mediante un formulario de carga. El flujo RAG es el mismo: parseo → chunking → embeddings → recuperación como herramienta del agente.</div>
 </section>
 
