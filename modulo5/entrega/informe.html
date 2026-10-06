@@ -11,8 +11,10 @@
   h2 { font-size: 13pt; margin: 0 0 6pt; color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 3pt; }
   h3 { font-size: 10.5pt; margin: 10pt 0 4pt; }
   .sub { color: var(--muted); margin: 0 0 10pt; }
-  section { page-break-before: always; }
-  section.first { page-break-before: avoid; }
+  section { margin-top: 14pt; }
+  section.first { margin-top: 0; }
+  h2 { page-break-after: avoid; }
+  figcaption { page-break-before: avoid; }
   .tag { display:inline-block; background: var(--accent); color:#fff; font-size:8pt; padding:1pt 6pt; border-radius:8pt; margin-right:4pt; }
   .cap { border: 1.5px dashed #9aa3ad; border-radius: 6px; margin: 6pt 0 8pt; padding: 0; text-align:center; page-break-inside: avoid; }
   .cap img { max-width: 100%; max-height: 120mm; display:block; margin: 0 auto; }
@@ -36,7 +38,7 @@
 
 <!-- ============ PORTADA + PIEZA 1 ============ -->
 <section class="first">
-  <h1>Pre Entrega Módulo 5 — Agente con Conocimiento Organizacional</h1>
+  <h1>Pre Entrega Módulo 5: Agente con Conocimiento Organizacional</h1>
   <p class="sub">Alumna: Sandra Maureira · Continuación del Checkpoint 1 (Agente de Calificación de Leads en n8n) · Empresa cliente: Nexo Digital S.A. (NexoCRM)</p>
   <div class="box">El agente del Checkpoint 1 (Chat Trigger → AI Agent en modo Tools Agent → Google Sheets + log en Gmail) se amplió con conocimiento organizacional: ahora responde dudas de los potenciales clientes a partir del manual comercial parseado con LlamaParse e indexado en una base vectorial, y sigue registrando los leads calificados.</div>
 
@@ -71,6 +73,10 @@
   </table>
   <p>Conclusión: el parseador <b>preservó las celdas pero no siempre la posición ni la jerarquía</b>. Por eso la revisión humana del Markdown antes de indexar es un paso obligatorio del proceso (ver gobernanza). Archivos: <code>Manual_Comercial_LlamaParse_original.md</code> (salida cruda) y <code>Manual_Comercial_parseado.md</code> (versión corregida que se indexó).</p>
   <div class="box"><b>Decisión de arquitectura:</b> en el plan gratuito actual de LlamaCloud, la creación de <i>Index</i> requiere plan Starter y el plan Free permite 0 <i>Data Sources</i> (“This feature requires a Starter, Pro, or Enterprise plan”). Por eso usé LlamaCloud para la etapa crítica, el <b>parseo</b>, y cargué el Markdown resultante en el <b>Simple Vector Store</b> de n8n mediante un formulario de carga. El flujo RAG es el mismo: parseo → chunking → embeddings → recuperación como herramienta del agente.</div>
+  <figure class="cap">
+    <img src="capturas/1c_llamacloud_plan_free.png" style="max-height:70mm">
+    <figcaption>Evidencia de la limitación: LlamaCloud → Settings → Data Sources en mi cuenta (plan Free): “Upgrade your plan to add more data sources. <b>The Free plan allows 0 data sources</b>”, y aviso de que las conexiones requieren plan pago. Al intentar crear el <i>Index</i> la plataforma respondió “This feature requires a Starter, Pro, or Enterprise plan”.</figcaption>
+  </figure>
 </section>
 
 <!-- ============ PIEZA 2 ============ -->
@@ -78,7 +84,7 @@
   <h2><span class="tag">2</span>Vector Store Retrieve Tool: Top-K y Minimum Score</h2>
   <figure class="cap">
     <img src="capturas/2_retrieve_tool_topk_score.png" onerror="this.outerHTML='<div class=ph><b>[Captura 2]</b> Pegá acá la captura del nodo Simple Vector Store en modo Retrieve Documents (As Tool for AI Agent), acoplado al AI Agent, donde se lean: nombre <b>consultar_manual_comercial</b>, la descripción, la memory key <b>manual_nexo_v3_1</b> y <b>Limit (Top-K) = 4</b>.</div>'">
-    <figcaption>Nodo <code>consultar_manual_comercial</code> (Simple Vector Store, modo <i>Retrieve Documents as Tool</i>): memory key <code>manual_nexo_v3_1</code>, <b>Limit (Top-K) = 4</b>. A la izquierda, la consulta que armó el agente para el caso 5 (“derecho de arrepentimiento reembolso devolución dinero plan anual”); a la derecha, el primer chunk devuelto: el capítulo 7 completo (7.1 a 7.4) y el 8, líneas 114–144 del Markdown.</figcaption>
+    <figcaption>Nodo <code>consultar_manual_comercial</code> (Simple Vector Store, modo <i>Retrieve Documents as Tool</i>): memory key <code>manual_nexo_v3_1</code>, <b>Limit (Top-K) = 4</b>. A la izquierda, la consulta que armó el agente para el caso 5 (“derecho de arrepentimiento reembolso devolución dinero plan anual”); a la derecha, el primer chunk devuelto: el capítulo 7 completo (7.1 a 7.4) y el 8, líneas 114–144 del Markdown. <br><b>Minimum Score:</b> el Simple Vector Store de n8n no tiene control de score mínimo (no aparece en el nodo). El umbral objetivo de 0.55 se compensa vía System Prompt: el agente solo responde si el fragmento contiene el dato exacto y, si no, aplica “No sé”.</figcaption>
   </figure>
   <figure class="cap">
     <img src="capturas/2b_ejecucion_rag.png" style="max-height:90mm">
