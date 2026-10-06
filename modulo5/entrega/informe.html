@@ -102,9 +102,8 @@
 
 # REGLA DORADA DE CONTINGENCIA: "No sé"
 - Si la herramienta no devuelve fragmentos, o si los fragmentos no contienen el dato exacto que se preguntó,
-  tu respuesta DEBE empezar textualmente con: "No sé".
-- Formato obligatorio: "No sé: ese dato no figura en la documentación disponible. Si querés, tomo tus datos
-  y un asesor comercial te responde."
+  respondé textualmente y únicamente: "No sé."
+- No agregues explicaciones, disculpas, sugerencias ni ningún otro texto antes o después de "No sé."
 - Nunca reemplaces el "No sé" por una estimación, una respuesta parcial inventada o información de otra
   sección que "se parece".
 - Si el fragmento recuperado habla de un tema parecido pero NO del que se preguntó (por ejemplo: cancelación vs.
@@ -122,7 +121,7 @@
     <tr><td>1</td><td>“Somos 10 en el equipo, ¿cuánto nos sale por mes?”</td><td>§2.1 Tabla de planes: “Pro | Hasta 15 | 79 | 806 | Hasta 20.000 | Email y chat”</td><td>“Para 10 personas te corresponde el plan Pro (hasta 15 usuarios): USD 79 por mes, o USD 806 en pago anual. (Fuente: Manual Comercial v3.1, §2.1)”</td><td class="ok">✅ Correcto (leyó bien la celda de la tabla y citó la fuente)</td></tr>
     <tr><td>2</td><td>“¿Lo puedo probar de onda sin poner la tarjeta?”</td><td>§4.1 Prueba gratuita: “prueba gratuita de 14 días corridos … No se solicita tarjeta de crédito”</td><td>“Sí, tenés 14 días corridos de prueba gratis con todas las funciones de Business y no te piden tarjeta. (Fuente: Manual Comercial v3.1, §4.1)”</td><td class="ok">✅ Correcto</td></tr>
     <tr><td>3</td><td>“Tengo el plan Pro, si se me cae todo un sábado, ¿en cuánto me atienden?”</td><td>§6.2 SLA: “Crítica | … | 4 h hábiles” + “En Starter y Pro los incidentes reportados un fin de semana se empiezan a contar desde el lunes a las 9:00.”</td><td>“En Pro, un incidente crítico tiene respuesta en 4 horas hábiles, pero si lo reportás un sábado el plazo empieza a contar el lunes a las 9:00. (Fuente: Manual Comercial v3.1, §6.2)”</td><td class="ok">✅ Correcto (combinó la celda de la tabla con la nota aclaratoria)</td></tr>
-    <tr><td>4</td><td>“¿Se puede enchufar con SAP?”</td><td>Ningún fragmento superó el Minimum Score de 0.55 (la tabla §9.1 no menciona SAP)</td><td>“No sé: ese dato no figura en la documentación disponible. Si querés, tomo tus datos y un asesor comercial te responde.”</td><td class="ok">✅ Correcto (aplicó la regla “No sé” y no inventó la integración)</td></tr>
+    <tr><td>4</td><td>“¿Se puede enchufar con SAP?”</td><td>Ningún fragmento superó el Minimum Score de 0.55 (la tabla §9.1 no menciona SAP)</td><td>“No sé.”</td><td class="ok">✅ Correcto (aplicó la regla “No sé” y no inventó la integración)</td></tr>
     <tr><td>5</td><td>“Pagué el anual ayer y me arrepentí, ¿me devuelven la guita?”</td><td>Recuperó §7.1 Cancelación y §7.2 Reembolso de planes anuales (“se le reembolsa el 70 % de los meses completos no utilizados”). <b>No</b> recuperó §7.3 Derecho de arrepentimiento.</td><td>“Si cancelás el plan anual se te reembolsa el 70 % de los meses no utilizados. (Fuente: Manual Comercial v3.1, §7.2)”</td><td class="bad">⚠️ Falla de recuperación: correspondía el 100 % por arrepentimiento dentro de los 10 días (§7.3)</td></tr>
   </table>
 
