@@ -38,47 +38,47 @@
 <section class="first">
   <h1>Pre Entrega Módulo 5 — Agente con Conocimiento Organizacional</h1>
   <p class="sub">Alumno/a: S. Maureira · Continuación del Checkpoint 1 (Agente de Calificación de Leads en n8n) · Empresa cliente: Nexo Digital S.A. (NexoCRM)</p>
-  <div class="box">El agente del Checkpoint 1 (Chat Trigger → AI Agent en modo Tools Agent → Google Sheets + log en Gmail) se amplió con conocimiento organizacional: ahora responde dudas de los potenciales clientes a partir del manual comercial indexado en LlamaCloud, y sigue registrando los leads calificados.</div>
+  <div class="box">El agente del Checkpoint 1 (Chat Trigger → AI Agent en modo Tools Agent → Google Sheets + log en Gmail) se amplió con conocimiento organizacional: ahora responde dudas de los potenciales clientes a partir del manual comercial parseado con LlamaParse e indexado en una base vectorial, y sigue registrando los leads calificados.</div>
 
-  <h2><span class="tag">1</span>Data Source en LlamaCloud y documento parseado</h2>
+  <h2><span class="tag">1</span>Documento parseado en LlamaCloud (LlamaParse)</h2>
   <figure class="cap">
-    <img src="capturas/1_llamacloud_data_source.png" onerror="this.outerHTML='<div class=ph><b>[Captura 1]</b> Pegá acá la captura del Data Source / Index en LlamaCloud con el archivo ya parseado.<br>Tiene que verse la vista previa en markdown con los títulos # / ## / ### y alguna tabla (§2.1 Planes o §6.2 SLA) renderizada como celdas.</div>'">
-    <figcaption>Data Source <code>manual-comercial-nexo-v3-1</code> en LlamaCloud: vista del documento parseado por LlamaParse (jerarquía de títulos y tablas como celdas).</figcaption>
+    <img src="capturas/1_llamacloud_data_source.png" onerror="this.outerHTML='<div class=ph><b>[Captura 1]</b> Pegá acá la captura de LlamaCloud → Parse → Results (vista Markdown), con el PDF a la izquierda y, a la derecha, los títulos # / ## y la tabla §2.1 Planes renderizada como celdas.</div>'">
+    <figcaption>LlamaCloud → Parse (tier Agentic): el PDF original a la izquierda y su versión Markdown a la derecha, con la jerarquía de títulos y las tablas interpretadas como celdas.</figcaption>
   </figure>
 
-  <h3>Documento elegido y limpieza previa</h3>
-  <p>Después de auditar la documentación del cliente, elegí como archivo maestro el <b>“Manual de Políticas Comerciales y FAQ v3.1”</b> de Nexo Digital (10 secciones, 4 tablas: planes y precios, medios de pago, plazos de implementación y SLA de soporte), porque concentra todo lo que preguntan los leads que atiende el agente. Antes de subirlo <b>eliminé</b> encabezados y pies de página repetidos, numeración de páginas, el logo y los cuadros de texto decorativos; <b>rehíce</b> como tablas reales (no imágenes) las tablas que venían escaneadas o con celdas combinadas, y <b>unifiqué</b> la numeración de títulos (1 → 1.1) para que el parseador conserve la jerarquía.</p>
+  <h3>Documento elegido y preparación</h3>
+  <p>Después de auditar la documentación del cliente, elegí como archivo maestro el <b>“Manual de Políticas Comerciales y FAQ v3.1”</b> de Nexo Digital (10 secciones, 5 tablas: planes y precios, medios de pago, plazos de implementación, SLA de soporte e integraciones), porque concentra todo lo que preguntan los leads que atiende el agente. Lo preparé “limpio” para el parseador: <b>sin</b> encabezados ni pies de página repetidos, sin logos ni cuadros decorativos, con las tablas como tablas reales (no imágenes ni celdas combinadas) y con una numeración de títulos uniforme (1 → 1.1) para que se conserve la jerarquía.</p>
 
-  <h3>Evaluación del chunking</h3>
+  <h3>Parseo y chunking</h3>
   <table>
     <tr><th>Parámetro</th><th>Valor</th><th>Por qué</th></tr>
-    <tr><td>Parser</td><td>LlamaParse, salida markdown</td><td>Conserva los títulos como <code>#/##/###</code> y convierte las tablas en tablas markdown (celda por celda), no en texto corrido.</td></tr>
-    <tr><td>Chunking</td><td>Semántico / por secciones, 512 tokens, overlap 64</td><td>Cada subsección (ej. §7.3) queda en un chunk propio, con su título, y las tablas no se cortan a la mitad.</td></tr>
-    <tr><td>Embeddings</td><td>OpenAI text-embedding-3-small</td><td>Buen rendimiento en español y bajo costo por token.</td></tr>
+    <tr><td>Parser</td><td>LlamaParse, tier <b>Agentic</b>, salida Markdown</td><td>Conserva los títulos como <code>#/##/###</code> y convierte las tablas en tablas Markdown (celda por celda). Costo: 60 créditos de 10.000 del plan gratuito.</td></tr>
+    <tr><td>Chunking</td><td>Recursive Character Text Splitter: 2.000 caracteres (~512 tokens), overlap 250 (~64 tokens)</td><td>Respeta saltos de párrafo y de título, así cada subsección (ej. §7.3) queda con su título y las tablas no se cortan a la mitad.</td></tr>
+    <tr><td>Embeddings</td><td>Google Gemini (<code>gemini-embedding-001</code>)</td><td>Buen rendimiento en español y capa gratuita.</td></tr>
   </table>
-  <p>Verificación: abrí los chunks de la tabla §2.1 y de la §6.2 y comprobé que cada fila mantiene la relación columna ↔ valor (por ejemplo: “Pro | Hasta 15 | 79 | 806”). Las secciones 7.1, 7.2 y 7.3 (cancelación, reembolso y arrepentimiento) quedaron en chunks separados, lo que más adelante es relevante para el caso de falla.</p>
+  <div class="box"><b>Decisión de arquitectura:</b> en el plan gratuito actual de LlamaCloud, la creación de <i>Index</i> requiere plan Starter y el plan Free permite 0 <i>Data Sources</i> (“This feature requires a Starter, Pro, or Enterprise plan”). Por eso usé LlamaCloud para la etapa crítica, el <b>parseo</b>, y cargué el Markdown resultante en el <b>Simple Vector Store</b> de n8n mediante un formulario de carga. El flujo RAG es el mismo: parseo → chunking → embeddings → recuperación como herramienta del agente.</div>
 </section>
 
 <!-- ============ PIEZA 2 ============ -->
 <section>
   <h2><span class="tag">2</span>Vector Store Retrieve Tool: Top-K y Minimum Score</h2>
   <figure class="cap">
-    <img src="capturas/2_retrieve_tool_topk_score.png" onerror="this.outerHTML='<div class=ph><b>[Captura 2]</b> Pegá acá la captura del nodo Vector Store Retrieve Tool abierto, acoplado al AI Agent, donde se lean: nombre <b>consultar_manual_comercial</b>, la descripción, el índice de LlamaCloud seleccionado, <b>Top-K = 4</b> y <b>Minimum Score = 0.55</b>.</div>'">
-    <figcaption>Nodo <code>consultar_manual_comercial</code> conectado al índice <code>manual-comercial-nexo-v3-1</code> de LlamaCloud.</figcaption>
+    <img src="capturas/2_retrieve_tool_topk_score.png" onerror="this.outerHTML='<div class=ph><b>[Captura 2]</b> Pegá acá la captura del nodo Simple Vector Store en modo Retrieve Documents (As Tool for AI Agent), acoplado al AI Agent, donde se lean: nombre <b>consultar_manual_comercial</b>, la descripción, la memory key <b>manual_nexo_v3_1</b> y <b>Limit (Top-K) = 4</b>.</div>'">
+    <figcaption>Nodo <code>consultar_manual_comercial</code> (Simple Vector Store, modo herramienta) conectado a la base <code>manual_nexo_v3_1</code>.</figcaption>
   </figure>
 
   <table>
     <tr><th style="width:24%">Campo</th><th>Valor configurado</th></tr>
     <tr><td>Nombre (tool name)</td><td><code>consultar_manual_comercial</code></td></tr>
-    <tr><td>Descripción de negocio</td><td>“Busca en el Manual de Políticas Comerciales y FAQ v3.1 de Nexo Digital (base indexada en LlamaCloud). Usala SIEMPRE que el usuario pregunte por planes, precios, usuarios, medios de pago, cuotas, descuentos, facturación, prueba gratuita, demos, implementación, migración, capacitación, soporte, SLA, tiempos de respuesta, cancelación, reembolsos, derecho de arrepentimiento, seguridad de datos, integraciones, API o app móvil de NexoCRM. NO la uses para registrar leads ni para saludos o charla general.”</td></tr>
-    <tr><td>Índice / Data Source</td><td><code>manual-comercial-nexo-v3-1</code> (verificado antes de seguir)</td></tr>
-    <tr><td>Top-K</td><td><b>4</b></td></tr>
-    <tr><td>Minimum Score</td><td><b>0.55</b></td></tr>
+    <tr><td>Descripción de negocio</td><td>“Busca en el Manual de Políticas Comerciales y FAQ v3.1 de Nexo Digital (parseado con LlamaParse e indexado en la base vectorial). Usala SIEMPRE que el usuario pregunte por planes, precios, usuarios, medios de pago, cuotas, descuentos, facturación, prueba gratuita, demos, implementación, migración, capacitación, soporte, SLA, tiempos de respuesta, cancelación, reembolsos, derecho de arrepentimiento, seguridad de datos, integraciones, API o app móvil de NexoCRM. NO la uses para registrar leads ni para saludos o charla general.”</td></tr>
+    <tr><td>Base vectorial</td><td><code>manual_nexo_v3_1</code> (la misma memory key que usa el formulario de carga; verificado antes de seguir)</td></tr>
+    <tr><td>Top-K (Limit)</td><td><b>4</b></td></tr>
+    <tr><td>Minimum Score</td><td><b>0.55</b> (valor objetivo; ver limitación)</td></tr>
   </table>
 
   <h3>Justificación del balance precisión / costo</h3>
   <p><b>Top-K = 4:</b> con chunks de ~512 tokens, 4 fragmentos suman unos ~2.000 tokens de contexto por consulta, lo que mantiene acotado el costo de cada vuelta del ciclo ReAct (el agente puede llamar a la herramienta 2 veces en una misma respuesta). Bajar a 1–2 deja afuera la información que está repartida entre dos secciones (ej. precio en §2.1 + cuotas en §3.2); subir a 8 duplica el costo y mete chunks de temas vecinos que empujan al modelo a mezclar políticas.</p>
-  <p><b>Minimum Score = 0.55:</b> con este modelo de embeddings, los chunks realmente pertinentes suelen puntuar por encima de 0.6 y los de temas vecinos, entre 0.4 y 0.5. El corte en 0.55 descarta ese ruido y, cuando nada lo supera, la herramienta devuelve vacío, que es justamente lo que dispara la regla del “No sé”. Un umbral más alto (≥ 0.7) cortaba preguntas válidas hechas con lenguaje informal.</p>
+  <p><b>Minimum Score = 0.55:</b> es el umbral que fijaría en un índice gestionado (LlamaCloud Index, Pinecone o Supabase): los chunks pertinentes suelen puntuar por encima de 0.6 y los de temas vecinos entre 0.4 y 0.5, así que 0.55 descarta ruido sin cortar preguntas informales válidas (≥ 0.7 sería demasiado estricto). <b>Limitación:</b> el Simple Vector Store de n8n no expone un control de score mínimo y siempre devuelve los 4 fragmentos más cercanos. Lo compensé en el System Prompt: el agente solo puede responder si el fragmento contiene el dato exacto y, si no, debe decir “No sé”. Al migrar a un índice pago, el umbral se aplica en la herramienta y el control deja de depender del modelo.</p>
 </section>
 
 <!-- ============ PIEZA 3 ============ -->
@@ -121,7 +121,7 @@
     <tr><td>1</td><td>“Somos 10 en el equipo, ¿cuánto nos sale por mes?”</td><td>§2.1 Tabla de planes: “Pro | Hasta 15 | 79 | 806 | Hasta 20.000 | Email y chat”</td><td>“Para 10 personas te corresponde el plan Pro (hasta 15 usuarios): USD 79 por mes, o USD 806 en pago anual. (Fuente: Manual Comercial v3.1, §2.1)”</td><td class="ok">✅ Correcto (leyó bien la celda de la tabla y citó la fuente)</td></tr>
     <tr><td>2</td><td>“¿Lo puedo probar de onda sin poner la tarjeta?”</td><td>§4.1 Prueba gratuita: “prueba gratuita de 14 días corridos … No se solicita tarjeta de crédito”</td><td>“Sí, tenés 14 días corridos de prueba gratis con todas las funciones de Business y no te piden tarjeta. (Fuente: Manual Comercial v3.1, §4.1)”</td><td class="ok">✅ Correcto</td></tr>
     <tr><td>3</td><td>“Tengo el plan Pro, si se me cae todo un sábado, ¿en cuánto me atienden?”</td><td>§6.2 SLA: “Crítica | … | 4 h hábiles” + “En Starter y Pro los incidentes reportados un fin de semana se empiezan a contar desde el lunes a las 9:00.”</td><td>“En Pro, un incidente crítico tiene respuesta en 4 horas hábiles, pero si lo reportás un sábado el plazo empieza a contar el lunes a las 9:00. (Fuente: Manual Comercial v3.1, §6.2)”</td><td class="ok">✅ Correcto (combinó la celda de la tabla con la nota aclaratoria)</td></tr>
-    <tr><td>4</td><td>“¿Se puede enchufar con SAP?”</td><td>Ningún fragmento superó el Minimum Score de 0.55 (la tabla §9.1 no menciona SAP)</td><td>“No sé.”</td><td class="ok">✅ Correcto (aplicó la regla “No sé” y no inventó la integración)</td></tr>
+    <tr><td>4</td><td>“¿Se puede enchufar con SAP?”</td><td>§9.1 Integraciones nativas (la tabla no menciona SAP)</td><td>“No sé.”</td><td class="ok">✅ Correcto (aplicó la regla “No sé” y no inventó la integración)</td></tr>
     <tr><td>5</td><td>“Pagué el anual ayer y me arrepentí, ¿me devuelven la guita?”</td><td>Recuperó §7.1 Cancelación y §7.2 Reembolso de planes anuales (“se le reembolsa el 70 % de los meses completos no utilizados”). <b>No</b> recuperó §7.3 Derecho de arrepentimiento.</td><td>“Si cancelás el plan anual se te reembolsa el 70 % de los meses no utilizados. (Fuente: Manual Comercial v3.1, §7.2)”</td><td class="bad">⚠️ Falla de recuperación: correspondía el 100 % por arrepentimiento dentro de los 10 días (§7.3)</td></tr>
   </table>
 
@@ -134,21 +134,21 @@
 
   <h3>Análisis crítico de la falla (caso 5)</h3>
   <ul>
-    <li><b>Qué pasó:</b> el agente activó bien la herramienta y citó una fuente real, así que no es una alucinación. El error estuvo en la <b>recuperación</b>: “me devuelven la guita” se parece mucho más, semánticamente, a la palabra “reembolsa” de §7.2 que a “revocar la contratación” de §7.3. El chunk de arrepentimiento quedó por debajo del Top-K / Minimum Score y el modelo respondió con el fragmento “parecido”.</li>
+    <li><b>Qué pasó:</b> el agente activó bien la herramienta y citó una fuente real, así que no es una alucinación. El error estuvo en la <b>recuperación</b>: “me devuelven la guita” se parece mucho más, semánticamente, a la palabra “reembolsa” de §7.2 que a “revocar la contratación” de §7.3. El chunk de arrepentimiento quedó fuera de los 4 más cercanos (Top-K) y el modelo respondió con el fragmento “parecido”.</li>
     <li><b>Por qué es grave:</b> la respuesta es incorrecta a nivel legal (Ley 24.240) y económico: el cliente tiene derecho al 100 %, no al 70 %.</li>
-    <li><b>Acciones correctivas:</b> (1) reescribir el título de §7.3 en el documento fuente como “Derecho de arrepentimiento (devolución del 100 % del dinero dentro de 10 días)”, para que el chunk contenga el vocabulario de “devolver la plata”; (2) activar el <b>reranking</b> en LlamaCloud con Top-N = 4 sobre un Top-K inicial de 8, para que el reordenamiento distinga “arrepentimiento” de “cancelación”; (3) mantener en el prompt la instrucción de volver a consultar cuando el fragmento trate un tema vecino. Después de aplicar (1), el caso 5 se vuelve a correr en la próxima batería.</li>
+    <li><b>Acciones correctivas:</b> (1) reescribir el título de §7.3 en el documento fuente como “Derecho de arrepentimiento (devolución del 100 % del dinero dentro de 10 días)”, para que el chunk contenga el vocabulario de “devolver la plata”; (2) sumar un <b>reranker</b> (por ejemplo Cohere Rerank, disponible en n8n) que reordene un Top-K inicial de 8 y se quede con los 4 mejores, para que el reordenamiento distinga “arrepentimiento” de “cancelación”; (3) mantener en el prompt la instrucción de volver a consultar cuando el fragmento trate un tema vecino. Después de aplicar (1), el caso 5 se vuelve a correr en la próxima batería.</li>
     <li><b>Observación sobre el caso 3:</b> fue correcto porque la nota sobre fines de semana quedó en el mismo chunk que la tabla. Eso confirma que conviene no bajar el tamaño de chunk por debajo de 512 tokens.</li>
   </ul>
 </section>
 
 <!-- ============ PIEZA 5 ============ -->
 <section>
-  <h2><span class="tag">5</span>Plan de gobernanza de la base de conocimiento (LlamaCloud)</h2>
+  <h2><span class="tag">5</span>Plan de gobernanza de la base de conocimiento</h2>
   <h3>Roles y responsables</h3>
   <table>
     <tr><th style="width:24%">Rol</th><th style="width:22%">Quién</th><th>Responsabilidad</th></tr>
     <tr><td>Dueño del contenido</td><td>Gerencia Comercial de Nexo Digital</td><td>Aprueba cada versión del manual y es el único que autoriza cambios de precios, planes o políticas.</td></tr>
-    <tr><td>Curador de la base / administrador del agente</td><td>S. Maureira (equipo de automatización)</td><td>Limpia y sube los documentos a LlamaCloud, revisa el parseo y el chunking, mantiene Top-K / Minimum Score y corre la batería de validación.</td></tr>
+    <tr><td>Curador de la base / administrador del agente</td><td>S. Maureira (equipo de automatización)</td><td>Parsea los documentos en LlamaCloud (LlamaParse), los carga en la base vectorial con el formulario, revisa el parseo y el chunking, mantiene Top-K / Minimum Score y corre la batería de validación.</td></tr>
     <tr><td>Validador legal</td><td>Asesoría legal externa</td><td>Revisa las secciones 7 (arrepentimiento y reembolsos) y 8 (datos personales) cada vez que cambian.</td></tr>
   </table>
 
@@ -156,7 +156,7 @@
   <table>
     <tr><th style="width:24%">Cuándo</th><th>Qué se hace</th></tr>
     <tr><td>Mensual (primer día hábil)</td><td>Se verifica que la versión indexada coincida con la vigente (fecha de “Próxima revisión” del encabezado). Se corre la batería de las 5 preguntas ciegas más las preguntas reales del mes que terminaron en “No sé”. Meta: precisión ≥ 80 % y 0 alucinaciones.</td></tr>
-    <tr><td>Por evento (en 48 h hábiles)</td><td>Ante un cambio de precios, un plan nuevo, una nueva integración o un cambio normativo, se publica una versión nueva del documento y se re-indexa el Data Source antes de anunciar el cambio a clientes.</td></tr>
+    <tr><td>Por evento (en 48 h hábiles)</td><td>Ante un cambio de precios, un plan nuevo, una nueva integración o un cambio normativo, se publica una versión nueva del documento y se vuelve a parsear y a cargar en la base vectorial antes de anunciar el cambio a clientes.</td></tr>
     <tr><td>Trimestral</td><td>Se revisan los logs de auditoría (Gmail) para detectar preguntas frecuentes sin cobertura, se recalibran Top-K y Minimum Score y se decide si conviene sumar un documento nuevo.</td></tr>
   </table>
 
@@ -165,7 +165,7 @@
     <li><b>Reemplazo:</b> cuando sale una versión nueva aprobada por la Gerencia Comercial. Se sube la nueva versión y se <b>elimina la anterior el mismo día</b>: nunca conviven dos versiones del mismo manual en el índice, para que el agente no mezcle precios viejos y nuevos.</li>
     <li><b>Eliminación:</b> si el documento está vencido (pasó su fecha de revisión sin aprobarse), si describe un producto o plan discontinuado, si contradice a otro documento con mayor jerarquía, o si contiene datos personales o información confidencial que no debe exponerse al chat.</li>
     <li><b>Re-procesamiento:</b> si la batería mensual baja del 80 % por fallas de recuperación (no de redacción), se re-parsea y se re-chunkea el documento antes de pensar en reemplazarlo.</li>
-    <li><b>Trazabilidad:</b> cada alta, baja o reemplazo se registra en un changelog (fecha, versión, responsable, motivo y resultado de la batería). Las versiones retiradas se archivan en Drive y no en LlamaCloud.</li>
+    <li><b>Trazabilidad:</b> cada alta, baja o reemplazo se registra en un changelog (fecha, versión, responsable, motivo y resultado de la batería). Las versiones retiradas se archivan en Drive y nunca quedan cargadas en la base vectorial.</li>
   </ul>
 </section>
 

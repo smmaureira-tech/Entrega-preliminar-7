@@ -1,5 +1,5 @@
 {
-  "name": "Pre Entrega Modulo 5 - Agente RAG con Conocimiento Organizacional (LlamaCloud)",
+  "name": "Pre Entrega Modulo 5 - Agente RAG con Conocimiento Organizacional (LlamaParse + Vector Store)",
   "nodes": [
     {
       "parameters": {
@@ -133,47 +133,154 @@
     },
     {
       "parameters": {
-        "toolDescription": "Busca en el Manual de Políticas Comerciales y FAQ v3.1 de Nexo Digital (base de conocimiento indexada en LlamaCloud). Usala SIEMPRE que el usuario pregunte por planes, precios, usuarios, medios de pago, cuotas, descuentos, facturación, prueba gratuita, demos, implementación, migración, capacitación, soporte, SLA, tiempos de respuesta, cancelación, reembolsos, derecho de arrepentimiento, seguridad de datos, integraciones, API o app móvil de NexoCRM. Devuelve los fragmentos más relevantes con su puntaje. NO la uses para registrar leads ni para saludos o charla general.",
-        "method": "POST",
-        "url": "https://api.cloud.llamaindex.ai/api/v1/pipelines/REPLACE_WITH_TU_PIPELINE_ID/retrieve",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"query\": \"{{ $fromAI('consulta', 'Pregunta del usuario reformulada con el vocabulario formal del manual comercial (ej: reembolso, cancelacion, incidente critico, cuotas)', 'string') }}\",\n  \"dense_similarity_top_k\": 4,\n  \"dense_similarity_cutoff\": 0.55,\n  \"enable_reranking\": false,\n  \"retrieval_mode\": \"chunks\"\n}",
-        "options": {},
-        "optimizeResponse": true,
-        "fieldsToInclude": "selected",
-        "fields": "retrieval_nodes"
+        "formTitle": "Cargar manual a la base de conocimiento",
+        "formDescription": "Subí el Markdown que generó LlamaParse (Manual_Comercial_parseado.md). Reemplaza el contenido anterior de la base.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Manual",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".md,.txt",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
       },
-      "id": "b7f1c2d3-0a1b-4c5d-9e8f-55aa66bb77cc",
-      "name": "consultar_manual_comercial",
-      "type": "n8n-nodes-base.httpRequestTool",
-      "typeVersion": 4.2,
+      "id": "a0000001-0000-4000-8000-000000000001",
+      "name": "Formulario - Cargar manual",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
       "position": [
-        140,
-        520
+        -160,
+        760
+      ],
+      "webhookId": "b7e1f0c2-5d3a-4c1e-9f7a-2c8d6e4b1a90"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": "manual_nexo_v3_1",
+        "clearStore": true
+      },
+      "id": "a0000001-0000-4000-8000-000000000002",
+      "name": "Guardar en base vectorial",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.1,
+      "position": [
+        60,
+        760
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "id": "a0000001-0000-4000-8000-000000000003",
+      "name": "Embeddings Gemini (carga)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        0,
+        960
       ],
       "credentials": {
-        "httpHeaderAuth": {
-          "id": "REPLACE_WITH_TU_CREDENCIAL_LLAMACLOUD",
-          "name": "LlamaCloud API Key (Authorization: Bearer llx-...)"
+        "googlePalmApi": {
+          "id": "REPLACE_WITH_TU_CREDENCIAL_GEMINI",
+          "name": "Google Gemini (PaLM) API account"
         }
       }
     },
     {
       "parameters": {
-        "content": "## Pre Entrega Módulo 5 - RAG\n**Data Source / Index LlamaCloud:** `manual-comercial-nexo-v3-1`\nParseo: LlamaParse (markdown, tablas como celdas)\nChunking: semántico por títulos, 512 tokens, overlap 64\n\n**Retrieve Tool:** Top-K = **4** · Minimum Score = **0.55**\nTool name: `consultar_manual_comercial`\n\nReemplazar `REPLACE_WITH_TU_PIPELINE_ID` y la credencial LlamaCloud.",
-        "height": 260,
-        "width": 380,
+        "dataType": "binary",
+        "loader": "textLoader",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "fuente",
+                "value": "Manual Comercial v3.1"
+              }
+            ]
+          }
+        }
+      },
+      "id": "a0000001-0000-4000-8000-000000000004",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        200,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "chunkSize": 2000,
+        "chunkOverlap": 250,
+        "options": {}
+      },
+      "id": "a0000001-0000-4000-8000-000000000005",
+      "name": "Chunking - Recursive Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        300,
+        1140
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "consultar_manual_comercial",
+        "toolDescription": "Busca en el Manual de Políticas Comerciales y FAQ v3.1 de Nexo Digital (parseado con LlamaParse e indexado en la base vectorial). Usala SIEMPRE que el usuario pregunte por planes, precios, usuarios, medios de pago, cuotas, descuentos, facturación, prueba gratuita, demos, implementación, migración, capacitación, soporte, SLA, tiempos de respuesta, cancelación, reembolsos, derecho de arrepentimiento, seguridad de datos, integraciones, API o app móvil de NexoCRM. Devuelve los fragmentos más relevantes. NO la uses para registrar leads ni para saludos o charla general.",
+        "memoryKey": "manual_nexo_v3_1",
+        "topK": 4,
+        "includeDocumentMetadata": true
+      },
+      "id": "a0000001-0000-4000-8000-000000000006",
+      "name": "consultar_manual_comercial",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.1,
+      "position": [
+        140,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "id": "a0000001-0000-4000-8000-000000000007",
+      "name": "Embeddings Gemini (consulta)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        140,
+        700
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "REPLACE_WITH_TU_CREDENCIAL_GEMINI",
+          "name": "Google Gemini (PaLM) API account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Pre Entrega Módulo 5 - RAG (plan B gratuito)\n**1. Parseo:** LlamaParse (Agentic) → Markdown con títulos y tablas en celdas.\n**2. Carga:** abrir la URL del *Formulario - Cargar manual* y subir el .md. Chunking: 2000 caracteres (~512 tokens), overlap 250 (~64 tokens).\n**3. Consulta:** `consultar_manual_comercial` · Top-K = **4**.\nMinimum Score: el Simple Vector Store no lo expone (ver informe).\n\n⚠️ La base vive en memoria: si n8n se reinicia, volver a cargar el manual con el formulario.\nMemory key compartida: `manual_nexo_v3_1`.",
+        "height": 320,
+        "width": 420,
         "color": 4
       },
-      "id": "c1d2e3f4-1111-2222-3333-444455556666",
+      "id": "a0000001-0000-4000-8000-000000000008",
       "name": "Nota - Configuracion RAG",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -560,
+        -640,
         240
       ]
     }
@@ -223,12 +330,67 @@
         ]
       ]
     },
+    "Formulario - Cargar manual": {
+      "main": [
+        [
+          {
+            "node": "Guardar en base vectorial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Gemini (carga)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Guardar en base vectorial",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Guardar en base vectorial",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunking - Recursive Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "consultar_manual_comercial": {
       "ai_tool": [
         [
           {
             "node": "AI Agent",
             "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Gemini (consulta)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "consultar_manual_comercial",
+            "type": "ai_embedding",
             "index": 0
           }
         ]
