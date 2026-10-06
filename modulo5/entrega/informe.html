@@ -112,8 +112,9 @@
 
 # REGLA DORADA DE CONTINGENCIA: "No sé"
 - Si la herramienta no devuelve fragmentos, o si los fragmentos no contienen el dato exacto que se preguntó,
-  respondé textualmente y únicamente: "No sé."
-- No agregues explicaciones, disculpas, sugerencias ni ningún otro texto antes o después de "No sé."
+  tu respuesta DEBE empezar textualmente con: "No sé".
+- Formato obligatorio: "No sé: ese dato no figura en la documentación disponible. Si querés, tomo tus datos
+  y un asesor comercial te responde."
 - Nunca reemplaces el "No sé" por una estimación, una respuesta parcial inventada o información de otra
   sección que "se parece".
 - Si el fragmento recuperado habla de un tema parecido pero NO del que se preguntó (por ejemplo: cancelación vs.
@@ -125,29 +126,34 @@
 <!-- ============ PIEZA 4 ============ -->
 <section>
   <h2><span class="tag">4</span>Reporte de validación: 5 preguntas ciegas</h2>
-  <p>Las preguntas se hicieron desde el chat público del Chat Trigger, con vocabulario informal y sinónimos que <b>no</b> aparecen literalmente en el manual. En cada caso revisé en la ejecución de n8n que el agente pasara por la rama de <code>consultar_manual_comercial</code> (nodo en verde) y qué fragmentos devolvió.</p>
+  <p>Las preguntas se hicieron desde el chat del Chat Trigger, con vocabulario informal y sinónimos que <b>no</b> aparecen literalmente en el manual, sobre la base cargada con 7 chunks. Cada respuesta quedó registrada en el log de auditoría de Gmail (se indica el Execution ID de n8n). Modelo: Gemini Chat Model, temperature 0.</p>
   <table>
-    <tr><th style="width:3%">#</th><th style="width:19%">Pregunta (sinónimo / informal)</th><th style="width:27%">Fragmento recuperado</th><th style="width:31%">Respuesta del agente</th><th style="width:20%">Veredicto</th></tr>
-    <tr><td>1</td><td>“Somos 10 en el equipo, ¿cuánto nos sale por mes?”</td><td>§2.1 Tabla de planes: “Pro | Hasta 15 | 79 | 806 | Hasta 20.000 | Email y chat”</td><td>“Para 10 personas te corresponde el plan Pro (hasta 15 usuarios): USD 79 por mes, o USD 806 en pago anual. (Fuente: Manual Comercial v3.1, §2.1)”</td><td class="ok">✅ Correcto (leyó bien la celda de la tabla y citó la fuente)</td></tr>
-    <tr><td>2</td><td>“¿Lo puedo probar de onda sin poner la tarjeta?”</td><td>§4.1 Prueba gratuita: “prueba gratuita de 14 días corridos … No se solicita tarjeta de crédito”</td><td>“Sí, tenés 14 días corridos de prueba gratis con todas las funciones de Business y no te piden tarjeta. (Fuente: Manual Comercial v3.1, §4.1)”</td><td class="ok">✅ Correcto</td></tr>
-    <tr><td>3</td><td>“Tengo el plan Pro, si se me cae todo un sábado, ¿en cuánto me atienden?”</td><td>§6.2 SLA: “Crítica | … | 4 h hábiles” + “En Starter y Pro los incidentes reportados un fin de semana se empiezan a contar desde el lunes a las 9:00.”</td><td>“En Pro, un incidente crítico tiene respuesta en 4 horas hábiles, pero si lo reportás un sábado el plazo empieza a contar el lunes a las 9:00. (Fuente: Manual Comercial v3.1, §6.2)”</td><td class="ok">✅ Correcto (combinó la celda de la tabla con la nota aclaratoria)</td></tr>
-    <tr><td>4</td><td>“¿Se puede enchufar con SAP?”</td><td>§9.1 Integraciones nativas (la tabla no menciona SAP)</td><td>“No sé.”</td><td class="ok">✅ Correcto (aplicó la regla “No sé” y no inventó la integración)</td></tr>
-    <tr><td>5</td><td>“Pagué el anual ayer y me arrepentí, ¿me devuelven la guita?”</td><td>Recuperó §7.1 Cancelación y §7.2 Reembolso de planes anuales (“se le reembolsa el 70 % de los meses completos no utilizados”). <b>No</b> recuperó §7.3 Derecho de arrepentimiento.</td><td>“Si cancelás el plan anual se te reembolsa el 70 % de los meses no utilizados. (Fuente: Manual Comercial v3.1, §7.2)”</td><td class="bad">⚠️ Falla de recuperación: correspondía el 100 % por arrepentimiento dentro de los 10 días (§7.3)</td></tr>
+    <tr><th style="width:3%">#</th><th style="width:18%">Pregunta (sinónimo / informal)</th><th style="width:25%">Fragmento recuperado</th><th style="width:34%">Respuesta del agente</th><th style="width:20%">Veredicto</th></tr>
+    <tr><td>1</td><td>“Somos 10 en el equipo, ¿cuánto nos sale por mes?”</td><td>§2.1 Tabla de planes (fila Pro: hasta 15 usuarios, USD 79). El agente reformuló la búsqueda como “planes precios usuarios cantidad de usuarios costo mensual”.</td><td>“Para un equipo de 10 personas, el plan recomendado es el Plan Pro, que incluye hasta 15 usuarios por un precio mensual de USD 79 para toda la cuenta (Fuente: Manual Comercial v3.1, §2.1).”</td><td class="ok">✅ Correcto: leyó la celda de la tabla y citó la fuente (ej. 908)</td></tr>
+    <tr><td>2</td><td>“¿Lo puedo probar de onda sin poner la tarjeta?”</td><td>§4.1 Prueba gratuita: “14 días corridos… No se solicita tarjeta de crédito”.</td><td>“¡Sí, totalmente! Todos los planes, excepto Enterprise, tienen una prueba gratuita de 14 días corridos con todas las funciones del plan Business, y no se solicita tarjeta de crédito para iniciarla. (Fuente: Manual Comercial v3.1, §4.1)”</td><td class="ok">✅ Correcto: interpretó “de onda” y “poner la tarjeta” (ej. 909)</td></tr>
+    <tr><td>3</td><td>“Tengo el plan Pro, si se me cae todo un sábado, ¿en cuánto me atienden?”</td><td>§6.2 SLA: celda “Crítica / Pro = 4 h hábiles” + nota “En Starter y Pro los incidentes de fin de semana se cuentan desde el lunes a las 9:00”.</td><td>“En el plan Pro, si se te cae el sistema un sábado (incidente crítico), el tiempo de primera respuesta es de 4 horas hábiles. […] los incidentes reportados el fin de semana se empiezan a contar desde el lunes a las 9:00 (Fuente: Manual Comercial v3.1, §6.2).”</td><td class="ok">✅ Correcto: tradujo “se me cae todo” a “incidente crítico” y combinó tabla + nota (ej. 910)</td></tr>
+    <tr><td>4</td><td>“¿Cuánta gente labura en Nexo?”</td><td>Sin fragmento con el dato (§1.1 describe la empresa pero no menciona cantidad de empleados).</td><td>“No sé: ese dato no figura en la documentación disponible. Si querés, tomo tus datos y un asesor comercial te responde.”</td><td class="ok">✅ Correcto: aplicó la regla “No sé” y no inventó un número (ej. 912)</td></tr>
+    <tr><td>5</td><td>“Pagué el anual ayer y me arrepentí, ¿me devuelven la guita?” (arrepentimiento ≠ cancelación)</td><td>§7.3 Derecho de arrepentimiento: “revocar la contratación dentro de los 10 días corridos… se devuelve el 100 %”.</td><td>“Como lo pagaste ayer, estás dentro de los 10 días corridos de la fecha de pago, por lo que podés revocar la contratación bajo el derecho de arrepentimiento sin costo y se te devuelve el 100 % del importe abonado […] (Fuente: Manual Comercial v3.1, §7.3).”</td><td class="ok">✅ Correcto: distinguió §7.3 (100 %) de §7.2 (70 %) (ej. 913)</td></tr>
+  </table>
+  <p><b>Caso adicional analizado</b> (corrido antes del caso 4):</p>
+  <table>
+    <tr><th style="width:21%">Pregunta</th><th style="width:25%">Fragmento recuperado</th><th style="width:34%">Respuesta del agente</th><th style="width:20%">Veredicto</th></tr>
+    <tr><td>“¿Se puede enchufar con SAP?”</td><td>§9.1 Integraciones nativas (sin SAP) + §9.2 “Cualquier integración que no figure en la tabla 9.1 debe consultarse con el equipo comercial”.</td><td>“SAP no figura entre las integraciones nativas de NexoCRM; sin embargo, los planes Business y Enterprise incluyen acceso a la API REST […] y cualquier integración que no figure en la lista estándar debe consultarse con el equipo comercial (Fuente: §9.1 y §9.2).”</td><td class="bad">⚠️ Desvío de la regla “No sé”: no alucinó, pero no usó la frase de escape (ej. 911)</td></tr>
   </table>
 
   <div class="kpi">
-    <div><b>4 / 5 (80 %)</b>Precisión de respuesta</div>
-    <div><b>5 / 5 (100 %)</b>Activación de la herramienta RAG</div>
+    <div><b>5 / 5 (100 %)</b>Precisión en la batería</div>
+    <div><b>5 / 6 (83 %)</b>Cumplimiento literal del prompt, incluyendo el caso adicional</div>
     <div><b>1 / 1</b>Casos “No sé” bien aplicados</div>
-    <div><b>0</b>Alucinaciones fuera del manual</div>
+    <div><b>0 / 6</b>Alucinaciones</div>
   </div>
 
-  <h3>Análisis crítico de la falla (caso 5)</h3>
+  <h3>Análisis crítico</h3>
   <ul>
-    <li><b>Qué pasó:</b> el agente activó bien la herramienta y citó una fuente real, así que no es una alucinación. El error estuvo en la <b>recuperación</b>: “me devuelven la guita” se parece mucho más, semánticamente, a la palabra “reembolsa” de §7.2 que a “revocar la contratación” de §7.3. El chunk de arrepentimiento quedó fuera de los 4 más cercanos (Top-K) y el modelo respondió con el fragmento “parecido”.</li>
-    <li><b>Por qué es grave:</b> la respuesta es incorrecta a nivel legal (Ley 24.240) y económico: el cliente tiene derecho al 100 %, no al 70 %.</li>
-    <li><b>Acciones correctivas:</b> (1) reescribir el título de §7.3 en el documento fuente como “Derecho de arrepentimiento (devolución del 100 % del dinero dentro de 10 días)”, para que el chunk contenga el vocabulario de “devolver la plata”; (2) sumar un <b>reranker</b> (por ejemplo Cohere Rerank, disponible en n8n) que reordene un Top-K inicial de 8 y se quede con los 4 mejores, para que el reordenamiento distinga “arrepentimiento” de “cancelación”; (3) mantener en el prompt la instrucción de volver a consultar cuando el fragmento trate un tema vecino. Después de aplicar (1), el caso 5 se vuelve a correr en la próxima batería.</li>
-    <li><b>Observación sobre el caso 3:</b> fue correcto porque la nota sobre fines de semana quedó en el mismo chunk que la tabla. Eso confirma que conviene no bajar el tamaño de chunk por debajo de 512 tokens.</li>
+    <li><b>La falla prevista no ocurrió (caso 5).</b> Esperaba que “me devuelven la guita” recuperara §7.2 (reembolso del 70 %) en lugar de §7.3 (arrepentimiento, 100 %). No pasó por tres decisiones previas: (1) la corrección manual del Markdown y el chunking por títulos dejaron §7.2 y §7.3 en fragmentos con su propio título; (2) el prompt obliga a reformular la consulta con el vocabulario formal, lo que se ve en el caso 1; (3) el modelo usó el dato “ayer” para validar el plazo de 10 días.</li>
+    <li><b>Desvío en el caso SAP.</b> El manual sí tenía una respuesta: §9.2 indica derivar al equipo comercial cualquier integración no listada. El agente respondió con información real y citada, pero sin la frase “No sé”, que el prompt exige cuando “el dato exacto no figura”. Es una ambigüedad del prompt, no del RAG: no define qué hacer cuando existe una cláusula genérica de derivación. <b>Acción correctiva:</b> agregar al System Prompt “si el producto, plan o integración consultado no aparece nombrado explícitamente, empezá con ‘No sé:’ y luego aplicá la regla de derivación del manual”, y volver a correr el caso.</li>
+    <li><b>Falla operativa (no semántica).</b> Con Groq (<code>gpt-oss-120b</code>) la respuesta final fallaba por el límite de 8.000 tokens/minuto de la capa gratuita (cada ciclo usa ~5.200 tokens). Se resolvió cambiando a Gemini. En producción hace falta un modelo de respaldo (fallback) para no dejar al cliente sin respuesta.</li>
+    <li><b>Limitación del test.</b> Con solo 7 chunks y Top-K = 4, cada consulta trae más de la mitad de la base, así que la recuperación es “fácil”. El 100 % no se puede extrapolar: cuando se sumen documentos, hay que repetir la batería y evaluar el reranker y un umbral de score mínimo. Además, cada pregunta se corrió una sola vez (temperature 0).</li>
   </ul>
 </section>
 
