@@ -32,8 +32,8 @@
   .ok { color: var(--accent); font-weight: bold; } .bad { color: var(--warn); font-weight: bold; }
   ul { margin: 3pt 0 6pt 14pt; padding: 0; } li { margin: 1pt 0; }
   .kpi { display:flex; gap:8pt; margin: 6pt 0; }
-  .kpi div { flex:1; border:1px solid var(--line); border-radius:6px; padding:5pt 8pt; }
-  .kpi b { display:block; font-size: 14pt; color: var(--accent); }
+  .kpi div { flex:1; border:1px solid var(--line); border-radius:6px; padding:5pt 6pt; font-size: 8.4pt; }
+  .kpi b { display:block; font-size: 11.5pt; color: var(--accent); white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -152,12 +152,15 @@
     <tr><td>1</td><td>“Somos 10 en el equipo, ¿cuánto nos sale por mes?”</td><td>§2.1 Tabla de planes (fila Pro: hasta 15 usuarios, USD 79). El agente reformuló la búsqueda como “planes precios usuarios cantidad de usuarios costo mensual”.</td><td>“Para un equipo de 10 personas, el plan recomendado es el Plan Pro, que incluye hasta 15 usuarios por un precio mensual de USD 79 para toda la cuenta (Fuente: Manual Comercial v3.1, §2.1).”</td><td class="ok">✅ Correcto: leyó la celda de la tabla y citó la fuente (ej. 908)</td></tr>
     <tr><td>2</td><td>“¿Lo puedo probar de onda sin poner la tarjeta?”</td><td>§4.1 Prueba gratuita: “14 días corridos… No se solicita tarjeta de crédito”.</td><td>“¡Sí, totalmente! Todos los planes, excepto Enterprise, tienen una prueba gratuita de 14 días corridos con todas las funciones del plan Business, y no se solicita tarjeta de crédito para iniciarla. (Fuente: Manual Comercial v3.1, §4.1)”</td><td class="ok">✅ Correcto: interpretó “de onda” y “poner la tarjeta” (ej. 909)</td></tr>
     <tr><td>3</td><td>“Tengo el plan Pro, si se me cae todo un sábado, ¿en cuánto me atienden?”</td><td>§6.2 SLA: celda “Crítica / Pro = 4 h hábiles” + nota “En Starter y Pro los incidentes de fin de semana se cuentan desde el lunes a las 9:00”.</td><td>“En el plan Pro, si se te cae el sistema un sábado (incidente crítico), el tiempo de primera respuesta es de 4 horas hábiles. […] los incidentes reportados el fin de semana se empiezan a contar desde el lunes a las 9:00 (Fuente: Manual Comercial v3.1, §6.2).”</td><td class="ok">✅ Correcto: tradujo “se me cae todo” a “incidente crítico” y combinó tabla + nota (ej. 910)</td></tr>
-    <tr><td>4</td><td>“¿Cuánta gente labura en Nexo?”</td><td>Sin fragmento con el dato (§1.1 describe la empresa pero no menciona cantidad de empleados).</td><td>“No sé: ese dato no figura en la documentación disponible. Si querés, tomo tus datos y un asesor comercial te responde.”</td><td class="ok">✅ Correcto: aplicó la regla “No sé” y no inventó un número (ej. 912)</td></tr>
+    <tr><td>4</td><td>“¿Cuánta gente labura en Nexo?”</td><td><b>No consultó la herramienta</b> (en el log de ejecución solo aparecen Gemini Chat Model y Gmail). El dato tampoco existe en el manual: §1.1 describe la empresa pero no menciona la cantidad de empleados.</td><td>“No sé: ese dato no figura en la documentación disponible. Si querés, tomo tus datos y un asesor comercial te responde.”</td><td class="ok">✅ Correcto en el resultado: aplicó “No sé” y no inventó un número. ⚠️ Pero respondió sin verificar en la base (ej. 912)</td></tr>
     <tr><td>5</td><td>“Pagué el anual ayer y me arrepentí, ¿me devuelven la guita?” (arrepentimiento ≠ cancelación)</td><td>Chunk con el capítulo 7 completo (7.1, 7.2 y 7.3) + capítulo 8. Usó §7.3: “revocar la contratación dentro de los 10 días corridos… se devuelve el 100 %”. Consulta reformulada: “derecho de arrepentimiento reembolso devolución dinero plan anual”.</td><td>“Como lo pagaste ayer, estás dentro de los 10 días corridos de la fecha de pago, por lo que podés revocar la contratación bajo el derecho de arrepentimiento sin costo y se te devuelve el 100 % del importe abonado […] (Fuente: Manual Comercial v3.1, §7.3).”</td><td class="ok">✅ Correcto: distinguió §7.3 (100 %) de §7.2 (70 %) (ej. 913)</td></tr>
   </table>
   <div style="display:flex;gap:8pt;align-items:flex-start">
     <figure class="cap" style="flex:1"><img src="capturas/4a_reformulacion_consulta.png" style="max-height:80mm"><figcaption>Caso 1: en <code>intermediateSteps</code> se ve que el agente reformuló la consulta a “planes precios usuarios cantidad de usuarios costo mensual”.</figcaption></figure>
     <figure class="cap" style="flex:1"><img src="capturas/4b_log_no_se.png" style="max-height:80mm"><figcaption>Caso 4: log de auditoría (Gmail) con la respuesta “No sé” (ej. 912).</figcaption></figure>
+  </div>
+  <figure class="cap"><img src="capturas/4c_no_se_sin_herramienta.png" style="max-height:75mm"><figcaption>Caso 4 en el lienzo: la lupa <code>consultar_manual_comercial</code> no tiene el tilde verde y en los Logs solo aparecen Gemini Chat Model y Gmail. El agente respondió “No sé” sin consultar la base.</figcaption></figure>
+  <div>
   </div>
   <p><b>Caso adicional analizado</b> (corrido antes del caso 4):</p>
   <table>
@@ -170,12 +173,14 @@
     <div><b>5 / 6 (83 %)</b>Cumplimiento literal del prompt, incluyendo el caso adicional</div>
     <div><b>1 / 1</b>Casos “No sé” bien aplicados</div>
     <div><b>0 / 6</b>Alucinaciones</div>
+    <div><b>5 / 6</b>Activaciones de la herramienta (falta el caso 4)</div>
   </div>
 
   <h3>Análisis crítico</h3>
   <ul>
     <li><b>La falla prevista no ocurrió (caso 5).</b> Esperaba que “me devuelven la guita” recuperara §7.2 (reembolso del 70 %) en lugar de §7.3 (arrepentimiento, 100 %). No pasó por tres decisiones previas: (1) la corrección manual del Markdown y el chunking por títulos dejaron el capítulo 7 entero (7.1 cancelación, 7.2 reembolso, 7.3 arrepentimiento) en un mismo chunk, que fue el primero recuperado. El riesgo dejó de estar en la recuperación y pasó al razonamiento: el modelo tenía las tres políticas a la vista y eligió la correcta; (2) el prompt obliga a reformular la consulta con el vocabulario formal, lo que se ve en el caso 1; (3) el modelo usó el dato “ayer” para validar el plazo de 10 días.</li>
     <li><b>Desvío en el caso SAP.</b> El manual sí tenía una respuesta: §9.2 indica derivar al equipo comercial cualquier integración no listada. El agente respondió con información real y citada, pero sin la frase “No sé”, que el prompt exige cuando “el dato exacto no figura”. Es una ambigüedad del prompt, no del RAG: no define qué hacer cuando existe una cláusula genérica de derivación. <b>Acción correctiva:</b> agregar al System Prompt “si el producto, plan o integración consultado no aparece nombrado explícitamente, empezá con ‘No sé:’ y luego aplicá la regla de derivación del manual”, y volver a correr el caso.</li>
+    <li><b>“No sé” sin consultar la base (caso 4).</b> El log muestra que el agente respondió sin llamar a <code>consultar_manual_comercial</code>. El resultado fue correcto, pero por criterio propio del modelo y no por evidencia: si el dato hubiera estado en el manual, lo habría negado igual. La causa está en el prompt, que obliga a consultar solo ante una lista cerrada de temas (planes, precios, pagos…) que no incluye datos generales de la empresa. <b>Acción correctiva:</b> cambiar la regla a “ante <i>cualquier</i> pregunta sobre Nexo Digital o NexoCRM, consultá siempre la herramienta antes de responder, incluso para decir ‘No sé’”, y volver a correr el caso verificando que la herramienta se active.</li>
     <li><b>Falla operativa (no semántica).</b> Con Groq (<code>gpt-oss-120b</code>) la respuesta final fallaba por el límite de 8.000 tokens/minuto de la capa gratuita (cada ciclo usa ~5.200 tokens). Se resolvió cambiando a Gemini. En producción hace falta un modelo de respaldo (fallback) para no dejar al cliente sin respuesta.</li>
     <li><b>Limitación del test.</b> Con solo 7 chunks y Top-K = 4, cada consulta trae más de la mitad de la base, así que la recuperación es “fácil”, y además los chunks grandes juntan políticas parecidas (7.1/7.2/7.3), lo que traslada la dificultad al modelo. El 100 % no se puede extrapolar: cuando se sumen documentos, hay que repetir la batería y evaluar el reranker y un umbral de score mínimo. Además, cada pregunta se corrió una sola vez (temperature 0).</li>
   </ul>
