@@ -74,8 +74,8 @@
   <p>Conclusión: el parseador <b>preservó las celdas pero no siempre la posición ni la jerarquía</b>. Por eso la revisión humana del Markdown antes de indexar es un paso obligatorio del proceso (ver gobernanza). Archivos: <code>Manual_Comercial_LlamaParse_original.md</code> (salida cruda) y <code>Manual_Comercial_parseado.md</code> (versión corregida que se indexó).</p>
   <div class="box"><b>Decisión de arquitectura:</b> en el plan gratuito actual de LlamaCloud, la creación de <i>Index</i> requiere plan Starter y el plan Free permite 0 <i>Data Sources</i> (“This feature requires a Starter, Pro, or Enterprise plan”). Por eso usé LlamaCloud para la etapa crítica, el <b>parseo</b>, y cargué el Markdown resultante en el <b>Simple Vector Store</b> de n8n mediante un formulario de carga. El flujo RAG es el mismo: parseo → chunking → embeddings → recuperación como herramienta del agente.</div>
   <div style="display:flex;gap:8pt;align-items:flex-start">
-    <figure class="cap" style="flex:1"><img src="capturas/1d_llamacloud_index_bloqueado.png" style="max-height:62mm"><figcaption>Index → New index → crear la carpeta fuente con el PDF del manual: “<b>This feature requires a Starter, Pro, or Enterprise plan.</b> Please upgrade your subscription.” (cuenta en plan Free).</figcaption></figure>
-    <figure class="cap" style="flex:1"><img src="capturas/1c_llamacloud_plan_free.png" style="max-height:62mm"><figcaption>Settings → Data Sources: “<b>The Free plan allows 0 data sources</b>”; las conexiones requieren plan pago.</figcaption></figure>
+    <figure class="cap" style="flex:1"><img src="capturas/1d_llamacloud_index_bloqueado.png" style="max-height:75mm"><figcaption>Index → New index → crear la carpeta fuente con el PDF del manual: “<b>This feature requires a Starter, Pro, or Enterprise plan.</b> Please upgrade your subscription.” (cuenta en plan Free).</figcaption></figure>
+    <figure class="cap" style="flex:1"><img src="capturas/1c_llamacloud_plan_free.png" style="max-height:75mm"><figcaption>Settings → Data Sources: “<b>The Free plan allows 0 data sources</b>”; las conexiones requieren plan pago.</figcaption></figure>
   </div>
 </section>
 
