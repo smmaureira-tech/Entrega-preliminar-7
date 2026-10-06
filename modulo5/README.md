@@ -5,7 +5,7 @@ Continuación del Checkpoint 1 (`../checkpoint1_S_Maureira.json`): el mismo agen
 | Archivo | Para qué |
 |---|---|
 | `base_conocimiento/Manual_Comercial_NexoDigital_v3.1.pdf` | Documento maestro para subir al Data Source de LlamaCloud (hay títulos jerárquicos y 5 tablas) |
-| `n8n/PreEntrega_Modulo5_Agente_RAG_S_Maureira.json` | Workflow para importar en n8n (Checkpoint 1 + herramienta `consultar_manual_comercial`, Top-K 4, Min Score 0.55) |
+| `n8n/PreEntrega_Modulo5_Agente_RAG_S_Maureira.json` | Workflow para importar en n8n (modelo: Groq Chat Model; Checkpoint 1 + herramienta `consultar_manual_comercial`, Top-K 4, Min Score 0.55) |
 | `n8n/system_prompt_RAG.md` | System prompt del agente (citas + regla "No sé") |
 | `entrega/informe.html` | Fuente del PDF final (5 piezas) |
 | `entrega/PreEntrega_Modulo5_SMaureira.pdf` | PDF a entregar (renombrar con nombre y apellido completos) |
