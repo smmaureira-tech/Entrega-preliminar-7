@@ -169,12 +169,13 @@
   </table>
 
   <div class="kpi">
-    <div><b>5 / 5 (100 %)</b>Precisión en la batería</div>
-    <div><b>5 / 6 (83 %)</b>Cumplimiento literal del prompt, incluyendo el caso adicional</div>
-    <div><b>1 / 1</b>Casos “No sé” bien aplicados</div>
+    <div><b>5 / 5 (100 %)</b>Precisión del resultado (respuesta correcta)</div>
+    <div><b>4 / 5 (80 %)</b>Precisión del proceso (respuesta correcta <i>y</i> basada en la herramienta)</div>
+    <div><b>0 / 1</b>Casos “No sé” con verificación en la base</div>
     <div><b>0 / 6</b>Alucinaciones</div>
-    <div><b>5 / 6</b>Activaciones de la herramienta (falta el caso 4)</div>
+    <div><b>5 / 6</b>Activaciones de la herramienta</div>
   </div>
+  <p style="font-size:8.6pt;color:var(--muted)">Distingo dos métricas porque la consigna pide comprobar el desvío hacia la rama del almacén: el caso 4 acertó en el resultado (“No sé”), pero no pasó por <code>consultar_manual_comercial</code>, así que no cuenta como acierto de proceso. Con el caso adicional SAP, el cumplimiento literal del prompt es 5/6.</p>
 
   <h3>Análisis crítico</h3>
   <ul>
