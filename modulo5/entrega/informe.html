@@ -56,7 +56,16 @@
     <tr><td>Chunking</td><td>Recursive Character Text Splitter: 2.000 caracteres (~512 tokens), overlap 250 (~64 tokens)</td><td>Respeta saltos de párrafo y de título, así cada subsección (ej. §7.3) queda con su título y las tablas no se cortan a la mitad.</td></tr>
     <tr><td>Embeddings</td><td>Google Gemini (<code>gemini-embedding-001</code>)</td><td>Buen rendimiento en español y capa gratuita.</td></tr>
   </table>
-  <p><b>Hallazgo del parseo:</b> LlamaParse respetó la jerarquía de títulos y leyó todas las tablas como celdas, pero <b>reubicó la tabla de §3.1 “Medios de pago aceptados”</b> por encima de §2.2 “Usuarios adicionales”, dentro de la sección 2. Si se indexaba así, el chunk de §3.1 quedaba sin su tabla y la de medios de pago se mezclaba con los planes, lo que habría hecho fallar preguntas como “¿puedo pagar con Mercado Pago?”. <b>Corrección:</b> antes de cargar la base, devolví la tabla a su sección y verifiqué el orden contra el PDF original (archivo <code>Manual_Comercial_parseado.md</code>).</p>
+  <h3>Evaluación del resultado de LlamaParse</h3>
+  <p>LlamaParse extrajo el texto completo y leyó las 5 tablas como celdas (salida en tablas HTML, fila por fila). Al revisar el Markdown contra el PDF original encontré cuatro problemas que afectan directamente al chunking:</p>
+  <table>
+    <tr><th style="width:30%">Hallazgo</th><th>Impacto en el RAG</th><th style="width:28%">Corrección aplicada</th></tr>
+    <tr><td><b>Tablas intercambiadas:</b> bajo §2.1 “Tabla de planes” quedó la tabla de medios de pago, y la de planes quedó bajo §3.2 “Pago en cuotas”; §3.1 quedó vacía.</td><td>Grave: la pregunta “¿cuánto sale el plan Pro?” recuperaría un chunk titulado “Tabla de planes” con medios de pago, y los precios quedarían asociados a “cuotas”.</td><td>Cada tabla se devolvió a su sección, verificado contra el PDF.</td></tr>
+    <tr><td><b>Jerarquía de títulos inconsistente:</b> el título salió como <code>##</code>, las secciones 1–2 como <code>###/####</code>, de la 3 en adelante como <code>##/###</code>, y §5.2–5.3 subieron a <code>##</code>.</td><td>Medio: el splitter corta por títulos, así que §5.2 y §5.3 quedarían como capítulos separados de la §5.</td><td>Niveles normalizados: <code>#</code> título, <code>##</code> capítulo, <code>###</code> subsección.</td></tr>
+    <tr><td><b>Negritas en títulos</b> (<code>## **7. ...**</code>) de la sección 7 a la 10.</td><td>Bajo: ruido en el texto del chunk.</td><td>Se quitaron los <code>**</code>.</td></tr>
+    <tr><td><b>Números de página sueltos</b> (“1 / 6”, “2 / 6”…).</td><td>Bajo: ruido que puede caer en medio de un chunk.</td><td>Se eliminaron.</td></tr>
+  </table>
+  <p>Conclusión: el parseador <b>preservó las celdas pero no siempre la posición ni la jerarquía</b>. Por eso la revisión humana del Markdown antes de indexar es un paso obligatorio del proceso (ver gobernanza). Archivos: <code>Manual_Comercial_LlamaParse_original.md</code> (salida cruda) y <code>Manual_Comercial_parseado.md</code> (versión corregida que se indexó).</p>
   <div class="box"><b>Decisión de arquitectura:</b> en el plan gratuito actual de LlamaCloud, la creación de <i>Index</i> requiere plan Starter y el plan Free permite 0 <i>Data Sources</i> (“This feature requires a Starter, Pro, or Enterprise plan”). Por eso usé LlamaCloud para la etapa crítica, el <b>parseo</b>, y cargué el Markdown resultante en el <b>Simple Vector Store</b> de n8n mediante un formulario de carga. El flujo RAG es el mismo: parseo → chunking → embeddings → recuperación como herramienta del agente.</div>
 </section>
 
@@ -149,7 +158,7 @@
   <table>
     <tr><th style="width:24%">Rol</th><th style="width:22%">Quién</th><th>Responsabilidad</th></tr>
     <tr><td>Dueño del contenido</td><td>Gerencia Comercial de Nexo Digital</td><td>Aprueba cada versión del manual y es el único que autoriza cambios de precios, planes o políticas.</td></tr>
-    <tr><td>Curador de la base / administrador del agente</td><td>S. Maureira (equipo de automatización)</td><td>Parsea los documentos en LlamaCloud (LlamaParse), los carga en la base vectorial con el formulario, revisa el parseo y el chunking, mantiene Top-K / Minimum Score y corre la batería de validación.</td></tr>
+    <tr><td>Curador de la base / administrador del agente</td><td>S. Maureira (equipo de automatización)</td><td>Parsea los documentos en LlamaCloud (LlamaParse), revisa el Markdown contra el original (posición de tablas, niveles de títulos, ruido), lo carga en la base vectorial con el formulario, mantiene Top-K / Minimum Score y corre la batería de validación.</td></tr>
     <tr><td>Validador legal</td><td>Asesoría legal externa</td><td>Revisa las secciones 7 (arrepentimiento y reembolsos) y 8 (datos personales) cada vez que cambian.</td></tr>
   </table>
 
