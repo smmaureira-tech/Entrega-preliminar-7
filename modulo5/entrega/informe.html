@@ -184,6 +184,12 @@
     <li><b>Falla operativa (no semántica).</b> Con Groq (<code>gpt-oss-120b</code>) la respuesta final fallaba por el límite de 8.000 tokens/minuto de la capa gratuita (cada ciclo usa ~5.200 tokens). Se resolvió cambiando a Gemini. En producción hace falta un modelo de respaldo (fallback) para no dejar al cliente sin respuesta.</li>
     <li><b>Limitación del test.</b> Con solo 7 chunks y Top-K = 4, cada consulta trae más de la mitad de la base, así que la recuperación es “fácil”, y además los chunks grandes juntan políticas parecidas (7.1/7.2/7.3), lo que traslada la dificultad al modelo. El 100 % no se puede extrapolar: cuando se sumen documentos, hay que repetir la batería y evaluar el reranker y un umbral de score mínimo. Además, cada pregunta se corrió una sola vez (temperature 0).</li>
   </ul>
+
+  <h3>Prueba de integración: RAG + registro del lead (herramienta heredada del Checkpoint 1)</h3>
+  <p>Mensaje: <i>“Hola, soy Martín Gómez de Ferretería El Tornillo, mi mail es martin@eltornillo.com. Somos 12 en el equipo y queremos contratar el plan Pro este mes.”</i> En una sola ejecución, el agente (1) consultó el manual con la búsqueda reformulada “plan Pro usuarios precio” (4 chunks), (2) llamó a la herramienta de Google Sheets y registró el lead con el estado calificado <b>“Nuevo - Interés alto”</b>, y (3) dejó el log de auditoría en Gmail. Así se comprueba que la incorporación del RAG no rompió el flujo de calificación de leads.</p>
+  <figure class="cap"><img src="capturas/4d_integracion_lead_tablero.png" style="max-height:80mm"><figcaption>Ejecución: Gemini con 3 pasadas (ReAct), <code>consultar_manual_comercial</code> con 4 items y Google Sheets con 1 item, todo en verde. Abajo, la consulta enviada al vector store.</figcaption></figure>
+  <figure class="cap"><img src="capturas/4e_integracion_lead_sheet.png" style="max-height:40mm"><figcaption>Planilla <i>Leads_Nexodigital</i>: fila 3 creada por el agente (fecha, nombre, contacto, empresa, necesidad y estado “Nuevo - Interés alto”).</figcaption></figure>
+  <p><b>Observación:</b> el agente transcribió la empresa como “<b>Fretería</b> El Tornillo” en lugar de “Ferretería”. No es una alucinación de conocimiento, sino un error de copia del dato del usuario. Por eso la gobernanza incluye que el equipo comercial revise cada lead nuevo antes del primer contacto, y como mejora se puede pedir al agente que confirme los datos con el usuario antes de registrarlos.</p>
 </section>
 
 <!-- ============ PIEZA 5 ============ -->
