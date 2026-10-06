@@ -13,7 +13,7 @@
   .sub { color: var(--muted); margin: 0 0 10pt; }
   section { margin-top: 14pt; }
   section.first { margin-top: 0; }
-  h2 { page-break-after: avoid; }
+  h2, h3 { page-break-after: avoid; break-after: avoid; }
   figcaption { page-break-before: avoid; }
   .tag { display:inline-block; background: var(--accent); color:#fff; font-size:8pt; padding:1pt 6pt; border-radius:8pt; margin-right:4pt; }
   .cap { border: 1.5px dashed #9aa3ad; border-radius: 6px; margin: 6pt 0 8pt; padding: 0; text-align:center; page-break-inside: avoid; }
@@ -23,6 +23,8 @@
   figcaption { font-size: 8.3pt; color: var(--muted); padding: 3pt 6pt 5pt; }
   .box { background: var(--soft); border-left: 4px solid var(--accent); padding: 6pt 9pt; margin: 6pt 0; }
   table { border-collapse: collapse; width: 100%; margin: 4pt 0 8pt; page-break-inside: avoid; }
+  table.split { page-break-inside: auto; }
+  tr { page-break-inside: avoid; }
   th, td { border: 1px solid var(--line); padding: 4pt 5pt; vertical-align: top; text-align: left; }
   th { background: #f1f3f5; font-size: 8.8pt; }
   td { font-size: 8.6pt; }
@@ -49,7 +51,7 @@
   </figure>
   <figure class="cap">
     <img src="capturas/1b_carga_base_vectorial.png" style="max-height:95mm">
-    <figcaption>Carga en n8n del Markdown corregido (<code>Manual_Comercial_parseado.md</code>, text/markdown): el splitter generó <b>7 chunks</b> que quedaron en la base vectorial <code>manual_nexo_v3_1</code>.</figcaption>
+    <figcaption>Rama de carga en n8n: el Markdown corregido (<code>Manual_Comercial_parseado.md</code>, text/markdown): el splitter generó <b>7 chunks</b> que quedaron en la base vectorial <code>manual_nexo_v3_1</code>.</figcaption>
   </figure>
 
   <h3>Documento elegido y preparación</h3>
@@ -73,9 +75,9 @@
   </table>
   <p>Conclusión: el parseador <b>preservó las celdas pero no siempre la posición ni la jerarquía</b>. Por eso la revisión humana del Markdown antes de indexar es un paso obligatorio del proceso (ver gobernanza). Archivos: <code>Manual_Comercial_LlamaParse_original.md</code> (salida cruda) y <code>Manual_Comercial_parseado.md</code> (versión corregida que se indexó).</p>
   <div class="box"><b>Decisión de arquitectura:</b> en el plan gratuito actual de LlamaCloud, la creación de <i>Index</i> requiere plan Starter y el plan Free permite 0 <i>Data Sources</i> (“This feature requires a Starter, Pro, or Enterprise plan”). Por eso usé LlamaCloud para la etapa crítica, el <b>parseo</b>, y cargué el Markdown resultante en el <b>Simple Vector Store</b> de n8n mediante un formulario de carga. El flujo RAG es el mismo: parseo → chunking → embeddings → recuperación como herramienta del agente.</div>
-  <div style="display:flex;gap:8pt;align-items:flex-start">
-    <figure class="cap" style="flex:1"><img src="capturas/1d_llamacloud_index_bloqueado.png" style="max-height:75mm"><figcaption>Index → New index → crear la carpeta fuente con el PDF del manual: “<b>This feature requires a Starter, Pro, or Enterprise plan.</b> Please upgrade your subscription.” (cuenta en plan Free).</figcaption></figure>
-    <figure class="cap" style="flex:1"><img src="capturas/1c_llamacloud_plan_free.png" style="max-height:75mm"><figcaption>Settings → Data Sources: “<b>The Free plan allows 0 data sources</b>”; las conexiones requieren plan pago.</figcaption></figure>
+  <div>
+    <figure class="cap"><img src="capturas/1d_llamacloud_index_bloqueado.png" style="max-height:55mm"><figcaption>Index → New index → crear la carpeta fuente con el PDF del manual: “<b>This feature requires a Starter, Pro, or Enterprise plan.</b> Please upgrade your subscription.” (cuenta en plan Free).</figcaption></figure>
+    <figure class="cap"><img src="capturas/1c_llamacloud_plan_free.png" style="max-height:55mm"><figcaption>Settings → Data Sources: “<b>The Free plan allows 0 data sources</b>”; las conexiones requieren plan pago.</figcaption></figure>
   </div>
 </section>
 
@@ -145,7 +147,7 @@
 <section>
   <h2><span class="tag">4</span>Reporte de validación: 5 preguntas ciegas</h2>
   <p>Las preguntas se hicieron desde el chat del Chat Trigger, con vocabulario informal y sinónimos que <b>no</b> aparecen literalmente en el manual, sobre la base cargada con 7 chunks. Cada respuesta quedó registrada en el log de auditoría de Gmail (se indica el Execution ID de n8n). Modelo: Gemini Chat Model, temperature 0.</p>
-  <table>
+  <table class="split">
     <tr><th style="width:3%">#</th><th style="width:18%">Pregunta (sinónimo / informal)</th><th style="width:25%">Fragmento recuperado</th><th style="width:34%">Respuesta del agente</th><th style="width:20%">Veredicto</th></tr>
     <tr><td>1</td><td>“Somos 10 en el equipo, ¿cuánto nos sale por mes?”</td><td>§2.1 Tabla de planes (fila Pro: hasta 15 usuarios, USD 79). El agente reformuló la búsqueda como “planes precios usuarios cantidad de usuarios costo mensual”.</td><td>“Para un equipo de 10 personas, el plan recomendado es el Plan Pro, que incluye hasta 15 usuarios por un precio mensual de USD 79 para toda la cuenta (Fuente: Manual Comercial v3.1, §2.1).”</td><td class="ok">✅ Correcto: leyó la celda de la tabla y citó la fuente (ej. 908)</td></tr>
     <tr><td>2</td><td>“¿Lo puedo probar de onda sin poner la tarjeta?”</td><td>§4.1 Prueba gratuita: “14 días corridos… No se solicita tarjeta de crédito”.</td><td>“¡Sí, totalmente! Todos los planes, excepto Enterprise, tienen una prueba gratuita de 14 días corridos con todas las funciones del plan Business, y no se solicita tarjeta de crédito para iniciarla. (Fuente: Manual Comercial v3.1, §4.1)”</td><td class="ok">✅ Correcto: interpretó “de onda” y “poner la tarjeta” (ej. 909)</td></tr>
