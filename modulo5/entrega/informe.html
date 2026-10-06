@@ -104,11 +104,11 @@
   <h2><span class="tag">3</span>Estructura del System Prompt RAG</h2>
   <figure class="cap">
     <img src="capturas/3a_system_prompt_fuente.png" style="max-height:95mm">
-    <figcaption>System Message tal como lo recibe el modelo (log de ejecución): fuente única, obligación de consultar la herramienta, reformular sinónimos, basarse 100 % en los fragmentos y citar la fuente.</figcaption>
+    <figcaption>AI Agent → System Message (1/2): rol, <b>fuente única de verdad</b> (consultar siempre la herramienta, reformular sinónimos, basarse 100 % en los fragmentos), <b>instrucción de citar la fuente</b> y <b>regla dorada “No sé”</b>.</figcaption>
   </figure>
   <figure class="cap">
     <img src="capturas/3_system_prompt.png">
-    <figcaption>AI Agent → System Message: regla de contingencia “No sé” (no reemplazarlo por estimaciones y volver a consultar si el fragmento es de un tema vecino).</figcaption>
+    <figcaption>AI Agent → System Message (2/2): regla “No sé” completa, calificación de leads heredada del Checkpoint 1, y límites y escalamiento.</figcaption>
   </figure>
   <p>Estructura: <b>Rol → Fuente única de verdad (100 % basado en fragmentos + formato de cita) → Regla dorada “No sé” → Calificación de leads (heredado del Checkpoint 1) → Límites y escalamiento.</b> Texto completo de las dos reglas evaluadas:</p>
 <pre># FUENTE ÚNICA DE VERDAD (RAG)
