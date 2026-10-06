@@ -37,13 +37,17 @@
 <!-- ============ PORTADA + PIEZA 1 ============ -->
 <section class="first">
   <h1>Pre Entrega Módulo 5 — Agente con Conocimiento Organizacional</h1>
-  <p class="sub">Alumno/a: S. Maureira · Continuación del Checkpoint 1 (Agente de Calificación de Leads en n8n) · Empresa cliente: Nexo Digital S.A. (NexoCRM)</p>
+  <p class="sub">Alumna: Sandra Maureira · Continuación del Checkpoint 1 (Agente de Calificación de Leads en n8n) · Empresa cliente: Nexo Digital S.A. (NexoCRM)</p>
   <div class="box">El agente del Checkpoint 1 (Chat Trigger → AI Agent en modo Tools Agent → Google Sheets + log en Gmail) se amplió con conocimiento organizacional: ahora responde dudas de los potenciales clientes a partir del manual comercial parseado con LlamaParse e indexado en una base vectorial, y sigue registrando los leads calificados.</div>
 
   <h2><span class="tag">1</span>Documento parseado en LlamaCloud (LlamaParse)</h2>
   <figure class="cap">
     <img src="capturas/1_llamacloud_data_source.png" onerror="this.outerHTML='<div class=ph><b>[Captura 1]</b> Pegá acá la captura de LlamaCloud → Parse → Results (vista Markdown), con el PDF a la izquierda y, a la derecha, los títulos # / ## y la tabla §2.1 Planes renderizada como celdas.</div>'">
     <figcaption>LlamaCloud → Parse (tier Agentic): el PDF original a la izquierda y su versión Markdown a la derecha, con la jerarquía de títulos y las tablas interpretadas como celdas.</figcaption>
+  </figure>
+  <figure class="cap">
+    <img src="capturas/1b_carga_base_vectorial.png" style="max-height:95mm">
+    <figcaption>Carga en n8n del Markdown corregido (<code>Manual_Comercial_parseado.md</code>, text/markdown): el splitter generó <b>7 chunks</b> que quedaron en la base vectorial <code>manual_nexo_v3_1</code>.</figcaption>
   </figure>
 
   <h3>Documento elegido y preparación</h3>
@@ -76,6 +80,10 @@
     <img src="capturas/2_retrieve_tool_topk_score.png" onerror="this.outerHTML='<div class=ph><b>[Captura 2]</b> Pegá acá la captura del nodo Simple Vector Store en modo Retrieve Documents (As Tool for AI Agent), acoplado al AI Agent, donde se lean: nombre <b>consultar_manual_comercial</b>, la descripción, la memory key <b>manual_nexo_v3_1</b> y <b>Limit (Top-K) = 4</b>.</div>'">
     <figcaption>Nodo <code>consultar_manual_comercial</code> (Simple Vector Store, modo herramienta) conectado a la base <code>manual_nexo_v3_1</code>.</figcaption>
   </figure>
+  <figure class="cap">
+    <img src="capturas/2b_ejecucion_rag.png" style="max-height:90mm">
+    <figcaption>Ejecución real: el AI Agent llamó a <code>consultar_manual_comercial</code>, que devolvió <b>4 items</b> (Top-K = 4); el modelo hizo 2 pasadas (ciclo ReAct) y el flujo terminó en el log de Gmail.</figcaption>
+  </figure>
 
   <table>
     <tr><th style="width:24%">Campo</th><th>Valor configurado</th></tr>
@@ -95,8 +103,12 @@
 <section>
   <h2><span class="tag">3</span>Estructura del System Prompt RAG</h2>
   <figure class="cap">
-    <img src="capturas/3_system_prompt.png" onerror="this.outerHTML='<div class=ph><b>[Captura 3]</b> Pegá acá la captura del AI Agent → Options → System Message, donde se lean las secciones <b>FUENTE ÚNICA DE VERDAD</b> (citar fuentes) y <b>REGLA DORADA DE CONTINGENCIA: No sé</b>.</div>'">
-    <figcaption>System Message del AI Agent (modo Tools Agent).</figcaption>
+    <img src="capturas/3a_system_prompt_fuente.png" style="max-height:95mm">
+    <figcaption>System Message tal como lo recibe el modelo (log de ejecución): fuente única, obligación de consultar la herramienta, reformular sinónimos, basarse 100 % en los fragmentos y citar la fuente.</figcaption>
+  </figure>
+  <figure class="cap">
+    <img src="capturas/3_system_prompt.png">
+    <figcaption>AI Agent → System Message: regla de contingencia “No sé” (no reemplazarlo por estimaciones y volver a consultar si el fragmento es de un tema vecino).</figcaption>
   </figure>
   <p>Estructura: <b>Rol → Fuente única de verdad (100 % basado en fragmentos + formato de cita) → Regla dorada “No sé” → Calificación de leads (heredado del Checkpoint 1) → Límites y escalamiento.</b> Texto completo de las dos reglas evaluadas:</p>
 <pre># FUENTE ÚNICA DE VERDAD (RAG)
@@ -135,6 +147,10 @@
     <tr><td>4</td><td>“¿Cuánta gente labura en Nexo?”</td><td>Sin fragmento con el dato (§1.1 describe la empresa pero no menciona cantidad de empleados).</td><td>“No sé: ese dato no figura en la documentación disponible. Si querés, tomo tus datos y un asesor comercial te responde.”</td><td class="ok">✅ Correcto: aplicó la regla “No sé” y no inventó un número (ej. 912)</td></tr>
     <tr><td>5</td><td>“Pagué el anual ayer y me arrepentí, ¿me devuelven la guita?” (arrepentimiento ≠ cancelación)</td><td>§7.3 Derecho de arrepentimiento: “revocar la contratación dentro de los 10 días corridos… se devuelve el 100 %”.</td><td>“Como lo pagaste ayer, estás dentro de los 10 días corridos de la fecha de pago, por lo que podés revocar la contratación bajo el derecho de arrepentimiento sin costo y se te devuelve el 100 % del importe abonado […] (Fuente: Manual Comercial v3.1, §7.3).”</td><td class="ok">✅ Correcto: distinguió §7.3 (100 %) de §7.2 (70 %) (ej. 913)</td></tr>
   </table>
+  <div style="display:flex;gap:8pt;align-items:flex-start">
+    <figure class="cap" style="flex:1"><img src="capturas/4a_reformulacion_consulta.png" style="max-height:80mm"><figcaption>Caso 1: en <code>intermediateSteps</code> se ve que el agente reformuló la consulta a “planes precios usuarios cantidad de usuarios costo mensual”.</figcaption></figure>
+    <figure class="cap" style="flex:1"><img src="capturas/4b_log_no_se.png" style="max-height:80mm"><figcaption>Caso 4: log de auditoría (Gmail) con la respuesta “No sé” (ej. 912).</figcaption></figure>
+  </div>
   <p><b>Caso adicional analizado</b> (corrido antes del caso 4):</p>
   <table>
     <tr><th style="width:21%">Pregunta</th><th style="width:25%">Fragmento recuperado</th><th style="width:34%">Respuesta del agente</th><th style="width:20%">Veredicto</th></tr>
@@ -164,7 +180,7 @@
   <table>
     <tr><th style="width:24%">Rol</th><th style="width:22%">Quién</th><th>Responsabilidad</th></tr>
     <tr><td>Dueño del contenido</td><td>Gerencia Comercial de Nexo Digital</td><td>Aprueba cada versión del manual y es el único que autoriza cambios de precios, planes o políticas.</td></tr>
-    <tr><td>Curador de la base / administrador del agente</td><td>S. Maureira (equipo de automatización)</td><td>Parsea los documentos en LlamaCloud (LlamaParse), revisa el Markdown contra el original (posición de tablas, niveles de títulos, ruido), lo carga en la base vectorial con el formulario, mantiene Top-K / Minimum Score y corre la batería de validación.</td></tr>
+    <tr><td>Curador de la base / administrador del agente</td><td>Sandra Maureira (equipo de automatización)</td><td>Parsea los documentos en LlamaCloud (LlamaParse), revisa el Markdown contra el original (posición de tablas, niveles de títulos, ruido), lo carga en la base vectorial con el formulario, mantiene Top-K / Minimum Score y corre la batería de validación.</td></tr>
     <tr><td>Validador legal</td><td>Asesoría legal externa</td><td>Revisa las secciones 7 (arrepentimiento y reembolsos) y 8 (datos personales) cada vez que cambian.</td></tr>
   </table>
 

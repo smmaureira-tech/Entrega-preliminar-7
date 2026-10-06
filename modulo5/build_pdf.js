@@ -6,7 +6,7 @@ const { chromium } = require('playwright');
 
 const jobs = [
   ['base_conocimiento/Manual_Comercial_NexoDigital_v3.1.html', 'base_conocimiento/Manual_Comercial_NexoDigital_v3.1.pdf'],
-  ['entrega/informe.html', 'entrega/PreEntrega_Modulo5_SMaureira.pdf'],
+  ['entrega/informe.html', 'entrega/PreEntrega_Modulo5_SandraMaureira.pdf'],
 ];
 
 (async () => {

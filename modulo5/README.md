@@ -11,7 +11,7 @@ Continuación del Checkpoint 1 (`../checkpoint1_S_Maureira.json`): el mismo agen
 | `n8n/system_prompt_RAG.md` | System prompt del agente (citas + regla "No sé") |
 | `planilla/Leads_NexoDigital.xlsx` | Planilla para Google Sheets: hoja `Leads` (la usa el agente) y hoja `Bateria_Validacion` (para anotar las 5 preguntas) |
 | `entrega/informe.html` | Fuente del PDF final (5 piezas) |
-| `entrega/PreEntrega_Modulo5_SMaureira.pdf` | PDF a entregar (renombrar con nombre y apellido completos) |
+| `entrega/PreEntrega_Modulo5_SandraMaureira.pdf` | PDF a entregar  |
 
 ## Pasos
 1. Parsear el PDF en LlamaCloud → Parse (tier Agentic) y guardar el resultado como `Manual_Comercial_parseado.md`
