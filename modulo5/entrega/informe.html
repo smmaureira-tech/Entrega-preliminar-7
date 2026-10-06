@@ -87,7 +87,7 @@
   </table>
 
   <h3>Justificación del balance precisión / costo</h3>
-  <p><b>Top-K = 4:</b> con chunks de ~512 tokens, 4 fragmentos suman unos ~2.000 tokens de contexto por consulta, lo que mantiene acotado el costo de cada vuelta del ciclo ReAct (el agente puede llamar a la herramienta 2 veces en una misma respuesta). Bajar a 1–2 deja afuera la información que está repartida entre dos secciones (ej. precio en §2.1 + cuotas en §3.2); subir a 8 duplica el costo y mete chunks de temas vecinos que empujan al modelo a mezclar políticas.</p>
+  <p><b>Top-K = 4:</b> con chunks de ~512 tokens, 4 fragmentos suman unos ~2.000 tokens de contexto por consulta. <b>Medido en n8n</b>, cada ciclo del agente (system prompt + definición de herramientas + 4 fragmentos) consume <b>~5.200 tokens</b>, y en una misma respuesta el agente llamó a la herramienta 2 veces. Con el límite de 8.000 tokens/minuto de la capa gratuita de Groq, un Top-K = 8 haría inviable responder siquiera una pregunta por minuto. Bajar a 1–2 deja afuera la información que está repartida entre dos secciones (ej. precio en §2.1 + cuotas en §3.2); subir a 8 duplica el costo y mete chunks de temas vecinos que empujan al modelo a mezclar políticas.</p>
   <p><b>Minimum Score = 0.55:</b> es el umbral que fijaría en un índice gestionado (LlamaCloud Index, Pinecone o Supabase): los chunks pertinentes suelen puntuar por encima de 0.6 y los de temas vecinos entre 0.4 y 0.5, así que 0.55 descarta ruido sin cortar preguntas informales válidas (≥ 0.7 sería demasiado estricto). <b>Limitación:</b> el Simple Vector Store de n8n no expone un control de score mínimo y siempre devuelve los 4 fragmentos más cercanos. Lo compensé en el System Prompt: el agente solo puede responder si el fragmento contiene el dato exacto y, si no, debe decir “No sé”. Al migrar a un índice pago, el umbral se aplica en la herramienta y el control deja de depender del modelo.</p>
 </section>
 
@@ -119,7 +119,7 @@
 - Si el fragmento recuperado habla de un tema parecido pero NO del que se preguntó (por ejemplo: cancelación vs.
   derecho de arrepentimiento), volvé a consultar la herramienta con otros términos; si sigue sin aparecer,
   respondé "No sé".</pre>
-  <p>El cerebro del agente es el <b>Groq Chat Model</b> (llama-3.3-70b-versatile) con <b>temperature = 0</b>, para reducir la variación entre corridas y que se ciña a los fragmentos.</p>
+  <p>El cerebro del agente es el <b>Google Gemini Chat Model</b> (<code>gemini-2.5-flash</code>) con <b>temperature = 0</b>, para reducir la variación entre corridas y que se ciña a los fragmentos. Empecé con Groq (<code>openai/gpt-oss-120b</code>), pero la capa gratuita corta en 8.000 tokens por minuto y el agente necesita ~5.200 por ciclo, así que la respuesta final fallaba con <i>“Rate limit reached”</i>; lo reemplacé por Gemini, que usa la misma credencial que los embeddings.</p>
 </section>
 
 <!-- ============ PIEZA 4 ============ -->

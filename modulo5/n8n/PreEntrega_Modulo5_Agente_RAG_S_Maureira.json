@@ -21,23 +21,23 @@
     },
     {
       "parameters": {
-        "model": "llama-3.3-70b-versatile",
+        "modelName": "models/gemini-2.5-flash",
         "options": {
           "temperature": 0
         }
       },
       "id": "6bc2c2cc-cd4b-41d9-a967-177d10a3a9bc",
-      "name": "Groq Chat Model",
-      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
         -20,
         520
       ],
       "credentials": {
-        "groqApi": {
-          "id": "REPLACE_WITH_TU_CREDENCIAL_GROQ",
-          "name": "Groq account"
+        "googlePalmApi": {
+          "id": "REPLACE_WITH_TU_CREDENCIAL_GEMINI",
+          "name": "Google Gemini(PaLM) Api account"
         }
       }
     },
@@ -322,17 +322,6 @@
         ]
       ]
     },
-    "Groq Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Formulario - Cargar manual": {
       "main": [
         [
@@ -394,6 +383,17 @@
           {
             "node": "consultar_manual_comercial",
             "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
             "index": 0
           }
         ]

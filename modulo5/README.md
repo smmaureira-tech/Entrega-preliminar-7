@@ -7,7 +7,7 @@ Continuación del Checkpoint 1 (`../checkpoint1_S_Maureira.json`): el mismo agen
 | `base_conocimiento/Manual_Comercial_NexoDigital_v3.1.pdf` | Documento maestro: se parsea en LlamaCloud → Parse (LlamaParse, tier Agentic) y se descarga el Markdown |
 | `base_conocimiento/Manual_Comercial_LlamaParse_original.md` | Salida cruda de LlamaParse (evidencia de los hallazgos del parseo) |
 | `base_conocimiento/Manual_Comercial_parseado.md` | Markdown del manual con el orden de tablas corregido: es el que se sube con el formulario |
-| `n8n/PreEntrega_Modulo5_Agente_RAG_S_Maureira.json` | Workflow para importar en n8n (Groq + formulario de carga + Simple Vector Store con embeddings de Gemini; herramienta `consultar_manual_comercial`, Top-K 4) |
+| `n8n/PreEntrega_Modulo5_Agente_RAG_S_Maureira.json` | Workflow para importar en n8n (Gemini Chat Model + formulario de carga + Simple Vector Store con embeddings de Gemini; herramienta `consultar_manual_comercial`, Top-K 4) |
 | `n8n/system_prompt_RAG.md` | System prompt del agente (citas + regla "No sé") |
 | `planilla/Leads_NexoDigital.xlsx` | Planilla para Google Sheets: hoja `Leads` (la usa el agente) y hoja `Bateria_Validacion` (para anotar las 5 preguntas) |
 | `entrega/informe.html` | Fuente del PDF final (5 piezas) |
@@ -16,7 +16,7 @@ Continuación del Checkpoint 1 (`../checkpoint1_S_Maureira.json`): el mismo agen
 ## Pasos
 1. Parsear el PDF en LlamaCloud → Parse (tier Agentic) y guardar el resultado como `Manual_Comercial_parseado.md`
    (el plan Free de LlamaCloud no permite crear Index ni Data Sources).
-2. Importar el workflow, cargar las credenciales (Groq, Gemini, Google Sheets, Gmail), abrir la URL del nodo
+2. Importar el workflow, cargar las credenciales (Gemini, Google Sheets, Gmail), abrir la URL del nodo
    "Formulario - Cargar manual" y subir el .md. La base vive en memoria: si n8n se reinicia, volver a cargarlo.
 3. Correr las 5 preguntas de la pieza 4 y corregir en `entrega/informe.html` lo que haya respondido realmente el agente.
 4. Guardar las capturas en `entrega/capturas/` como `1_llamacloud_data_source.png`, `2_retrieve_tool_topk_score.png` y `3_system_prompt.png`.
