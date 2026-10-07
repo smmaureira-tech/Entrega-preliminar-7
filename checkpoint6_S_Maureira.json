@@ -372,15 +372,15 @@
         "documentId": {
           "__rl": true,
           "mode": "list",
-          "value": "1PPkW5HmffF4rrlFuSnKKLHjVEVaNUrbLXPyNNBrkl4U",
-          "cachedResultName": "NEXA_DIGITAL_CRM_Leads",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PPkW5HmffF4rrlFuSnKKLHjVEVaNUrbLXPyNNBrkl4U"
+          "value": "1zEBNVs-M4uuudXnUhtOj5oc6aN89cblga7ArY88XjFM",
+          "cachedResultName": "NEXA_DIGITAL_CRM_Voz",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zEBNVs-M4uuudXnUhtOj5oc6aN89cblga7ArY88XjFM"
         },
         "sheetName": {
           "__rl": true,
           "mode": "list",
           "value": "gid=0",
-          "cachedResultName": "Leads"
+          "cachedResultName": "Hoja 1"
         },
         "columns": {
           "mappingMode": "defineBelow",
