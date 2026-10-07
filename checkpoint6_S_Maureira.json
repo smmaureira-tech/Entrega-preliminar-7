@@ -1,21 +1,19 @@
 {
-  "name": "Checkpoint 6 - NEXA DIGITAL - Asistente de Voz (STT/TTS) + RAG",
+  "name": "Checkpoint 6 - NEXA DIGITAL - Asistente de Voz (STT/TTS) + RAG - Gratis",
   "nodes": [
     {
       "parameters": {
         "updates": [
           "message"
         ],
-        "additionalFields": {
-          "download": true
-        }
+        "additionalFields": {}
       },
       "id": "034c7021-83d0-533e-88df-0c2ca3a4e3bd",
       "name": "Telegram Trigger",
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.2,
       "position": [
-        0,
+        -440,
         400
       ],
       "webhookId": "7c1e0a72-78c1-54b8-8745-3115fee19f76",
@@ -28,26 +26,93 @@
     },
     {
       "parameters": {
-        "resource": "audio",
-        "operation": "transcribe",
-        "binaryPropertyName": "data",
-        "options": {
-          "language": "es",
-          "temperature": 0
+        "resource": "file",
+        "fileId": "={{ $json.message.voice ? $json.message.voice.file_id : $json.message.audio.file_id }}",
+        "download": true,
+        "additionalFields": {
+          "mimeType": "audio/ogg"
         }
       },
-      "id": "20dea3d8-07b4-54aa-a1e6-8f9aba5bd7c1",
-      "name": "OpenAI Whisper (STT)",
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 1.8,
+      "id": "bd6104d5-b658-5f53-a289-bc8681d4cdff",
+      "name": "Telegram - Descargar Nota de Voz",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -220,
+        400
+      ],
+      "webhookId": "609e4949-8784-5a57-9e36-c468891cb144",
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_CRED_ID",
+          "name": "Telegram NEXA Bot"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Groq-Whisper acepta .ogg pero no la extensión .oga que usa Telegram.\n// Solo se renombra el archivo: el audio sigue en la propiedad binaria \"data\", en memoria.\nfor (const item of $input.all()) {\n  const b = item.binary && item.binary.data;\n  if (b) {\n    b.fileName = (b.fileName || 'nota_de_voz').replace(/\\.oga$/i, '') .replace(/\\.ogg$/i, '') + '.ogg';\n    b.mimeType = 'audio/ogg';\n  }\n}\nreturn $input.all();"
+      },
+      "id": "0ed99bd0-7d9a-5b15-a152-03dee4f85af5",
+      "name": "Preparar audio (.ogg)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "model",
+              "value": "whisper-large-v3"
+            },
+            {
+              "name": "language",
+              "value": "es"
+            },
+            {
+              "name": "response_format",
+              "value": "json"
+            },
+            {
+              "name": "temperature",
+              "value": "0"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "43eb7a3d-a132-5778-8f99-5fc77807371e",
+      "name": "Whisper STT (Groq gratis)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
         240,
         400
       ],
       "credentials": {
-        "openAiApi": {
-          "id": "OPENAI_CRED_ID",
-          "name": "OpenAI NEXA"
+        "httpHeaderAuth": {
+          "id": "GROQ_CRED_ID",
+          "name": "Groq API (Bearer)"
         }
       },
       "onError": "continueRegularOutput",
@@ -151,29 +216,24 @@
     },
     {
       "parameters": {
-        "model": {
-          "__rl": true,
-          "mode": "list",
-          "value": "claude-sonnet-4-5-20250929",
-          "cachedResultName": "Claude Sonnet 4.5"
-        },
+        "modelName": "models/gemini-2.5-flash",
         "options": {
-          "maxTokensToSample": 150,
+          "maxOutputTokens": 150,
           "temperature": 0.3
         }
       },
-      "id": "1659f153-579d-5b9c-907a-6b4f9e982568",
-      "name": "Anthropic Chat Model",
-      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
-      "typeVersion": 1.3,
+      "id": "11c3ea01-bd31-5780-ba60-e990459374b3",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
       "position": [
         560,
         800
       ],
       "credentials": {
-        "anthropicApi": {
-          "id": "ANTHROPIC_CRED_ID",
-          "name": "Anthropic NEXA"
+        "googlePalmApi": {
+          "id": "GEMINI_CRED_ID",
+          "name": "Google Gemini API"
         }
       }
     },
@@ -196,50 +256,110 @@
       "parameters": {
         "mode": "retrieve-as-tool",
         "toolName": "base_conocimiento_nexa",
-        "toolDescription": "Base de conocimiento oficial de NEXA DIGITAL (Módulo 5 - RAG): servicios, planes, precios de referencia, plazos y preguntas frecuentes. Consultala antes de responder cualquier pregunta sobre la oferta de la agencia.",
-        "tableName": {
-          "__rl": true,
-          "mode": "list",
-          "value": "documents",
-          "cachedResultName": "documents"
-        },
-        "topK": 4,
-        "options": {
-          "queryName": "match_documents"
-        }
+        "toolDescription": "Base de conocimiento oficial de NEXA DIGITAL (Módulo 5 - RAG): servicios, forma de trabajo, plazos y preguntas frecuentes. Consultala antes de responder cualquier pregunta sobre la oferta de la agencia.",
+        "memoryKey": "nexa_kb",
+        "topK": 4
       },
       "id": "fe72841e-166f-5d34-b6f4-ece229d32980",
       "name": "RAG - Base de Conocimiento NEXA",
-      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
       "typeVersion": 1.1,
       "position": [
         920,
         800
-      ],
-      "credentials": {
-        "supabaseApi": {
-          "id": "SUPABASE_CRED_ID",
-          "name": "Supabase NEXA"
-        }
-      }
+      ]
     },
     {
       "parameters": {
-        "model": "text-embedding-3-small",
-        "options": {}
+        "modelName": "models/gemini-embedding-001"
       },
-      "id": "47d7a741-dea8-5102-a411-ebf7534d0dd2",
-      "name": "Embeddings OpenAI",
-      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
-      "typeVersion": 1.2,
+      "id": "5f4abc25-416c-5868-8b3f-823d90bc7c63",
+      "name": "Embeddings Gemini",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
       "position": [
         960,
         1000
       ],
       "credentials": {
-        "openAiApi": {
-          "id": "OPENAI_CRED_ID",
-          "name": "OpenAI NEXA"
+        "googlePalmApi": {
+          "id": "GEMINI_CRED_ID",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "36ac79ad-8b82-5ea8-a787-61214a22a618",
+      "name": "Carga RAG (ejecutar 1 vez)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Base de conocimiento de NEXA DIGITAL (editá estos textos con la info real de la agencia)\nconst docs = [\n  'NEXA DIGITAL es una agencia de marketing digital para pymes y emprendimientos de Chile. Ayuda a conseguir clientes por internet con estrategia, contenido y publicidad.',\n  'Servicios: plan de marketing digital, gestión de redes sociales (Instagram, Facebook, TikTok), publicidad en Meta Ads y Google Ads, diseño de tiendas online y sitios web, y estrategias para turismo como cabañas y alojamientos.',\n  'Cómo trabajamos: 1) conversación inicial gratuita, 2) diagnóstico del negocio, 3) propuesta con plan y presupuesto, 4) ejecución y reportes mensuales de resultados.',\n  'Precios: cada plan se cotiza según el diagnóstico, el alcance y el presupuesto del cliente. Un asesor comercial confirma el valor final; el asistente no entrega precios cerrados.',\n  'Plazos: la propuesta se envía dentro de 48 horas hábiles después del diagnóstico. Las campañas de publicidad pueden comenzar en una semana desde la aprobación.',\n  'Atención: lunes a viernes de 9:00 a 18:00 (hora de Chile). Fuera de ese horario, el asistente de voz registra la consulta y un asesor contacta al cliente el siguiente día hábil.',\n];\nreturn docs.map((texto, i) => ({ json: { id: i + 1, texto } }));"
+      },
+      "id": "c2a1d8c5-10a4-593d-9177-3e9c58dbf35f",
+      "name": "Documentos NEXA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": "nexa_kb",
+        "clearStore": true
+      },
+      "id": "058362a8-34e3-5444-94b7-f4145c74106b",
+      "name": "Guardar en Base de Conocimiento",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.1,
+      "position": [
+        20,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "dataType": "json",
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.texto }}",
+        "textSplittingMode": "simple",
+        "options": {}
+      },
+      "id": "a8028aa4-218a-56c0-9cd9-ed32bc02f383",
+      "name": "Cargador de Documentos",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        40,
+        1100
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "id": "ee20c2e6-b85f-580a-a265-dec4c537eece",
+      "name": "Embeddings Gemini (carga)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        1100
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "GEMINI_CRED_ID",
+          "name": "Google Gemini API"
         }
       }
     },
@@ -393,7 +513,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// COMPLIANCE - DESTRUCCIÓN BINARIA\n// Se descartan TODOS los payloads binarios (nota de voz del cliente y audio TTS).\n// Solo sobreviven metadatos mínimos, sin audio, para la auditoría.\nlet respuesta = '';\nlet estado = 'contingencia_audio_no_valido';\ntry {\n  respuesta = $('Contención 200 caracteres').first().json.respuesta;\n  estado = 'respondido_por_voz';\n} catch (e) {}\n\nconst msg = $('Telegram Trigger').first().json.message || {};\nlet transcripcion = '';\ntry { transcripcion = $('OpenAI Whisper (STT)').first().json.text || ''; } catch (e) {}\n\n// Se devuelven items SOLO con json: n8n no propaga ninguna propiedad \"binary\".\nreturn [{\n  json: {\n    chat_id: msg.chat ? msg.chat.id : null,\n    duracion_audio_seg: msg.voice ? msg.voice.duration : null,\n    transcripcion,\n    respuesta,\n    caracteres_tts: respuesta.length,\n    estado,\n    binarios_destruidos: true,\n    procesado: $now.toISO(),\n  },\n}];"
+        "jsCode": "// COMPLIANCE - DESTRUCCIÓN BINARIA\n// Se descartan TODOS los payloads binarios (nota de voz del cliente y audio TTS).\n// Solo sobreviven metadatos mínimos, sin audio, para la auditoría.\nlet respuesta = '';\nlet estado = 'contingencia_audio_no_valido';\ntry {\n  respuesta = $('Contención 200 caracteres').first().json.respuesta;\n  estado = 'respondido_por_voz';\n} catch (e) {}\n\nconst msg = $('Telegram Trigger').first().json.message || {};\nlet transcripcion = '';\ntry { transcripcion = $('Whisper STT (Groq gratis)').first().json.text || ''; } catch (e) {}\n\n// Se devuelven items SOLO con json: n8n no propaga ninguna propiedad \"binary\".\nreturn [{\n  json: {\n    chat_id: msg.chat ? msg.chat.id : null,\n    duracion_audio_seg: msg.voice ? msg.voice.duration : null,\n    transcripcion,\n    respuesta,\n    caracteres_tts: respuesta.length,\n    estado,\n    binarios_destruidos: true,\n    procesado: $now.toISO(),\n  },\n}];"
       },
       "id": "8049ac7e-4095-5e9a-8cea-28137e9e5fb3",
       "name": "Compliance - Destrucción Binaria",
@@ -432,9 +552,9 @@
     },
     {
       "parameters": {
-        "content": "## 1. Oídos del agente (STT)\n**Telegram Trigger** recibe la nota de voz y la descarga como binario `data` (Download = ON).\n\n**OpenAI Whisper** → Input Binary Property: `data` · Language: `es` (menos latencia).\n\nSi Whisper falla, el flujo sigue (On Error = Continue) y lo resuelve el IF.",
-        "height": 380,
-        "width": 500,
+        "content": "## 1. Oídos del agente (STT) · 100 % gratis\n**Telegram Trigger** recibe el mensaje → **Get a File** descarga la nota de voz como binario `data` (el trigger no baja audios por sí solo).\n\n**Preparar audio** solo cambia la extensión `.oga` → `.ogg` (requisito de Groq).\n\n**Whisper STT (Groq)** · modelo `whisper-large-v3` · campo binario `data` · idioma `es`. On Error = Continue → lo resuelve el IF.",
+        "height": 400,
+        "width": 940,
         "color": 7
       },
       "id": "c25ab556-a99f-568d-8619-26039710224f",
@@ -442,8 +562,24 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -60,
-        180
+        -500,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Carga del RAG (Módulo 5) · ejecutar 1 vez\nBotón **Execute workflow** sobre *Carga RAG*: indexa los textos de NEXA con embeddings de Gemini en la base vectorial en memoria `nexa_kb`.\nRepetir si se reinicia n8n o se editan los textos.",
+        "height": 480,
+        "width": 940,
+        "color": 5
+      },
+      "id": "73aea229-8c3b-5747-82d6-aedab3ba7627",
+      "name": "Nota - Carga RAG",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -500,
+        760
       ]
     },
     {
@@ -464,7 +600,7 @@
     },
     {
       "parameters": {
-        "content": "## 2. Cerebro (Tools Agent) + RAG del Módulo 5\nModelo Claude (máx. 150 tokens) · memoria por chat · RAG Supabase · CRM Google Sheets.\n\n**Contención financiera:** el System Message ordena respuestas de **máx. 200 caracteres**, sin emojis ni markdown (VUI).",
+        "content": "## 2. Cerebro (Tools Agent) + RAG del Módulo 5\nGemini 2.5 Flash (máx. 150 tokens) · memoria por chat · RAG en memoria (`nexa_kb`) · CRM Google Sheets. Todo en planes gratuitos.\n\n**Contención financiera:** el System Message ordena respuestas de **máx. 200 caracteres**, sin emojis ni markdown (VUI).",
         "height": 580,
         "width": 900,
         "color": 6
@@ -516,14 +652,36 @@
       "main": [
         [
           {
-            "node": "OpenAI Whisper (STT)",
+            "node": "Telegram - Descargar Nota de Voz",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "OpenAI Whisper (STT)": {
+    "Telegram - Descargar Nota de Voz": {
+      "main": [
+        [
+          {
+            "node": "Preparar audio (.ogg)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar audio (.ogg)": {
+      "main": [
+        [
+          {
+            "node": "Whisper STT (Groq gratis)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Whisper STT (Groq gratis)": {
       "main": [
         [
           {
@@ -552,7 +710,7 @@
         ]
       ]
     },
-    "Anthropic Chat Model": {
+    "Google Gemini Chat Model": {
       "ai_languageModel": [
         [
           {
@@ -596,11 +754,55 @@
         ]
       ]
     },
-    "Embeddings OpenAI": {
+    "Embeddings Gemini": {
       "ai_embedding": [
         [
           {
             "node": "RAG - Base de Conocimiento NEXA",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Carga RAG (ejecutar 1 vez)": {
+      "main": [
+        [
+          {
+            "node": "Documentos NEXA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Documentos NEXA": {
+      "main": [
+        [
+          {
+            "node": "Guardar en Base de Conocimiento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cargador de Documentos": {
+      "ai_document": [
+        [
+          {
+            "node": "Guardar en Base de Conocimiento",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Gemini (carga)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Guardar en Base de Conocimiento",
             "type": "ai_embedding",
             "index": 0
           }
