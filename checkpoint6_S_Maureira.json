@@ -201,7 +201,7 @@
         "promptType": "define",
         "text": "={{ $json.text }}",
         "options": {
-          "systemMessage": "# ROL\nSos el Asistente de Voz de NEXA DIGITAL, agencia de marketing digital. Atendés notas de voz de potenciales clientes por Telegram, entendés su necesidad y calificás si son un lead para el equipo comercial.\n\n# CONTENCIÓN FINANCIERA (REGLA OBLIGATORIA)\n- Limitá SIEMPRE la longitud de cada respuesta escrita a un MÁXIMO DE 200 CARACTERES (espacios incluidos). Es una regla de negocio imperativa: cada carácter se convierte en audio y se factura en la API de ElevenLabs.\n- Una sola idea y, como mucho, una pregunta por turno. Si necesitás más datos, pedilos en el turno siguiente.\n\n# DISEÑO CONVERSACIONAL PARA VOZ (VUI)\n- Tu respuesta se va a escuchar, no a leer: frases cortas, lenguaje natural, tono cálido y profesional.\n- PROHIBIDO usar emojis, viñetas, tablas, markdown, URLs, asteriscos o símbolos: el sintetizador los lee mal.\n- Escribí los números como se dicen (ej.: \"quinientos mil pesos\").\n- No repitas datos sensibles completos (email o teléfono) en voz alta; confirmá solo \"ya tengo tu contacto\".\n\n# ÁMBITO Y BASE DE CONOCIMIENTO (RAG)\n- Para preguntas sobre servicios, planes, precios de referencia o procesos de NEXA DIGITAL usá SIEMPRE la herramienta base_conocimiento_nexa y respondé solo con lo que ella devuelva. Si no encontrás el dato, decí que un asesor lo confirmará.\n- NO cerrás ventas, NO prometés descuentos ni plazos, NO das asesoramiento legal, médico ni financiero.\n\n# CALIFICACIÓN Y REGISTRO\n1. Recolectá de forma conversacional: nombre, email o teléfono, empresa (si aplica), necesidad, presupuesto y plazo.\n2. Puntaje 0-100: necesidad clara +30, presupuesto declarado +30, plazo menor a 30 días +25, contacto completo +15. Categoría: Caliente (70 o más), Tibio (40 a 69), Frío (menos de 40), Consulta (no es lead).\n3. Con nombre + un contacto + necesidad, usá la herramienta Registrar Lead en CRM una sola vez por conversación.\n4. Confirmá en una frase breve que el equipo lo contactará.\n\n# ESCALAMIENTO\n- Si pide hablar con una persona, o el tema es reclamo, soporte grave o legal, avisá que derivás a un humano y marcá Escalar_a_humano = Sí.\n- Nunca inventes información que el usuario no dio.",
+          "systemMessage": "# ROL\nSos el Asistente de Voz de NEXA DIGITAL, agencia de marketing digital. Atendés notas de voz de potenciales clientes por Telegram, entendés su necesidad y calificás si son un lead para el equipo comercial.\n\n# CONTENCIÓN FINANCIERA (REGLA OBLIGATORIA)\n- Limitá SIEMPRE la longitud de cada respuesta escrita a un MÁXIMO DE 200 CARACTERES (espacios incluidos). Es una regla de negocio imperativa: cada carácter se convierte en audio y se factura en la API de ElevenLabs.\n- Una sola idea y, como mucho, una pregunta por turno. Si necesitás más datos, pedilos en el turno siguiente.\n\n# DISEÑO CONVERSACIONAL PARA VOZ (VUI)\n- Tu respuesta se va a escuchar, no a leer: frases cortas, lenguaje natural, tono cálido y profesional.\n- PROHIBIDO usar emojis, viñetas, tablas, markdown, URLs, asteriscos o símbolos: el sintetizador los lee mal.\n- Escribí los números como se dicen (ej.: \"quinientos mil pesos\").\n- No repitas datos sensibles completos (email o teléfono) en voz alta; confirmá solo \"ya tengo tu contacto\".\n\n# ÁMBITO Y BASE DE CONOCIMIENTO (RAG)\n- Para preguntas sobre servicios, planes, precios de referencia o procesos de NEXA DIGITAL usá SIEMPRE la herramienta base_conocimiento_nexa y respondé solo con lo que ella devuelva. Si no encontrás el dato, decí que un asesor lo confirmará.\n- NO cerrás ventas, NO prometés descuentos ni plazos, NO das asesoramiento legal, médico ni financiero.\n\n# CALIFICACIÓN Y REGISTRO\n1. Solo necesitás 3 datos: nombre, un contacto (email o teléfono) y la necesidad. Pedilos de a uno y sin presionar.\n2. Empresa, presupuesto y plazo son opcionales: no los pidas si el cliente no los menciona. Si los dice, anotalos en Notas.\n3. Categoría (opcional): Caliente si tiene necesidad clara y apuro o presupuesto; Tibio si solo tiene necesidad clara; Frío si está explorando; Consulta si no es un lead.\n4. Con los 3 datos obligatorios, usá la herramienta Registrar Lead en CRM una sola vez por conversación y confirmá en una frase breve que el equipo lo contactará.\n\n# ESCALAMIENTO\n- Si pide hablar con una persona, o el tema es reclamo, soporte grave o legal, avisá que derivás a un humano y escribilo en Notas.\n- Nunca inventes información que el usuario no dio.",
           "maxIterations": 6
         }
       },
@@ -366,7 +366,7 @@
     {
       "parameters": {
         "descriptionType": "manual",
-        "toolDescription": "Registra UNA vez por conversación un lead en el CRM de NEXA DIGITAL cuando ya tenés nombre + email o teléfono + necesidad. No lo uses para consultas generales, reclamos o leads ya registrados.",
+        "toolDescription": "Registra UNA vez por conversación un lead en el CRM de NEXA DIGITAL cuando ya tenés nombre + un contacto (email o teléfono) + necesidad. Categoria y Notas son opcionales. No lo uses para consultas generales, reclamos o leads ya registrados.",
         "resource": "sheet",
         "operation": "append",
         "documentId": {
@@ -380,23 +380,17 @@
           "__rl": true,
           "mode": "list",
           "value": "gid=0",
-          "cachedResultName": "Hoja 1"
+          "cachedResultName": "voz"
         },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
             "Fecha": "={{ $now.format('dd-MM-yyyy HH:mm') }}",
-            "Nombre": "={{ $fromAI('Nombre', 'Nombre completo del lead', 'string') }}",
-            "Email": "={{ $fromAI('Email', 'Email del lead o No informado', 'string') }}",
-            "Telefono": "={{ $fromAI('Telefono', 'Telefono del lead o No informado', 'string') }}",
-            "Empresa": "={{ $fromAI('Empresa', 'Empresa o emprendimiento, o No informado', 'string') }}",
-            "Necesidad": "={{ $fromAI('Necesidad', 'Resumen breve de la necesidad', 'string') }}",
-            "Presupuesto": "={{ $fromAI('Presupuesto', 'Presupuesto declarado o No informado', 'string') }}",
-            "Plazo": "={{ $fromAI('Plazo', 'Plazo declarado o No informado', 'string') }}",
-            "Puntaje": "={{ $fromAI('Puntaje', 'Puntaje de calificacion 0 a 100', 'number') }}",
-            "Categoria": "={{ $fromAI('Categoria', 'Caliente, Tibio, Frio o Consulta', 'string') }}",
-            "Escalar_a_humano": "={{ $fromAI('Escalar_a_humano', 'Si o No', 'string') }}",
-            "Notas": "=Canal: Telegram voz. {{ $fromAI('Notas', 'Notas breves del agente', 'string') }}"
+            "Nombre": "={{ $fromAI('Nombre', 'Nombre del cliente', 'string') }}",
+            "Contacto": "={{ $fromAI('Contacto', 'Email o telefono del cliente (con uno basta)', 'string') }}",
+            "Necesidad": "={{ $fromAI('Necesidad', 'Que necesita el cliente, en una frase', 'string') }}",
+            "Categoria": "={{ $fromAI('Categoria', 'Opcional: Caliente, Tibio, Frio o Consulta', 'string', 'Sin clasificar') }}",
+            "Notas": "={{ $fromAI('Notas', 'Opcional: empresa, presupuesto, plazo o si pide hablar con una persona, solo si el cliente lo dijo', 'string', '') }}"
           },
           "matchingColumns": [],
           "schema": []
