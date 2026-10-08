@@ -508,7 +508,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// COMPLIANCE - DESTRUCCIÓN BINARIA\n// Se descartan TODOS los payloads binarios (nota de voz del cliente y audio TTS).\n// Solo sobreviven metadatos mínimos, sin audio, para la auditoría.\nlet respuesta = '';\nlet estado = 'contingencia_audio_no_valido';\ntry {\n  respuesta = $('Contención 200 caracteres').first().json.respuesta;\n  estado = 'respondido_por_voz';\n} catch (e) {}\n\nconst msg = $('Telegram Trigger').first().json.message || {};\nlet transcripcion = '';\ntry { transcripcion = $('Whisper STT (Groq gratis)').first().json.text || ''; } catch (e) {}\n\n// Se devuelven items SOLO con json: n8n no propaga ninguna propiedad \"binary\".\nreturn [{\n  json: {\n    chat_id: msg.chat ? msg.chat.id : null,\n    duracion_audio_seg: msg.voice ? msg.voice.duration : null,\n    transcripcion,\n    respuesta,\n    caracteres_tts: respuesta.length,\n    estado,\n    binarios_destruidos: true,\n    procesado: $now.toISO(),\n  },\n}];"
+        "jsCode": "// COMPLIANCE - DESTRUCCIÓN BINARIA\n// Se descartan TODOS los payloads binarios (nota de voz del cliente y audio TTS).\n// Solo sobreviven metadatos mínimos, sin audio, para la auditoría.\nlet respuesta = '';\nlet estado = 'contingencia_audio_no_valido';\ntry {\n  respuesta = $('Contención 200 caracteres').first().json.respuesta;\n  estado = 'respondido_por_voz';\n} catch (e) {}\n\nconst msg = $('Telegram Trigger').first().json.message || {};\nlet transcripcion = '';\ntry { transcripcion = $('Whisper STT (Groq gratis)').first().json.text || ''; } catch (e) {}\n\n// Minimización de datos: el log de auditoría no guarda correos ni teléfonos.\nconst enmascarar = (t) => (t || '')\n  .replace(/[\\w.+-]+@[\\w-]+(\\.[\\w-]+)+/g, '[correo]')\n  .replace(/\\S+\\s+arroba\\s+\\S+(\\s+punto\\s+\\S+)*/gi, '[correo]')\n  .replace(/\\+?\\d(?:[\\s-]?\\d){7,}/g, '[teléfono]');\ntranscripcion = enmascarar(transcripcion);\nrespuesta = enmascarar(respuesta);\n\n// Se devuelven items SOLO con json: n8n no propaga ninguna propiedad \"binary\".\nreturn [{\n  json: {\n    chat_id: msg.chat ? msg.chat.id : null,\n    duracion_audio_seg: msg.voice ? msg.voice.duration : null,\n    transcripcion,\n    respuesta,\n    caracteres_tts: respuesta.length,\n    estado,\n    binarios_destruidos: true,\n    procesado: $now.toISO(),\n  },\n}];"
       },
       "id": "8049ac7e-4095-5e9a-8cea-28137e9e5fb3",
       "name": "Compliance - Destrucción Binaria",
@@ -627,7 +627,7 @@
     },
     {
       "parameters": {
-        "content": "## 4. Compliance y destrucción binaria\n- El Code node devuelve solo JSON: los audios no pasan al log.\n- Settings del workflow: **Save successful / failed / manual executions = No guardar**. Nada queda en el historial.\n- Servidor: `N8N_DEFAULT_BINARY_DATA_MODE=default` (binarios en memoria volátil, no en disco) + `EXECUTIONS_DATA_PRUNE=true`.\n- El log de Gmail no lleva audio.",
+        "content": "## 4. Compliance y destrucción binaria\n- El Code node devuelve solo JSON: los audios no pasan al log.\n- Settings del workflow: **Save successful / failed / manual executions = No guardar**. Nada queda en el historial.\n- Recomendado en producción (self-hosted): `N8N_DEFAULT_BINARY_DATA_MODE=default` (binarios en memoria) + `EXECUTIONS_DATA_PRUNE=true`.\n- On Error = Continue en Descargar y Whisper: los errores llegan al IF.\n- El log de Gmail no lleva audio y enmascara correos y teléfonos.",
         "height": 440,
         "width": 460,
         "color": 2
