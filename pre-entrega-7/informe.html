@@ -45,10 +45,10 @@
   .box { border: 0.8px solid var(--line); background: var(--soft); border-radius: 3px; padding: 2mm 2.6mm; margin: 1.5mm 0 2mm; }
   .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 1.8mm 2.6mm; margin: 1.5mm 0 2mm; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
-  .agent { border: 0.8px solid var(--line); border-radius: 3px; padding: 1.5mm 2.4mm; margin-bottom: 1.6mm; break-inside: avoid; }
+  .agent { border: 0.8px solid var(--line); border-radius: 3px; padding: 1.3mm 2.2mm; margin-bottom: 1.3mm; break-inside: avoid; }
   .agent h4 { margin: 0 0 1mm; color: var(--accent); font-size: 9pt; }
   .agent .meta { color: var(--muted); font-size: 7.5pt; margin-bottom: 1mm; }
-  .prompt { font-family: "DejaVu Sans Mono", monospace; font-size: 6.6pt; background: #f7f8fa; border: 0.6px solid var(--line); padding: 1mm 1.6mm; white-space: pre-wrap; margin: 1mm 0; line-height: 1.32; }
+  .prompt { font-family: "DejaVu Sans Mono", monospace; font-size: 6.4pt; background: #f7f8fa; border: 0.6px solid var(--line); padding: 1mm 1.6mm; white-space: pre-wrap; margin: 1mm 0; line-height: 1.32; }
   code, .mono { font-family: "DejaVu Sans Mono", monospace; font-size: 7pt; }
   .cover-band { background: var(--accent); color: #fff; padding: 5mm 7mm 4.5mm; border-radius: 3px; margin-bottom: 3mm; }
   .cover-band h1 { color: #fff; font-size: 20pt; }
@@ -75,11 +75,11 @@
   <div class="kv">
     <div>Autora / consultora</div><div>S. Maureira</div>
     <div>Cliente</div><div>"SaaS-Gestión" (nombre ficticio; datos anonimizados), Santiago de Chile. Software de gestión para PyMEs (facturación electrónica ante el SII, inventario y cobranzas), ~45 empleados, ~600 cuentas con suscripción, ~350 leads entrantes por mes.</div>
-    <div>Punto de partida</div><div>Checkpoint 1: agente de calificación de leads en n8n (chat → Claude → Google Sheets, con log de auditoría por Gmail); en esta red los agentes usan Groq, el proveedor trabajado en clase. Este informe lo escala a una red multi-agente gobernada, alineada con el patrón de la Clase 7: <i>el código decide la prioridad, el LLM razona el caso y el humano aprueba lo riesgoso</i>.</div>
+    <div>Punto de partida</div><div>Checkpoint 1: agente de calificación de leads en n8n (chat → Claude → Google Sheets, con log de auditoría por Gmail); en esta red los agentes usan Groq, el proveedor trabajado en clase. Este informe lo escala a una red multi-agente gobernada, alineada con el patrón de la Clase 7: <i>las reglas deciden la prioridad, el LLM razona el caso y el humano aprueba lo riesgoso</i>.</div>
     <div>Estructura</div><div>1) Relevamiento y priorización · 2) Arquitectura y permisos · 3) Propuesta de valor y semáforo de riesgo (HITL) · 4) Scorecards y versión de portafolio.</div>
   </div>
 
-  <h2>1. Relevamiento del Proceso y Framework de Priorización <span class="pg">Página 1</span></h2>
+  <h2>1. Relevamiento del Proceso y Framework de Priorización <span class="pg">Sección 1</span></h2>
 
   <h3>1.1 Industria, problema operativo y justificación</h3>
   <p><b>Industria:</b> software B2B por suscripción (SaaS) para PyMEs chilenas. Los ingresos dependen de dos motores: <b>captar</b> cuentas nuevas (Sales Ops) y <b>retener</b> las existentes (Customer Success). Cada punto de churn mensual equivale a perder ~6 cuentas por mes.</p>
@@ -114,10 +114,10 @@
 
 <!-- ============================ PÁGINA 2 ============================ -->
 <section class="page">
-  <h2>2. Arquitectura del Sistema Multi-Agente y Mapa de Permisos <span class="pg">Página 2</span></h2>
+  <h2>2. Arquitectura del Sistema Multi-Agente y Mapa de Permisos <span class="pg">Sección 2</span></h2>
 
   <h3>2.1 Coreografía multi-agente</h3>
-  <svg viewBox="0 0 760 452" width="86%" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 1mm">
+  <svg viewBox="0 0 760 452" width="80%" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 1mm">
     <defs>
       <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"/></marker>
       <marker id="arR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b3261e"/></marker>
@@ -150,7 +150,7 @@
     <text x="240" y="147" text-anchor="middle" font-size="8.2" fill="#dbe7f3">health score + triage</text>
     <text x="240" y="159" text-anchor="middle" font-size="8.2" fill="#dbe7f3">detecta flags críticos</text>
     <text x="240" y="171" text-anchor="middle" font-size="8.2" fill="#dbe7f3">delega por contrato JSON</text>
-    <text x="240" y="189" text-anchor="middle" font-size="7.6" fill="#a9c3dc">Code + Switch (reglas)</text>
+    <text x="240" y="189" text-anchor="middle" font-size="7.6" fill="#a9c3dc">Set + Switch (reglas)</text>
 
     <!-- Especialistas -->
     <g font-size="8" fill="#5a6573">
@@ -238,8 +238,8 @@
 
   <div class="agent">
     <h4>A0 · Orquestador Comercial (triage determinístico)</h4>
-    <div class="meta">Disparo: cualquier entrada · Nodos: Code (health score, prioridad y detección de palabras críticas) + Switch (triage por ruta) · LLM solo para texto ambiguo: Groq · <code>openai/gpt-oss-120b</code> · Herramientas: Execute Workflow (A1–A4, Gate), HubSpot <i>buscar contacto</i> (lectura)</div>
-    <p><b>Misión:</b> la prioridad la decide el <b>código</b>, no la IA. Calcula el health score y la prioridad con reglas auditables, detecta palabras críticas (reembolso, abogado, SERNAC, cancelar) y el Switch deriva a <b>un solo</b> especialista (ventas · seguimiento · churn · expansión) o <b>directamente</b> al Gate HITL. Solo si ninguna regla aplica, un LLM clasifica la intención.</p>
+    <div class="meta">Disparo: cualquier entrada · Nodos nativos: Edit Fields/Set con expresiones (health score, prioridad y detección de palabras críticas) + IF/Filter + Switch (triage por ruta) · LLM solo para texto ambiguo: Groq · <code>openai/gpt-oss-120b</code> · Herramientas: Execute Workflow (A1–A4, Gate), HubSpot <i>buscar contacto</i> (lectura)</div>
+    <p><b>Misión:</b> la prioridad la deciden <b>reglas determinísticas</b>, no la IA. Calcula el health score y la prioridad con expresiones auditables en nodos nativos, detecta palabras críticas (reembolso, abogado, SERNAC, cancelar) y el Switch deriva a <b>un solo</b> especialista (ventas · seguimiento · churn · expansión) o <b>directamente</b> al Gate HITL. Solo si ninguna regla aplica, un LLM clasifica la intención.</p>
     <div class="prompt"># ROL  (Solo para mensajes que las reglas no lograron clasificar.) Eres el clasificador del Orquestador Comercial. Clasificas; NUNCA respondes ni ejecutas acciones.
 # SALIDA  Devuelve SOLO el JSON del contrato. Intenciones válidas: lead_nuevo | seguimiento | cliente_existente | reembolso | legal | baja | otro.
 # REGLAS  Si el texto menciona dinero a devolver, acciones legales o cancelación → flags_criticos y destino="gate_hitl".
@@ -249,7 +249,7 @@ Si la confianza es < 0.95 → destino="gate_hitl" con motivo "clasificación dud
 
   <div class="agent">
     <h4>A1 · Agente de Calificación de Leads (evolución del Checkpoint 1)</h4>
-    <div class="meta">Disparo: ruta ventas · Modelo: Groq · <code>openai/gpt-oss-120b</code> · Memoria: buffer de 10 turnos por sesión · Herramientas: Google Sheets <i>append</i> (Leads), HubSpot <i>crear contacto/lead</i>, Google Calendar <i>disponibilidad + crear evento</i></div>
+    <div class="meta">Disparo: ruta ventas · Modelo: Groq · <code>openai/gpt-oss-120b</code> · Memoria: buffer de 10 turnos por sesión · Herramientas: Google Sheets <i>append</i> (Leads), HubSpot <i>crear contacto/lead</i>, Google Calendar <i>disponibilidad + crear evento</i>, Google Drive <i>lectura</i> (catálogo público y Scorecard)</div>
     <p><b>Misión:</b> conversar, recolectar nombre, contacto, empresa y necesidad, aplicar la <b>Scorecard de Leads</b> (Sección 4.1) citando evidencia textual, registrar y, si el lead es A, ofrecer y agendar una reunión exploratoria con el AE de turno.</p>
     <div class="prompt"># ROL  Eres el Agente de Calificación de Leads de SaaS-Gestión. Conversas con prospectos y los calificas con la Scorecard v1.
 # ÁMBITO  Solo información que el usuario da en esta conversación. NO prometes precios finales, descuentos ni plazos.
@@ -267,19 +267,19 @@ Si la confianza es < 0.95 → destino="gate_hitl" con motivo "clasificación dud
 # REGLAS  Máximo 3 contactos por lead en 14 días. Nunca menciones descuentos, precios no publicados ni fechas de entrega.
 Si la objeción es "descuento", "contrato" o "seguridad de datos" → no respondas: destino="gate_hitl".
 # SALIDA  Clasifica la objeción, elige plantilla_id y explica por qué con la cita del prospecto.</div>
-    <p class="small"><b>Entrega:</b> <code>{"event_id","lead_id","objecion","cita","plantilla_id","borrador_mensaje","accion_sensible","motivo_sensible","confianza"}</code></p>
+    <p class="small"><b>Entrega al orquestador, al log y al Gate HITL (si <code>accion_sensible</code> = true o confianza &lt; 0,95):</b> <code>{"event_id","lead_id","objecion","cita","plantilla_id","borrador_mensaje","accion_sensible","motivo_sensible","confianza"}</code></p>
   </div>
 
   <div class="agent">
     <h4>A3 · Agente de Retención y Expansión (Customer Success)</h4>
-    <div class="meta">Disparo: rutas churn y expansión del Switch (cron diario 7:00 + emails de clientes) · Modelo: Groq · <code>openai/gpt-oss-120b</code> · Herramientas: <code>churns_similares</code> (casos históricos de clientes parecidos y qué funcionó; Google Sheets, lectura), Zendesk <i>lectura</i> de tickets, Stripe <i>lectura</i> (estado de suscripción), HubSpot <i>escribir solo la propiedad health_score</i></div>
-    <p><b>Misión:</b> con el Health Score (4.3) ya calculado por código, (a) en la ruta <b>churn</b>: diagnosticar la causa, consultar SIEMPRE <code>churns_similares</code> y proponer un plan de recuperación con borrador de mensaje; (b) en la ruta <b>expansión</b> (uso del plan ≥ 85% y health ≥ 70): calcular el impacto de pasar al plan siguiente (+30% de MRR) y redactar la propuesta para el CSM. Nunca contacta al cliente ni ofrece compensaciones: todo sale como borrador.</p>
+    <div class="meta">Disparo: rutas churn y expansión del Switch (cron diario 7:00 + emails de clientes) · Modelo: Groq · <code>openai/gpt-oss-120b</code> · Herramientas: <code>churns_similares</code> (casos históricos de clientes parecidos y qué funcionó; Google Sheets, lectura), Zendesk <i>lectura</i> de tickets, Gmail <i>lectura</i> del buzón soporte@, Google Drive <i>lectura</i> (Playbooks), Stripe <i>lectura</i> (estado de suscripción), HubSpot <i>escribir solo la propiedad health_score</i></div>
+    <p><b>Misión:</b> con el Health Score (4.3) ya calculado por las reglas de A0, (a) en la ruta <b>churn</b>: diagnosticar la causa, consultar SIEMPRE <code>churns_similares</code> y proponer un plan de recuperación con borrador de mensaje; (b) en la ruta <b>expansión</b> (uso del plan ≥ 85% y health ≥ 70): calcular el impacto de pasar al plan siguiente (+30% de MRR) y redactar la propuesta para el CSM. Nunca contacta al cliente ni ofrece compensaciones: todo sale como borrador.</p>
     <div class="prompt"># ROL  Eres el Agente de Retención y Expansión. Recibes una cuenta con señales ya curadas por el sistema.
 # PASOS  Churn: diagnostica la causa, consulta SIEMPRE churns_similares y propone un plan + borrador (máx. 5 líneas, sin descuentos).
 Expansión: calcula MRR actual, MRR con plan siguiente (+30%) y la diferencia; redacta propuesta a precio de lista.
 # REGLAS  Usa SOLO las señales y tus herramientas. accion_sensible = true si implica precio, descuento, reembolso,
 contactar a un directivo de primer nivel o marcar un deal como perdido. Baja la confianza si las señales se contradicen.</div>
-    <p class="small"><b>Entrega:</b> <code>{"event_id","cuenta_id","ruta","diagnostico","accion_recomendada","borrador_mensaje","accion_sensible","motivo_sensible","confianza","casos_consultados":[]}</code></p>
+    <p class="small"><b>Entrega al orquestador, al log, al CSM dueño (tarea en HubSpot) y al Gate HITL (si <code>accion_sensible</code> = true, confianza &lt; 0,95 o prioridad Alta):</b> <code>{"event_id","cuenta_id","ruta","diagnostico","accion_recomendada","borrador_mensaje","accion_sensible","motivo_sensible","confianza","casos_consultados":[]}</code></p>
   </div>
 
   <div class="agent">
@@ -289,7 +289,7 @@ contactar a un directivo de primer nivel o marcar un deal como perdido. Baja la 
     <div class="prompt"># ROL  Eres el Auditor. Solo lees y reportas; nunca corriges registros.
 # REGLAS  Un ingreso se atribuye solo si existe cadena completa lead_id → deal_id → invoice_id; si falta un eslabón: "sin_atribucion".
 Marca como desvío toda acción sin evidencia citada, fuera de semáforo o con JSON inválido. Conformidad &lt; 90% → alerta.
-(Patrón Narrador-Validador: el LLM redacta; un nodo posterior verifica por código que cada cita exista en la fuente y que los montos sumen.)</div>
+(Patrón Narrador-Validador: el LLM redacta; nodos nativos posteriores (Set con expresiones + IF) verifican que cada cita exista en la fuente y que los montos sumen.)</div>
     <p class="small"><b>Entrega a Sheets y a RevOps:</b> <code>{"periodo","ingresos_por_canal":{...},"sin_atribucion":[],"muestra_auditada":n,"conformidad_pct","desvios":[{"event_id","agente","regla"}]}</code></p>
   </div>
 
@@ -301,13 +301,13 @@ Marca como desvío toda acción sin evidencia citada, fuera de semáforo o con J
     <tr><td>Google Sheets · Export de uso de producto</td><td class="c">L</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td></tr>
     <tr><td>Google Sheets · Casos históricos (churns_similares)</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">L</td><td class="c">—</td><td class="c">—</td></tr>
     <tr><td>HubSpot · Contactos</td><td class="c">L</td><td class="c"><b>E</b> crear</td><td class="c">L</td><td class="c">L</td><td class="c">L</td><td class="c">—</td></tr>
-    <tr><td>HubSpot · Deals / notas / tareas</td><td class="c">—</td><td class="c">—</td><td class="c">L + <b>E</b> nota/tarea</td><td class="c">L + <b>E</b> tarea</td><td class="c">L</td><td class="c"><b>E</b> etapa (post-aprob.)</td></tr>
+    <tr><td>HubSpot · Deals / notas / tareas</td><td class="c">—</td><td class="c">—</td><td class="c">L + <b>E</b> nota/tarea</td><td class="c">L + <b>E</b> tarea</td><td class="c">L</td><td class="c"><b>E</b> estado HITL + etapa (post-aprob.)</td></tr>
     <tr><td>HubSpot · Empresas (prop. health_score)</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c"><b>E</b> 1 propiedad</td><td class="c">L</td><td class="c">—</td></tr>
     <tr><td>Gmail</td><td class="c">L (entrada)</td><td class="c">—</td><td class="c"><b>E</b> borrador + plantillas</td><td class="c">L (soporte@)</td><td class="c">—</td><td class="c"><b>E</b> envío aprobado</td></tr>
     <tr><td>Google Calendar (AE de turno)</td><td class="c">—</td><td class="c">L + <b>E</b> crear evento</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td></tr>
     <tr><td>Google Drive · carpeta Playbooks</td><td class="c">—</td><td class="c">L</td><td class="c">L</td><td class="c">L</td><td class="c">L</td><td class="c">—</td></tr>
-    <tr><td>Zendesk · tickets</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">L</td><td class="c">—</td><td class="c">—</td></tr>
-    <tr><td>Stripe · suscripciones y facturas</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">L (estado)</td><td class="c">L (clave restringida)</td><td class="c">— <span class="muted">(reembolso lo ejecuta Finanzas)</span></td></tr>
+    <tr><td>Zendesk · tickets</td><td class="c">L (n.º abiertos)</td><td class="c">—</td><td class="c">—</td><td class="c">L</td><td class="c">—</td><td class="c">—</td></tr>
+    <tr><td>Stripe · suscripciones y facturas</td><td class="c">L (MRR)</td><td class="c">—</td><td class="c">—</td><td class="c">L (estado)</td><td class="c">L (clave restringida)</td><td class="c">— <span class="muted">(reembolso lo ejecuta Finanzas)</span></td></tr>
     <tr><td>Slack · #escalamientos-revops</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c"><b>E</b> postear + webhook</td></tr>
   </table>
   <p class="small"><b>L</b> = lectura · <b>E</b> = escritura acotada · — = sin acceso. <b>Reglas transversales:</b> (1) ninguna credencial tiene permiso de <i>borrar</i>; (2) una credencial de n8n por agente con scopes OAuth mínimos (p. ej. <code>gmail.compose</code> y no <code>gmail.modify</code> para A2); (3) Stripe solo con <i>restricted keys</i> de lectura: <b>ningún componente del sistema puede mover dinero</b>; (4) las pestañas del Sheet tienen rangos protegidos y el log es append-only; (5) el Gate HITL es el único con permisos de acción sensible y solo los usa con una aprobación humana registrada.</p>
@@ -315,18 +315,18 @@ Marca como desvío toda acción sin evidencia citada, fuera de semáforo o con J
   <h3>2.4 Estrategia de Context Engineering por sub-workflow</h3>
   <table class="small">
     <tr><th style="width:12%">Agente</th><th style="width:38%">Contexto que recibe (historial + señales)</th><th style="width:25%">Se excluye deliberadamente</th><th>Técnica</th></tr>
-    <tr><td>A0</td><td>Señales crudas: mensaje, canal, logins 30 días, tickets abiertos, uso del plan, MRR; búsqueda del contacto en HubSpot.</td><td>Historial completo, datos de facturación.</td><td>Context engineering por código: arma un bloque <code>contexto</code> curado (health, prioridad, nota) que reciben los agentes.</td></tr>
+    <tr><td>A0</td><td>Señales crudas: mensaje, canal, logins 30 días, tickets abiertos, uso del plan, MRR; búsqueda del contacto en HubSpot.</td><td>Historial completo, detalle de facturas y medios de pago.</td><td>Context engineering con reglas determinísticas (Edit Fields/Set): arma un bloque <code>contexto</code> curado (health, prioridad, nota) que reciben los agentes.</td></tr>
     <tr><td>A1</td><td>Últimos 10 turnos de la sesión; campos del formulario si existen; resumen del catálogo público (Drive); Scorecard v1.</td><td>Datos de otros clientes, precios no publicados.</td><td>Window Buffer Memory por <code>sessionId</code>; rúbrica en el system prompt.</td></tr>
     <tr><td>A2</td><td>Resumen de los últimos 5 emails del hilo; JSON de A1 (puntaje, evidencias); etapa del deal; objeciones previas; Playbook v1.</td><td>Notas internas de AE, info de otras cuentas.</td><td>Resumen previo con LLM liviano; recuperación de la sección del playbook por categoría.</td></tr>
     <tr><td>A3</td><td>Bloque <code>contexto</code> de A0 (logins 30 días, tickets abiertos, uso del plan, health, prioridad, último mensaje); estado de pago; MRR; fecha de renovación; casos de <code>churns_similares</code>.</td><td>Datos de tarjeta, contenido completo de tickets, PII de usuarios finales.</td><td>Pre-agregación con nodos nativos Aggregate / Summarize <i>antes</i> del LLM; se excluyen campos con PII mediante Edit Fields (Set).</td></tr>
     <tr><td>A4</td><td>Deals cerrados del período (id, monto, fecha, UTM); facturas pagadas (id, monto); muestra aleatoria del 10% del log.</td><td>Conversaciones completas.</td><td>Cruce determinístico por IDs con nodos Merge + Summarize; el LLM solo explica desvíos.</td></tr>
   </table>
-  <p class="small">Principios: <b>contratos JSON validados</b> (Structured Output Parser en cada agente + nodo IF que verifica los campos obligatorios antes de delegar; si falla, se reintenta una vez y luego va a HITL), <b>trazabilidad</b> por <code>event_id</code> de punta a punta, <b>minimización de datos personales</b> conforme a la Ley 19.628 y a la Ley 21.719 de Protección de Datos Personales (vigente desde diciembre de 2026), y <b>contexto mínimo suficiente</b>: cada agente ve solo lo que su rúbrica necesita.</p>
+  <p class="small">Principios: <b>contratos JSON validados</b> (Structured Output Parser en cada agente + nodo IF que verifica los campos obligatorios antes de delegar; si falla, se reintenta una vez y luego va a HITL), <b>trazabilidad</b> por <code>event_id</code> de punta a punta, <b>minimización de datos personales</b> conforme a la Ley 19.628 y a la Ley 21.719 de Protección de Datos Personales (que entra en vigencia en diciembre de 2026), y <b>contexto mínimo suficiente</b>: cada agente ve solo lo que su rúbrica necesita.</p>
 </section>
 
 <!-- ============================ PÁGINA 3 ============================ -->
 <section class="page">
-  <h2>3. Propuesta de Valor y Semáforo de Riesgo (HITL) <span class="pg">Página 3</span></h2>
+  <h2>3. Propuesta de Valor y Semáforo de Riesgo (HITL) <span class="pg">Sección 3</span></h2>
 
   <h3>3.1 Propuesta de valor para el comité directivo</h3>
   <div class="callout">
@@ -406,7 +406,7 @@ Marca como desvío toda acción sin evidencia citada, fuera de semáforo o con J
 
 <!-- ============================ PÁGINA 4 ============================ -->
 <section class="page">
-  <h2>4. Diseño de Scorecards y Versión de Portafolio <span class="pg">Página 4</span></h2>
+  <h2>4. Diseño de Scorecards y Versión de Portafolio <span class="pg">Sección 4</span></h2>
   <p><b>Regla de evidencia común a todas las rúbricas:</b> cada puntaje se asigna <b>solo</b> si el agente puede citar una evidencia documental firme: frase textual del usuario, campo del formulario, registro del CRM, ticket o métrica del export. Sin evidencia el puntaje es 0 y se marca <code>"sin_evidencia"</code>; el agente <b>no infiere</b>. Así, dos ejecuciones con los mismos datos dan el mismo resultado y A4 puede auditarlas.</p>
 
   <h3>4.1 Scorecard de Calificación de Leads v1 (A1): 100 puntos</h3>
@@ -434,7 +434,7 @@ Marca como desvío toda acción sin evidencia citada, fuera de semáforo o con J
       </table>
     </div>
     <div>
-      <h3>4.3 Health Score v1 (calculado por código en A0): 100 pts</h3>
+      <h3>4.3 Health Score v1 (reglas determinísticas en A0): 100 pts</h3>
       <table class="small">
         <tr><th>Componente</th><th class="c">Pts</th><th>Regla (fuente)</th></tr>
         <tr><td>Uso real</td><td class="c">40</td><td>min(logins en 30 días ÷ 20; 1) × 40 (export de uso)</td></tr>
