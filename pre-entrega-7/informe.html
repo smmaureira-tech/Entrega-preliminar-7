@@ -117,7 +117,7 @@
   <h2>2. Arquitectura del Sistema Multi-Agente y Mapa de Permisos <span class="pg">Sección 2</span></h2>
 
   <h3>2.1 Coreografía multi-agente</h3>
-  <svg viewBox="0 0 760 452" width="80%" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 1mm">
+  <svg viewBox="0 0 760 452" width="94%" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 1mm">
     <defs>
       <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"/></marker>
       <marker id="arR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b3261e"/></marker>
@@ -167,7 +167,7 @@
       <rect x="345" y="158" width="240" height="56" rx="4" fill="#fff" stroke="#1f4e79" stroke-width="1.2"/>
       <text x="355" y="174" font-size="10.5" font-weight="bold" fill="#1f4e79">A3 · Retención y Expansión (CS)</text>
       <text x="355" y="188">Churn · upsell · casos históricos (churns_similares)</text>
-      <text x="355" y="202">Uso (L) · Zendesk (L) · Stripe (L) · HubSpot prop.</text>
+      <text x="355" y="202">Zendesk · Gmail · Stripe (L) · HubSpot prop.</text>
 
       <rect x="345" y="224" width="240" height="56" rx="4" fill="#fff" stroke="#1f4e79" stroke-width="1.2"/>
       <text x="355" y="240" font-size="10.5" font-weight="bold" fill="#1f4e79">A4 · Auditor de Atribución y Cumplimiento</text>
@@ -185,7 +185,7 @@
     <rect x="620" y="26" width="130" height="62" rx="4" fill="#f3f5f8" stroke="#7a8594" stroke-dasharray="4 3"/>
     <text x="685" y="44" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#1c2430">Log de auditoría</text>
     <text x="685" y="58" text-anchor="middle" font-size="8" fill="#5a6573">Google Sheets</text>
-    <text x="685" y="70" text-anchor="middle" font-size="8" fill="#5a6573">append-only + Gmail</text>
+    <text x="685" y="70" text-anchor="middle" font-size="8" fill="#5a6573">archivo aparte + Gmail</text>
     <text x="685" y="82" text-anchor="middle" font-size="7.4" fill="#5a6573">(event_id, acción, semáforo)</text>
     <g stroke="#7a8594" stroke-width="1" fill="none" stroke-dasharray="3 3" marker-end="url(#arG)">
       <path d="M585,54 L620,54"/><path d="M585,120 L602,120 L602,66 L620,66"/><path d="M585,186 L606,186 L606,76 L620,76"/>
@@ -208,12 +208,12 @@
 
     <!-- Slack & humanos -->
     <rect x="345" y="360" width="240" height="78" rx="5" fill="#fff" stroke="#b3261e" stroke-width="1.2"/>
-    <text x="465" y="377" text-anchor="middle" font-size="10" font-weight="bold" fill="#1c2430">Slack #escalamientos-revops</text>
+    <text x="465" y="377" text-anchor="middle" font-size="10" font-weight="bold" fill="#1c2430">Slack · Send and Wait (formulario)</text>
     <rect x="356" y="386" width="52" height="18" rx="3" fill="#2e7d4f"/><text x="382" y="398" font-size="8" fill="#fff" text-anchor="middle">Aprobar</text>
     <rect x="413" y="386" width="52" height="18" rx="3" fill="#fff" stroke="#7a8594"/><text x="439" y="398" font-size="8" text-anchor="middle">Editar</text>
     <rect x="470" y="386" width="52" height="18" rx="3" fill="#fff" stroke="#b3261e"/><text x="496" y="398" font-size="8" fill="#b3261e" text-anchor="middle">Rechazar</text>
     <rect x="527" y="386" width="52" height="18" rx="3" fill="#fff" stroke="#7a8594"/><text x="553" y="398" font-size="8" text-anchor="middle">Tomar caso</text>
-    <text x="465" y="424" text-anchor="middle" font-size="7.8" fill="#5a6573">Fallback: Gmail a responsable si no hay respuesta en SLA</text>
+    <text x="465" y="424" text-anchor="middle" font-size="7.8" fill="#5a6573">#escalamientos-revops · fallback Gmail Send and Wait</text>
 
     <rect x="620" y="360" width="130" height="78" rx="5" fill="#f3f5f8" stroke="#c3cad4"/>
     <text x="685" y="378" text-anchor="middle" font-size="10" font-weight="bold">Humanos</text>
@@ -225,14 +225,14 @@
     <g stroke="#b3261e" stroke-width="1.3" fill="none" marker-end="url(#arR)">
       <path d="M705,228 L705,342 L520,342 L520,358"/>
     </g>
-    <text x="700" y="270" font-size="7.4" fill="#b3261e" text-anchor="end">mensaje Block Kit</text>
+    <text x="700" y="270" font-size="7.4" fill="#b3261e" text-anchor="end">Send and Wait</text>
     <g stroke="#1f4e79" stroke-width="1.2" fill="none" marker-end="url(#ar)">
       <path d="M585,399 L620,399"/>
       <path d="M738,360 L738,228"/>
     </g>
-    <text x="746" y="300" font-size="7.4" fill="#1f4e79" transform="rotate(-90 746 300)" text-anchor="middle">decisión (webhook)</text>
+    <text x="746" y="300" font-size="7.4" fill="#1f4e79" transform="rotate(-90 746 300)" text-anchor="middle">respuesta (formulario)</text>
   </svg>
-  <p class="small muted">Línea azul = delegación con contrato JSON · Línea roja = escalado forzado/HITL · Punteada = escritura append-only en el log (A4 lo lee para auditar). Los mensajes entre componentes siguen los contratos JSON de 2.2 (<code>evento_ruteado</code>, <code>escalado</code>). Cada especialista es un sub-workflow de n8n (<i>Execute Workflow</i>) con su propio nodo AI Agent, su memoria y sus credenciales. Los agentes no se hablan entre sí: todo pasa por el orquestador o el log, trazable por <code>event_id</code>.</p>
+  <p class="small muted">Línea azul = delegación con contrato JSON · Línea roja = escalado forzado/HITL · Punteada = escritura (solo agregar filas) en el log (A4 lo lee para auditar). Los mensajes entre componentes siguen los contratos JSON de 2.2 (<code>evento_ruteado</code>, <code>escalado</code>). Cada especialista es un sub-workflow de n8n (<i>Execute Workflow</i>) con su propio nodo AI Agent, su memoria y sus credenciales. Los agentes no se hablan entre sí: todo pasa por el orquestador o el log, trazable por <code>event_id</code>.</p>
 
   <h3>2.2 Descripción de cada agente</h3>
 
@@ -261,7 +261,7 @@ Si la confianza es < 0.95 → destino="gate_hitl" con motivo "clasificación dud
 
   <div class="agent">
     <h4>A2 · Agente de Seguimiento y Objeciones</h4>
-    <div class="meta">Disparo: lead sin respuesta a las 48 h (cron) o respuesta del prospecto · Modelo: Groq · <code>openai/gpt-oss-120b</code> · Herramientas: Gmail <i>crear borrador / enviar plantilla aprobada</i>, Google Drive <i>lectura</i> (carpeta Playbooks), HubSpot <i>leer deal + crear nota/tarea</i></div>
+    <div class="meta">Disparo: lead sin respuesta a las 48 h (cron) o respuesta del prospecto · Modelo: Groq · <code>openai/gpt-oss-120b</code> · Herramientas: Gmail <i>crear borrador / enviar plantilla aprobada</i>, Google Sheets <i>lectura</i> (pestaña Leads), Google Drive <i>lectura</i> (carpeta Playbooks), HubSpot <i>leer deal + crear nota/tarea</i> · El hilo de emails se lo entrega A0.</div>
     <p><b>Misión:</b> mantener vivo el seguimiento. Clasifica cada objeción con el <b>Playbook de Objeciones</b> (4.2) y responde <b>solo</b> con argumentos aprobados. Las plantillas sin cambios se envían de forma autónoma; los mensajes personalizados quedan como borrador para aprobación.</p>
     <div class="prompt"># ROL  Eres el Agente de Seguimiento. Usas EXCLUSIVAMENTE los argumentos del Playbook de Objeciones v1 (Drive).
 # REGLAS  Máximo 3 contactos por lead en 14 días. Nunca menciones descuentos, precios no publicados ni fechas de entrega.
@@ -284,7 +284,7 @@ contactar a un directivo de primer nivel o marcar un deal como perdido. Baja la 
 
   <div class="agent">
     <h4>A4 · Auditor de Atribución de Ingresos y Cumplimiento</h4>
-    <div class="meta">Disparo: cron semanal (lunes) y cierre de mes · Modelo: Groq · <code>openai/gpt-oss-120b</code> · Herramientas: HubSpot <i>lectura</i> de deals, Stripe <i>lectura</i> (clave restringida), Google Sheets <i>append</i> en las pestañas "Atribución" y "Auditoría"</div>
+    <div class="meta">Disparo: cron semanal (lunes) y cierre de mes · Modelo: Groq · <code>openai/gpt-oss-120b</code> · Herramientas: HubSpot <i>lectura</i> de deals, Stripe <i>lectura</i> (clave restringida), Google Drive <i>lectura</i> (rúbricas y Playbooks), Google Sheets <i>lectura</i> de Leads y del log, y <i>append</i> en las pestañas "Atribución" y "Auditoría"</div>
     <p><b>Misión:</b> (1) atribuir cada ingreso cerrado a su canal de origen cruzando el deal, el lead original y la factura pagada; (2) auditar una muestra del 10% de las acciones de A1–A3 contra sus rúbricas y reportar desvíos. Es el "control de calidad" del sistema.</p>
     <div class="prompt"># ROL  Eres el Auditor. Solo lees y reportas; nunca corriges registros.
 # REGLAS  Un ingreso se atribuye solo si existe cadena completa lead_id → deal_id → invoice_id; si falta un eslabón: "sin_atribucion".
@@ -297,31 +297,30 @@ Marca como desvío toda acción sin evidencia citada, fuera de semáforo o con J
   <table class="small">
     <tr><th>Conector / recurso</th><th class="c">A0 Orq.</th><th class="c">A1 Calif.</th><th class="c">A2 Seguim.</th><th class="c">A3 Retención</th><th class="c">A4 Auditor</th><th class="c">Gate HITL</th></tr>
     <tr><td>Google Sheets · pestaña Leads</td><td class="c">—</td><td class="c"><b>E</b> append</td><td class="c">L</td><td class="c">—</td><td class="c">L</td><td class="c">—</td></tr>
-    <tr><td>Google Sheets · Log de auditoría</td><td class="c">E append</td><td class="c">E append</td><td class="c">E append</td><td class="c">E append</td><td class="c">L + E append</td><td class="c">E append</td></tr>
+    <tr><td>Google Sheets · Log de auditoría (archivo aparte)</td><td class="c">E append</td><td class="c">E append</td><td class="c">E append</td><td class="c">E append</td><td class="c">L + E append</td><td class="c">E append</td></tr>
     <tr><td>Google Sheets · Export de uso de producto</td><td class="c">L</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td></tr>
     <tr><td>Google Sheets · Casos históricos (churns_similares)</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">L</td><td class="c">—</td><td class="c">—</td></tr>
     <tr><td>HubSpot · Contactos</td><td class="c">L</td><td class="c"><b>E</b> crear</td><td class="c">L</td><td class="c">L</td><td class="c">L</td><td class="c">—</td></tr>
     <tr><td>HubSpot · Deals / notas / tareas</td><td class="c">—</td><td class="c">—</td><td class="c">L + <b>E</b> nota/tarea</td><td class="c">L + <b>E</b> tarea</td><td class="c">L</td><td class="c"><b>E</b> estado HITL + etapa (post-aprob.)</td></tr>
-    <tr><td>HubSpot · Empresas (prop. health_score)</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c"><b>E</b> 1 propiedad</td><td class="c">L</td><td class="c">—</td></tr>
-    <tr><td>Gmail</td><td class="c">L (entrada)</td><td class="c">—</td><td class="c"><b>E</b> borrador + plantillas</td><td class="c">L (soporte@)</td><td class="c">—</td><td class="c"><b>E</b> envío aprobado</td></tr>
+    <tr><td>HubSpot · Empresas (prop. health_score)</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c"><b>E</b> health_score*</td><td class="c">L</td><td class="c">—</td></tr>
+    <tr><td>Gmail</td><td class="c">L (entrada)</td><td class="c">—</td><td class="c"><b>E</b> borrador + plantillas</td><td class="c">L (soporte@)</td><td class="c">—</td><td class="c"><b>E</b> envío aprobado + mensaje de contención fijo</td></tr>
     <tr><td>Google Calendar (AE de turno)</td><td class="c">—</td><td class="c">L + <b>E</b> crear evento</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td></tr>
     <tr><td>Google Drive · carpeta Playbooks</td><td class="c">—</td><td class="c">L</td><td class="c">L</td><td class="c">L</td><td class="c">L</td><td class="c">—</td></tr>
     <tr><td>Zendesk · tickets</td><td class="c">L (n.º abiertos)</td><td class="c">—</td><td class="c">—</td><td class="c">L</td><td class="c">—</td><td class="c">—</td></tr>
     <tr><td>Stripe · suscripciones y facturas</td><td class="c">L (MRR)</td><td class="c">—</td><td class="c">—</td><td class="c">L (estado)</td><td class="c">L (clave restringida)</td><td class="c">— <span class="muted">(reembolso lo ejecuta Finanzas)</span></td></tr>
     <tr><td>Slack · #escalamientos-revops</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c"><b>E</b> postear + webhook</td></tr>
   </table>
-  <p class="small"><b>L</b> = lectura · <b>E</b> = escritura acotada · — = sin acceso. <b>Reglas transversales:</b> (1) ninguna credencial tiene permiso de <i>borrar</i>; (2) una credencial de n8n por agente con scopes OAuth mínimos (p. ej. <code>gmail.compose</code> y no <code>gmail.modify</code> para A2); (3) Stripe solo con <i>restricted keys</i> de lectura: <b>ningún componente del sistema puede mover dinero</b>; (4) las pestañas del Sheet tienen rangos protegidos y el log es append-only; (5) el Gate HITL es el único con permisos de acción sensible y solo los usa con una aprobación humana registrada.</p>
+  <p class="small"><b>L</b> = lectura · <b>E</b> = escritura acotada · — = sin acceso. <b>Reglas transversales:</b> (1) <b>ningún flujo borra ni archiva</b>: los nodos solo usan operaciones de crear, agregar o actualizar. Es una restricción <i>acotada por diseño del flujo</i>, porque los scopes de escritura de HubSpot y Gmail técnicamente permitirían archivar o borrar borradores; (2) una credencial de n8n por agente; donde el conector lo permite se usan scopes mínimos, y si la credencial estándar exige permisos amplios (como la de Gmail), el límite lo pone el nodo configurado; (3) Stripe solo con <i>restricted keys</i> de lectura: <b>ningún componente del sistema puede mover dinero</b>; (4) el log vive en un Sheet aparte que solo edita la cuenta de servicio del flujo y que nadie del equipo puede modificar; (5) * HubSpot da scopes por objeto, no por propiedad: que A3 escriba solo <code>health_score</code> lo garantiza el nodo, que tiene ese único campo mapeado; (6) el Gate HITL es el único con permisos de acción sensible y solo los usa con una aprobación humana registrada.</p>
 
   <h3>2.4 Estrategia de Context Engineering por sub-workflow</h3>
-  <table class="small">
-    <tr><th style="width:12%">Agente</th><th style="width:38%">Contexto que recibe (historial + señales)</th><th style="width:25%">Se excluye deliberadamente</th><th>Técnica</th></tr>
-    <tr><td>A0</td><td>Señales crudas: mensaje, canal, logins 30 días, tickets abiertos, uso del plan, MRR; búsqueda del contacto en HubSpot.</td><td>Historial completo, detalle de facturas y medios de pago.</td><td>Context engineering con reglas determinísticas (Edit Fields/Set): arma un bloque <code>contexto</code> curado (health, prioridad, nota) que reciben los agentes.</td></tr>
-    <tr><td>A1</td><td>Últimos 10 turnos de la sesión; campos del formulario si existen; resumen del catálogo público (Drive); Scorecard v1.</td><td>Datos de otros clientes, precios no publicados.</td><td>Window Buffer Memory por <code>sessionId</code>; rúbrica en el system prompt.</td></tr>
-    <tr><td>A2</td><td>Resumen de los últimos 5 emails del hilo; JSON de A1 (puntaje, evidencias); etapa del deal; objeciones previas; Playbook v1.</td><td>Notas internas de AE, info de otras cuentas.</td><td>Resumen previo con LLM liviano; recuperación de la sección del playbook por categoría.</td></tr>
-    <tr><td>A3</td><td>Bloque <code>contexto</code> de A0 (logins 30 días, tickets abiertos, uso del plan, health, prioridad, último mensaje); estado de pago; MRR; fecha de renovación; casos de <code>churns_similares</code>.</td><td>Datos de tarjeta, contenido completo de tickets, PII de usuarios finales.</td><td>Pre-agregación con nodos nativos Aggregate / Summarize <i>antes</i> del LLM; se excluyen campos con PII mediante Edit Fields (Set).</td></tr>
-    <tr><td>A4</td><td>Deals cerrados del período (id, monto, fecha, UTM); facturas pagadas (id, monto); muestra aleatoria del 10% del log.</td><td>Conversaciones completas.</td><td>Cruce determinístico por IDs con nodos Merge + Summarize; el LLM solo explica desvíos.</td></tr>
-  </table>
-  <p class="small">Principios: <b>contratos JSON validados</b> (Structured Output Parser en cada agente + nodo IF que verifica los campos obligatorios antes de delegar; si falla, se reintenta una vez y luego va a HITL), <b>trazabilidad</b> por <code>event_id</code> de punta a punta, <b>minimización de datos personales</b> conforme a la Ley 19.628 y a la Ley 21.719 de Protección de Datos Personales (que entra en vigencia en diciembre de 2026), y <b>contexto mínimo suficiente</b>: cada agente ve solo lo que su rúbrica necesita.</p>
+  <ul class="small">
+    <li><b>A0:</b> recibe las señales crudas (mensaje, canal, logins de 30 días, tickets abiertos, uso del plan, MRR y contacto de HubSpot) y arma con Edit Fields/Set un bloque <code>contexto</code> curado (health, prioridad, nota). Excluye el historial completo y los medios de pago.</li>
+    <li><b>A1:</b> últimos 10 turnos (Window Buffer Memory por <code>sessionId</code>), campos del formulario, catálogo público y Scorecard. Excluye datos de otros clientes y precios no publicados.</li>
+    <li><b>A2:</b> resumen de los últimos 5 emails del hilo (lo entrega A0 desde Gmail entrante), JSON de A1, etapa del deal y sección del Playbook según la objeción. Excluye notas internas del AE.</li>
+    <li><b>A3:</b> bloque <code>contexto</code> de A0, estado de pago, MRR, renovación y casos de <code>churns_similares</code>, agregados con Aggregate/Summarize <i>antes</i> del LLM. Excluye datos de tarjeta, el texto completo de los tickets y datos personales de usuarios finales.</li>
+    <li><b>A4:</b> deals cerrados (id, monto, fecha, UTM), facturas pagadas y una muestra del 10% del log, cruzados con Merge por IDs. El LLM solo explica los desvíos.</li>
+  </ul>
+  <p class="small">Principios: <b>contratos JSON validados</b> (Structured Output Parser + IF; si falla, se reintenta una vez y luego va a HITL), <b>trazabilidad</b> por <code>event_id</code> y <b>minimización de datos personales</b> conforme a la Ley 19.628 y a la Ley 21.719 (que entra en vigencia en diciembre de 2026).</p>
 </section>
 
 <!-- ============================ PÁGINA 3 ============================ -->
@@ -358,19 +357,19 @@ Marca como desvío toda acción sin evidencia citada, fuera de semáforo o con J
       <td>Registrar leads (append en Sheets, crear en HubSpot) · escribir logs y estados fijos · actualizar <i>health_score</i> · crear notas y tareas internas · etiquetar emails · responder preguntas generales con información pública aprobada · agendar reunión exploratoria en horario libre del AE · enviar plantillas de seguimiento aprobadas <b>sin modificar</b>.</td>
       <td>Ejecuta y registra en el log con <code>event_id</code>. A4 audita el 10% semanalmente.</td></tr>
     <tr><td><span class="tag a">AMARILLO · borrador + aprobación</span></td>
-      <td>Emails personalizados a prospectos A · respuesta a objeciones de competencia o funcionalidad · cambio de etapa de un deal · reasignación de cuenta a otro AE o CSM · cualquier mensaje a un cliente con health score amarillo o rojo · propuestas de upsell · contactar a un directivo de primer nivel (gerente general, CFO, CTO) · marcar un deal como perdido · <b>toda salida de agente con confianza &lt; 0,95</b> · toda cuenta de <b>prioridad Alta</b>.</td>
+      <td>Emails personalizados a prospectos A · respuesta a objeciones de competencia o funcionalidad · cambio de etapa de un deal · reasignación de cuenta a otro AE o CSM · cualquier mensaje a un cliente con health score amarillo o rojo · propuestas de upsell · contactar a un directivo de primer nivel (gerente general, CFO, CTO) · marcar un deal como perdido · <b>toda salida de agente con confianza &lt; 0,95</b> · toda cuenta de cliente con <b>prioridad Alta</b> (churn con MRR ≥ USD 500).</td>
       <td>El agente prepara la acción y la deja <b>pendiente</b>; el responsable aprueba o edita en Slack. SLA: 4 h hábiles. Sin respuesta se reasigna al líder; <b>nunca se auto-aprueba</b>.</td></tr>
     <tr><td><span class="tag r">ROJO · congelado + escalado forzado</span></td>
       <td>Reembolsos, devoluciones o contracargos · transferencias de dinero · descuentos o cambios de precio de renovación · cancelaciones o bajas · reclamos legales, demandas o reclamos ante el SERNAC (Ley 19.496) · solicitudes de acceso, rectificación o supresión de datos personales (Ley 21.719) · riesgo de churn crítico · cualquier borrado de información.</td>
-      <td>El bot <b>no ejecuta ni promete nada</b>. Envía al cliente un mensaje de contención fijo y congela el caso (<code>estado=HITL_PENDIENTE</code>). Escalado obligatorio a Slack con botones. SLA: 1 h hábil.</td></tr>
+      <td>El bot <b>no ejecuta ni promete nada</b>. Envía al cliente un mensaje de contención fijo y congela el caso (<code>estado=HITL_PENDIENTE</code>). Escalado obligatorio a Slack (Send and Wait). SLA: 1 h hábil.</td></tr>
   </table>
 
-  <h3>3.4 Protocolo de escalado forzado a humanos (Slack con botones)</h3>
+  <h3>3.4 Protocolo de escalado forzado a humanos (Slack · Send and Wait)</h3>
   <div class="grid2">
     <div>
       <h4>Variables críticas que disparan el escalado</h4>
       <ul class="small">
-        <li><b>Regla de oro (Clase 7):</b> pasa a humano toda salida con <b>confianza &lt; 0,95</b>, <b>acción sensible</b> (precio, descuento, reembolso, directivo de primer nivel, deal perdido) o cuenta de <b>prioridad Alta</b>.</li>
+        <li><b>Regla de oro (Clase 7):</b> pasa a humano toda salida con <b>confianza &lt; 0,95</b>, <b>acción sensible</b> (precio, descuento, reembolso, directivo de primer nivel, deal perdido) o cuenta de <b>prioridad Alta</b> (solo clientes existentes en ruta churn con MRR ≥ USD 500; no aplica a leads, que se rigen por la Scorecard 4.1).</li>
         <li><b>Churn:</b> Health Score &lt; 50 con MRR ≥ USD 500 (prioridad Alta); o expresiones de baja ("cancelar", "dar de baja", "nos cambiamos a…").</li>
         <li><b>Reembolso:</b> cualquier pedido de devolución, reintegro o contracargo, <b>sin importar el monto</b>.</li>
         <li><b>Legal:</b> menciones a abogado, demanda, SERNAC, incumplimiento contractual o datos personales.</li>
@@ -379,11 +378,11 @@ Marca como desvío toda acción sin evidencia citada, fuera de semáforo o con J
       <ol class="small">
         <li><b>Detección</b> por A0 (en la entrada) o A3 (en el monitoreo) → <code>escalado.json</code>.</li>
         <li><b>Congelamiento:</b> estado <code>HITL_PENDIENTE</code> en HubSpot; el agente deja de tratar el tema y responde: <i>"Tu solicitud fue derivada a una persona del equipo, que te contactará dentro de las próximas horas hábiles."</i></li>
-        <li><b>Notificación</b> en Slack (Block Kit) con resumen, evidencia citada, MRR, renovación y acción sugerida. Se menciona al responsable según el ruteo: churn → CSM + Head of CS; reembolso → Finanzas; legal → Legal/Gerencia.</li>
-        <li><b>Espera:</b> el nodo n8n <i>Wait → On Webhook Call</i> retoma el flujo con el botón presionado y el ID de Slack de quien decidió.</li>
+        <li><b>Notificación</b> con el nodo nativo <b>Slack · Send and Wait for Response</b> (respuesta por formulario), sin app de Slack a medida, con resumen, evidencia citada, MRR, renovación y acción sugerida. Se menciona al responsable según el ruteo: churn → CSM + Head of CS; reembolso → Finanzas; legal → Legal/Gerencia.</li>
+        <li><b>Espera:</b> el mismo nodo pausa el flujo hasta que el responsable completa el formulario (decisión, texto editado y comentario) y registra quién respondió.</li>
         <li><b>Ejecución:</b> el Gate ejecuta solo lo aprobado (p. ej. enviar email aprobado o mover etapa). Los reembolsos los procesa Finanzas en Stripe; el Gate solo registra la decisión.</li>
-        <li><b>SLA y re-escalado:</b> sin respuesta en 1 h (rojo) o 4 h (amarillo) → recordatorio + Gmail al líder del área. Nunca hay auto-aprobación por timeout.</li>
-        <li><b>Auditoría:</b> quién decidió, cuándo, qué y con qué evidencia, en el log append-only.</li>
+        <li><b>SLA y re-escalado:</b> límite de espera del nodo de 1 h (rojo) o 4 h (amarillo). Al vencer, recordatorio y <b>Gmail · Send and Wait</b> al líder del área. Nunca hay auto-aprobación por timeout.</li>
+        <li><b>Auditoría:</b> quién decidió, cuándo, qué y con qué evidencia, en el log (Sheet aparte, solo se agregan filas).</li>
       </ol>
     </div>
     <div>
@@ -396,10 +395,10 @@ Marca como desvío toda acción sin evidencia citada, fuera de semáforo o con J
         <b>Health Score:</b> 14/100 (4 logins en 30 días; 4 tickets abiertos; mensaje con intención de baja) · confianza del agente 0,82<br>
         <b>Evidencia:</b> "Si no lo resuelven esta semana pedimos la baja y el reintegro del último mes" (ticket #8841)<br>
         <b>Acción sugerida:</b> llamada con un ingeniero en 24 h + informe escrito del incidente (funcionó en un caso similar según <code>churns_similares</code>). <i>El sistema no ofreció compensación.</i><br><b>Frenado porque:</b> confianza 0,82 &lt; 0,95 · acción sensible (reembolso) · prioridad Alta<br>
-        <span class="btn p">✅ Aprobar sugerencia</span><span class="btn">✏️ Editar y aprobar</span><span class="btn d">❌ Rechazar</span><span class="btn">🙋 Tomar caso</span>
+        <span class="btn p">📝 Responder</span> <span class="muted small">→ formulario: Aprobar · Editar y aprobar · Rechazar · Tomar caso</span>
         <div class="muted small" style="margin-top:1.2mm">SLA 1 h hábil · responsables: @csm-dueño @head-cs @finanzas</div>
       </div>
-      <p class="small" style="margin-top:2mm"><b>Efecto de cada botón:</b> <i>Aprobar</i> → el Gate ejecuta la acción sugerida y registra al aprobador · <i>Editar y aprobar</i> → modal de edición, se ejecuta la versión editada · <i>Rechazar</i> → motivo obligatorio, caso cerrado para el bot · <i>Tomar caso</i> → se asigna en HubSpot a quien presiona y el bot no vuelve a intervenir en el hilo.</p>
+      <p class="small" style="margin-top:2mm"><b>Efecto de cada opción del formulario:</b> <i>Aprobar</i> → el Gate ejecuta la acción sugerida y registra al aprobador · <i>Editar y aprobar</i> → se ejecuta el texto editado en el formulario · <i>Rechazar</i> → motivo obligatorio, caso cerrado para el bot · <i>Tomar caso</i> → se asigna en HubSpot a quien presiona y el bot no vuelve a intervenir en el hilo.</p>
     </div>
   </div>
 </section>
@@ -441,7 +440,7 @@ Marca como desvío toda acción sin evidencia citada, fuera de semáforo o con J
         <tr><td>Fricción de soporte</td><td class="c">30</td><td>30 − 6 × tickets abiertos (mínimo 0) (Zendesk)</td></tr>
         <tr><td>Sentimiento</td><td class="c">30</td><td>0 si el último mensaje o ticket contiene cancelar, baja, frustración, reclamo o competencia; si no, 30</td></tr>
       </table>
-      <p class="small"><span class="tag g">≥ 70</span> sana (si uso del plan ≥ 85% → ruta expansión) · <span class="tag a">50–69</span> tarea al CSM · <span class="tag r">&lt; 50</span> ruta churn; <b>prioridad Alta</b> si MRR ≥ USD 500. Reglas duras y auditables: el LLM no calcula el puntaje. <b>Override:</b> mención explícita de baja, reembolso o acción legal = rojo, sin importar el puntaje.</p>
+      <p class="small"><span class="tag g">≥ 70</span> sana (si uso del plan ≥ 85% → ruta expansión) · <span class="tag a">50–69</span> tarea al CSM · <span class="tag r">&lt; 50</span> ruta churn; <b>prioridad Alta</b> si MRR ≥ USD 500 (solo clientes; no aplica a leads). Reglas duras y auditables: el LLM no calcula el puntaje. <b>Override:</b> mención explícita de baja, reembolso o acción legal = rojo, sin importar el puntaje.</p>
     </div>
   </div>
 
