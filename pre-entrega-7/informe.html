@@ -308,7 +308,7 @@ Marca como desvío toda acción sin evidencia citada, fuera de semáforo o con J
     <tr><td>Google Drive · carpeta Playbooks</td><td class="c">—</td><td class="c">L</td><td class="c">L</td><td class="c">L</td><td class="c">L</td><td class="c">—</td></tr>
     <tr><td>Zendesk · tickets</td><td class="c">L (n.º abiertos)</td><td class="c">—</td><td class="c">—</td><td class="c">L</td><td class="c">—</td><td class="c">—</td></tr>
     <tr><td>Stripe · suscripciones y facturas</td><td class="c">L (MRR)</td><td class="c">—</td><td class="c">—</td><td class="c">L (estado)</td><td class="c">L (clave restringida)</td><td class="c">— <span class="muted">(reembolso lo ejecuta Finanzas)</span></td></tr>
-    <tr><td>Slack · #escalamientos-revops</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c"><b>E</b> postear + webhook</td></tr>
+    <tr><td>Slack · #escalamientos-revops</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c"><b>E</b> Send and Wait</td></tr>
   </table>
   <p class="small"><b>L</b> = lectura · <b>E</b> = escritura acotada · — = sin acceso. <b>Reglas transversales:</b> (1) <b>ningún flujo borra ni archiva</b>: los nodos solo usan operaciones de crear, agregar o actualizar. Es una restricción <i>acotada por diseño del flujo</i>, porque los scopes de escritura de HubSpot y Gmail técnicamente permitirían archivar o borrar borradores; (2) una credencial de n8n por agente; donde el conector lo permite se usan scopes mínimos, y si la credencial estándar exige permisos amplios (como la de Gmail), el límite lo pone el nodo configurado; (3) Stripe solo con <i>restricted keys</i> de lectura: <b>ningún componente del sistema puede mover dinero</b>; (4) el log vive en un Sheet aparte que solo edita la cuenta de servicio del flujo y que nadie del equipo puede modificar; (5) * HubSpot da scopes por objeto, no por propiedad: que A3 escriba solo <code>health_score</code> lo garantiza el nodo, que tiene ese único campo mapeado; (6) el Gate HITL es el único con permisos de acción sensible y solo los usa con una aprobación humana registrada.</p>
 
@@ -345,7 +345,7 @@ Marca como desvío toda acción sin evidencia citada, fuera de semáforo o con J
     <tr><td>Cuentas en riesgo detectadas ≥ 30 días antes de renovar</td><td class="c">~30%</td><td class="c">≥ 80%</td><td>Fecha de alerta vs. fecha de renovación/baja</td></tr>
     <tr><td>Churn mensual de cuentas</td><td class="c">2,4%</td><td class="c">1,8% (a 6 meses)</td><td>Bajas / cuentas activas al inicio del mes (Stripe)</td></tr>
     <tr><td>Precisión de la Scorecard de leads</td><td class="c">n/a</td><td class="c">≥ 85% de concordancia</td><td>Revisión humana ciega de 30 leads/mes</td></tr>
-    <tr><td>Escalamientos HITL atendidos en SLA</td><td class="c">sin SLA (2 días)</td><td class="c">≥ 95%</td><td>Tiempo entre post en Slack y clic de decisión</td></tr>
+    <tr><td>Escalamientos HITL atendidos en SLA</td><td class="c">sin SLA (2 días)</td><td class="c">≥ 95%</td><td>Tiempo entre el aviso en Slack y la respuesta del formulario</td></tr>
     <tr><td>Reporte de atribución de ingresos</td><td class="c">día hábil 3</td><td class="c">día hábil 1 · ≥ 90% atribuido</td><td>Fecha de publicación; % de ingresos con cadena completa</td></tr>
     <tr><td>Acciones sensibles ejecutadas sin aprobación</td><td class="c">—</td><td class="c"><b>0</b> (tolerancia cero)</td><td>Auditoría A4 + log del Gate</td></tr>
   </table>
@@ -379,10 +379,10 @@ Marca como desvío toda acción sin evidencia citada, fuera de semáforo o con J
         <li><b>Detección</b> por A0 (en la entrada) o A3 (en el monitoreo) → <code>escalado.json</code>.</li>
         <li><b>Congelamiento:</b> estado <code>HITL_PENDIENTE</code> en HubSpot; el agente deja de tratar el tema y responde: <i>"Tu solicitud fue derivada a una persona del equipo, que te contactará dentro de las próximas horas hábiles."</i></li>
         <li><b>Notificación</b> con el nodo nativo <b>Slack · Send and Wait for Response</b> (respuesta por formulario), sin app de Slack a medida, con resumen, evidencia citada, MRR, renovación y acción sugerida. Se menciona al responsable según el ruteo: churn → CSM + Head of CS; reembolso → Finanzas; legal → Legal/Gerencia.</li>
-        <li><b>Espera:</b> el mismo nodo pausa el flujo hasta que el responsable completa el formulario (decisión, texto editado y comentario) y registra quién respondió.</li>
+        <li><b>Espera:</b> el mismo nodo pausa el flujo hasta que el responsable completa el formulario: <b>responsable que decide</b> (lista desplegable obligatoria), decisión, texto editado y comentario. La identidad se toma de ese campo, no de la cuenta de Slack.</li>
         <li><b>Ejecución:</b> el Gate ejecuta solo lo aprobado (p. ej. enviar email aprobado o mover etapa). Los reembolsos los procesa Finanzas en Stripe; el Gate solo registra la decisión.</li>
         <li><b>SLA y re-escalado:</b> límite de espera del nodo de 1 h (rojo) o 4 h (amarillo). Al vencer, recordatorio y <b>Gmail · Send and Wait</b> al líder del área. Nunca hay auto-aprobación por timeout.</li>
-        <li><b>Auditoría:</b> quién decidió, cuándo, qué y con qué evidencia, en el log (Sheet aparte, solo se agregan filas).</li>
+        <li><b>Auditoría:</b> quién decidió (campo del formulario), cuándo, qué y con qué evidencia, en el log (Sheet aparte, solo se agregan filas).</li>
       </ol>
     </div>
     <div>
@@ -395,10 +395,10 @@ Marca como desvío toda acción sin evidencia citada, fuera de semáforo o con J
         <b>Health Score:</b> 14/100 (4 logins en 30 días; 4 tickets abiertos; mensaje con intención de baja) · confianza del agente 0,82<br>
         <b>Evidencia:</b> "Si no lo resuelven esta semana pedimos la baja y el reintegro del último mes" (ticket #8841)<br>
         <b>Acción sugerida:</b> llamada con un ingeniero en 24 h + informe escrito del incidente (funcionó en un caso similar según <code>churns_similares</code>). <i>El sistema no ofreció compensación.</i><br><b>Frenado porque:</b> confianza 0,82 &lt; 0,95 · acción sensible (reembolso) · prioridad Alta<br>
-        <span class="btn p">📝 Responder</span> <span class="muted small">→ formulario: Aprobar · Editar y aprobar · Rechazar · Tomar caso</span>
+        <span class="btn p">📝 Responder</span> <span class="muted small">→ formulario: responsable que decide (obligatorio) · Aprobar · Editar y aprobar · Rechazar · Tomar caso</span>
         <div class="muted small" style="margin-top:1.2mm">SLA 1 h hábil · responsables: @csm-dueño @head-cs @finanzas</div>
       </div>
-      <p class="small" style="margin-top:2mm"><b>Efecto de cada opción del formulario:</b> <i>Aprobar</i> → el Gate ejecuta la acción sugerida y registra al aprobador · <i>Editar y aprobar</i> → se ejecuta el texto editado en el formulario · <i>Rechazar</i> → motivo obligatorio, caso cerrado para el bot · <i>Tomar caso</i> → se asigna en HubSpot a quien presiona y el bot no vuelve a intervenir en el hilo.</p>
+      <p class="small" style="margin-top:2mm"><b>Efecto de cada opción del formulario:</b> <i>Aprobar</i> → el Gate ejecuta la acción sugerida y registra al responsable elegido en el formulario · <i>Editar y aprobar</i> → se ejecuta el texto editado en el formulario · <i>Rechazar</i> → motivo obligatorio, caso cerrado para el bot · <i>Tomar caso</i> → se asigna en HubSpot al responsable elegido en el formulario y el bot no vuelve a intervenir en el hilo.</p>
     </div>
   </div>
 </section>
