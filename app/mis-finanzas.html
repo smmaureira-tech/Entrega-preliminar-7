@@ -392,16 +392,17 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
       </div>
       <div class="mp-field">
         <label for="g-monto">2. ¿Cuánto gastaste?</label>
-        <span class="mp-help">Solo números. Si sacaste foto, puedes dejarlo vacío.</span>
+        <span class="mp-help g-monto-help">Solo números. Ejemplo: 14900</span>
         <input id="g-monto" type="text" inputmode="numeric" autocomplete="off" maxlength="12">
       </div>
-      <div class="mp-field">
+      <p class="mp-msg g-con-foto" hidden>Listo. La fecha y el comercio los anota Claude esta noche.</p>
+      <div class="mp-field g-sin-foto">
         <label for="g-desc">3. ¿En qué?</label>
         <span class="mp-help">Ejemplo: Bencina camión</span>
         <input id="g-desc" type="text" autocomplete="off" maxlength="50" list="g-descs">
         <datalist id="g-descs"></datalist>
       </div>
-      <div class="mp-field">
+      <div class="mp-field g-sin-foto">
         <label for="g-fecha">4. Fecha</label>
         <input id="g-fecha" type="date" min="2000-01-01" max="2099-12-31">
       </div>
@@ -851,7 +852,10 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
   /* ================= GASTOS ================= */
   function filaGasto(g) {
     const borrar = editG ? boton('mp-del', 'Borrar', () => { borrandoG = g.id; render(); }) : null;
+    const diferencia = g.revisar && g.monto_boleta > 0 && g.monto_boleta !== g.monto;
     const sub = g.por_leer ? 'Claude anotará el total esta noche'
+      : g.por_completar ? 'Claude completará la fecha y el comercio esta noche'
+      : diferencia ? 'El monto no coincide con la boleta · tócalo'
       : g.revisar ? 'Claude lo leyó · tócalo para revisar'
       : fechaFmt.format(fechaLocal(g.fecha)) + (g.foto ? ' · con boleta' : '');
     const li = fila({
@@ -861,7 +865,14 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
         const partes = [];
         if (g.foto) { const im = el('img'); im.src = '/_blob/' + g.foto; im.alt = 'Boleta de ' + g.descripcion; partes.push(im); }
         else partes.push(el('p', 'mp-note2', 'Este gasto no tiene foto.'));
-        if (g.revisar) {
+        if (diferencia) {
+          partes.push(el('p', null, 'Escribiste ' + money.format(g.monto) + ', pero en la boleta dice ' + money.format(g.monto_boleta) + '. ¿Cuál es el correcto?'));
+          const row = el('div', 'mp-row');
+          row.append(
+            boton('mp-btn is-main', 'El de la boleta: ' + money.format(g.monto_boleta), () => guardar(db.doc('gastos/' + g.id).update({ monto: g.monto_boleta, revisar: false }), 'Listo, quedó ' + money.format(g.monto_boleta) + '.')),
+            boton('mp-btn', 'El que escribí: ' + money.format(g.monto), () => guardar(db.doc('gastos/' + g.id).update({ revisar: false }), 'Listo, quedó ' + money.format(g.monto) + '.')));
+          partes.push(row);
+        } else if (g.revisar) {
           partes.push(el('p', null, 'Claude leyó ' + money.format(g.monto) + ' del ' + fechaFmt.format(fechaLocal(g.fecha)) + '. Mira la boleta: ¿es el mismo total?'));
           const row = el('div', 'mp-row');
           row.append(
@@ -912,9 +923,9 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
       el('span', 'mp-hero-num', money.format(d3.sum(lista, (g) => g.monto))),
       el('span', 'mp-hero-sub', lista.length ? lista.length + (lista.length === 1 ? ' gasto' : ' gastos') + (conFoto ? ' · ' + conFoto + ' con boleta' : '') : 'Sin gastos anotados'),
       ...(() => {
-        const porLeer = lista.filter((g) => g.por_leer).length, porRevisar = lista.filter((g) => g.revisar).length;
+        const porLeer = lista.filter((g) => g.por_leer).length, porRevisar = lista.filter((g) => g.revisar && g.monto_boleta > 0 && g.monto_boleta !== g.monto).length;
         const t = [porLeer ? porLeer + (porLeer === 1 ? ' boleta la leerá Claude esta noche.' : ' boletas las leerá Claude esta noche.') : '',
-          porRevisar ? porRevisar + (porRevisar === 1 ? ' boleta leída por Claude espera que la revises.' : ' boletas leídas por Claude esperan que las revises.') : ''].filter(Boolean).join(' ');
+          porRevisar ? porRevisar + (porRevisar === 1 ? ' gasto tiene un monto distinto al de la boleta. Tócalo para elegir el correcto.' : ' gastos tienen un monto distinto al de la boleta. Tócalos para elegir el correcto.') : ''].filter(Boolean).join(' ');
         return t ? [el('p', 'mp-msg', t)] : [];
       })());
     const ul = $('.mp-g-list');
@@ -944,6 +955,10 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
   const mostrarFoto = () => {
     const box = $('.mp-photo');
     box.hidden = !fotoNueva;
+    const conFoto = !!fotoNueva && !!assets;
+    $$('.g-sin-foto').forEach((x) => { x.hidden = conFoto && !$('#g-desc').classList.contains('is-auto'); });
+    $('.g-con-foto').hidden = !conFoto;
+    $('.g-monto-help').textContent = conFoto ? 'Mira el TOTAL en la boleta y escríbelo. Si no puedes, déjalo vacío.' : 'Solo números. Ejemplo: 14900';
     if (fotoNueva) box.querySelector('img').src = URL.createObjectURL(fotoNueva);
   };
   // Claude lee la boleta y llena monto, fecha y comercio; la persona solo revisa
@@ -983,6 +998,8 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
       marcarAuto('#g-monto', String(total));
       if (r.fecha && /^\d{4}-\d{2}-\d{2}$/.test(r.fecha) && r.fecha <= hoyISO) marcarAuto('#g-fecha', r.fecha);
       if (r.comercio && !$('#g-desc').value.trim()) marcarAuto('#g-desc', String(r.comercio).slice(0, 50));
+      $$('.g-sin-foto').forEach((x) => { x.hidden = false; });
+      $('.g-con-foto').hidden = true;
       lectura(
         el('span', null, 'Leí en la boleta:'),
         el('b', 'g-total', money.format(total)),
@@ -1038,10 +1055,14 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     const descripcion = $('#g-desc').value.trim();
     const fecha = $('#g-fecha').value;
     const falla = (texto, sel) => { $('.mp-g-err').textContent = texto; if (sel) $(sel).focus(); };
-    const porLeer = !monto && !!fotoNueva && !!assets;
-    if (!monto && !porLeer) return falla('Falta el paso 2: escribe cuánto gastaste, o saca una foto a la boleta.', '#g-monto');
-    if (!descripcion && !porLeer) return falla('Falta el paso 3: escribe en qué gastaste.', '#g-desc');
-    if (!fecha || !$('#g-fecha').validity.valid) return falla('Falta el paso 4: elige la fecha.', '#g-fecha');
+    const conFoto = !!fotoNueva && !!assets;
+    const leidoEnVivo = $('#g-monto').classList.contains('is-auto');
+    // Con foto: Claude completa en la noche lo que falte (y comprueba el monto escrito)
+    const porLeer = conFoto && !monto;
+    const porCompletar = conFoto && !!monto && !leidoEnVivo;
+    if (!monto && !conFoto) return falla('Falta el paso 2: escribe cuánto gastaste, o saca una foto a la boleta.', '#g-monto');
+    if (!conFoto && !descripcion) return falla('Falta el paso 3: escribe en qué gastaste.', '#g-desc');
+    if (!conFoto && (!fecha || !$('#g-fecha').validity.valid)) return falla('Falta el paso 4: elige la fecha.', '#g-fecha');
     const btn = $('.mp-g-save');
     btn.disabled = true;
     let foto = null;
@@ -1051,11 +1072,13 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
       catch (e) { btn.disabled = false; btn.textContent = 'Guardar'; return falla(e && e.code === 'too_large' ? 'La foto es muy grande. Prueba con otra.' : 'No se pudo subir la foto. Revisa tu internet e intenta de nuevo.'); }
     }
     btn.textContent = 'Guardando…';
-    const leido = $('#g-monto').classList.contains('is-auto');
-    const ok = await guardar(db.collection('gastos').add({ monto: porLeer ? null : monto, descripcion: descripcion || 'Boleta por leer', fecha, foto, leido_de_foto: leido, por_leer: porLeer, revisar: false, creado: Date.now() }),
-      porLeer ? 'Guardado. Claude anotará el total esta noche.' : 'Se guardó el gasto.');
+    const fechaFinal = fecha && $('#g-fecha').validity.valid ? fecha : fechaInicial(mesGas);
+    const ok = await guardar(db.collection('gastos').add({
+      monto: porLeer ? null : monto, descripcion: descripcion || 'Gasto con boleta', fecha: fechaFinal, foto,
+      leido_de_foto: leidoEnVivo, por_leer: porLeer, por_completar: porCompletar, revisar: false, creado: Date.now() }),
+      porLeer ? 'Guardado. Claude anotará el total esta noche.' : porCompletar ? '¡Listo! Claude completa el resto esta noche.' : 'Se guardó el gasto.');
     btn.disabled = false; btn.textContent = 'Guardar';
-    if (ok) { mesGas = claveDe(fecha); fotoNueva = null; $('.mp-g-form').hidden = true; render(); $('#inicio').scrollIntoView({ block: 'start' }); }
+    if (ok) { mesGas = claveDe(fechaFinal); fotoNueva = null; $('.mp-g-form').hidden = true; render(); $('#inicio').scrollIntoView({ block: 'start' }); }
   });
 
   /* ================= MI META ================= */
@@ -1415,7 +1438,7 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     () => avisar('No se pudieron leer tus datos. Revisa tu internet y vuelve a abrir la página.', true));
   const limpiarPago = (r) => Object.assign(r, { monto: Number(r.monto) || 0, dia: Number(r.dia) || 1, cuotas_total: Number(r.cuotas_total) || 0 });
   const limpiarTrabajo = (r) => Object.assign(r, { cliente: String(r.cliente || 'Sin nombre'), maquinaria: String(r.maquinaria || 'Equipo'), fecha: String(r.fecha || hoyISO).slice(0, 10), tipo: ['hora', 'dia', 'trato'].includes(r.tipo) ? r.tipo : 'hora', cantidad: Number(r.cantidad) || 1, valor: Number(r.valor) || 0, con_iva: r.con_iva !== false });
-  const limpiarGasto = (r) => Object.assign(r, { descripcion: String(r.descripcion || 'Gasto'), fecha: String(r.fecha || hoyISO).slice(0, 10), monto: Number(r.monto) || 0, foto: r.foto || null, por_leer: r.por_leer === true && !!r.foto, revisar: r.revisar === true });
+  const limpiarGasto = (r) => Object.assign(r, { descripcion: String(r.descripcion || 'Gasto'), fecha: String(r.fecha || hoyISO).slice(0, 10), monto: Number(r.monto) || 0, foto: r.foto || null, por_leer: r.por_leer === true && !!r.foto, por_completar: r.por_completar === true && !!r.foto, revisar: r.revisar === true, monto_boleta: Number(r.monto_boleta) || 0 });
 
   render();
   (async () => {
