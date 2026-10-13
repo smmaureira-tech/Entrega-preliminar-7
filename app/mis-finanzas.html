@@ -139,6 +139,10 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
 .mp-preview b { font-size: .92rem; font-variant-numeric: tabular-nums; }
 .mp-photo { display: grid; gap: .4rem; }
 .mp-photo img { max-width: 100%; max-height: 14rem; border-radius: 10px; object-fit: contain; background: var(--panel); justify-self: start; }
+.g-lectura { border-radius: 10px; padding: .6rem .75rem; background: var(--tint); border: 1px solid var(--tint2); display: grid; gap: .3rem; font-size: .9rem; }
+.g-lectura b.g-total { font-size: 1.6rem; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.g-lectura .mp-more { padding: 0; }
+.mp-field input.is-auto { border-color: var(--acc-strong); background: var(--tint); }
 .mp-err { color: var(--bad); font-weight: 700; font-size: .9rem; }
 .mp-err:empty { display: none; }
 .mp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -373,7 +377,7 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
       <h2>Nuevo gasto</h2>
       <div class="mp-field">
         <span class="mp-lbl">1. Foto de la boleta o factura</span>
-        <span class="mp-help g-foto-help">Puedes sacarla ahora o elegirla de tus fotos. Es opcional.</span>
+        <span class="mp-help g-foto-help">Saca la foto y Claude anota el total por ti.</span>
         <div class="mp-choice g-foto-btns">
           <button type="button" id="g-cam">Sacar foto</button>
           <button type="button" id="g-gal">Elegir de mis fotos</button>
@@ -384,6 +388,7 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
           <img alt="Foto de la boleta elegida">
           <button type="button" class="mp-more g-quitar">Quitar foto</button>
         </div>
+        <div class="g-lectura" aria-live="polite" hidden></div>
       </div>
       <div class="mp-field">
         <label for="g-monto">2. ¿Cuánto gastaste?</label>
@@ -905,29 +910,74 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     box.hidden = !fotoNueva;
     if (fotoNueva) box.querySelector('img').src = URL.createObjectURL(fotoNueva);
   };
+  // Claude lee la boleta y llena monto, fecha y comercio; la persona solo revisa
+  let sample = null, puedeLeer = false, lecturaCtl = null;
+  const lectura = (...nodos) => { const box = $('.g-lectura'); box.hidden = !nodos.length; box.replaceChildren(...nodos); };
+  const marcarAuto = (sel, valor) => { const i = $(sel); i.value = valor; i.classList.add('is-auto'); };
+  async function leerBoleta() {
+    if (!fotoNueva || !puedeLeer) return;
+    if (lecturaCtl) lecturaCtl.abort();
+    lecturaCtl = new AbortController();
+    lectura(el('span', null, 'Leyendo la boleta… espera unos segundos.'));
+    try {
+      const r = await sample.json(
+        'La imagen es una foto de una boleta o factura chilena tomada con un celular. ' +
+        'Lee el MONTO TOTAL A PAGAR (el total final, con IVA incluido; no el neto, ni el IVA, ni un subtotal, ni el vuelto, ni lo pagado en efectivo). ' +
+        'Lee también la fecha de emisión y el nombre del comercio. ' +
+        'Responde solo con JSON: {"legible": true|false, "total": número entero en pesos sin puntos o null, ' +
+        '"fecha": "AAAA-MM-DD" o null, "comercio": texto corto o null, "seguro": true si el total se lee con claridad}. ' +
+        'Si no ves un total claro, usa "legible": false. No inventes números.',
+        { images: fotoNueva, modelTier: 'default', signal: lecturaCtl.signal, cache: false });
+      const total = Math.round(Number(r && r.total));
+      if (!r || !r.legible || !(total > 0)) {
+        lectura(el('span', null, 'No pude leer el total en esta foto. Escríbelo tú en el paso 2, o saca otra foto con más luz.'));
+        return;
+      }
+      marcarAuto('#g-monto', String(total));
+      if (r.fecha && /^\d{4}-\d{2}-\d{2}$/.test(r.fecha) && r.fecha <= hoyISO) marcarAuto('#g-fecha', r.fecha);
+      if (r.comercio && !$('#g-desc').value.trim()) marcarAuto('#g-desc', String(r.comercio).slice(0, 50));
+      lectura(
+        el('span', null, 'Leí en la boleta:'),
+        el('b', 'g-total', money.format(total)),
+        el('span', null, (r.comercio ? r.comercio + ' · ' : '') + (r.fecha ? fechaFmt.format(fechaLocal(r.fecha)) : 'sin fecha')),
+        el('span', null, r.seguro === false ? 'No estoy seguro del total. Compáralo con la boleta antes de guardar.' : 'Mira la boleta: si el total es el mismo, toca Guardar.'));
+    } catch (e) {
+      if (e && e.code === 'cancelled') return;
+      const permanente = ['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed', 'images_unavailable'].includes(e && e.code);
+      if (permanente) puedeLeer = false;
+      lectura(el('span', null, permanente ? 'Aquí no se puede leer la boleta. Escribe el total tú en el paso 2.'
+        : e && e.code === 'rate_limited' ? 'Se usaron muchas lecturas seguidas. Escribe el total tú, o prueba más tarde.'
+        : 'No se pudo leer la boleta. Escribe el total tú en el paso 2.'),
+        ...(permanente ? [] : [boton('mp-more', 'Intentar leer otra vez', leerBoleta)]));
+    }
+  }
   const elegirFoto = async (input) => {
     const f = input.files && input.files[0];
     input.value = '';
     if (!f) return;
     fotoNueva = await achicar(f);
     mostrarFoto();
+    leerBoleta();
   };
+  $$('#g-monto, #g-fecha, #g-desc').forEach((i) => i.addEventListener('input', () => i.classList.remove('is-auto')));
   $('#g-cam').addEventListener('click', () => $('#g-cam-input').click());
   $('#g-gal').addEventListener('click', () => $('#g-gal-input').click());
   $('#g-cam-input').addEventListener('change', (e) => elegirFoto(e.target));
   $('#g-gal-input').addEventListener('change', (e) => elegirFoto(e.target));
-  $('.g-quitar').addEventListener('click', () => { fotoNueva = null; mostrarFoto(); });
+  $('.g-quitar').addEventListener('click', () => { if (lecturaCtl) lecturaCtl.abort(); fotoNueva = null; mostrarFoto(); lectura(); });
   $('.mp-g-add').addEventListener('click', () => {
     ['#g-monto', '#g-desc'].forEach((s) => { $(s).value = ''; });
     $('#g-fecha').value = fechaInicial(mesGas);
     $('.mp-g-err').textContent = '';
-    fotoNueva = null; mostrarFoto();
+    fotoNueva = null; mostrarFoto(); lectura();
+    $$('#g-monto, #g-fecha, #g-desc').forEach((i) => i.classList.remove('is-auto'));
     $('.g-foto-btns').hidden = !assets;
-    $('.g-foto-help').textContent = assets ? 'Puedes sacarla ahora o elegirla de tus fotos. Es opcional.' : 'Para guardar fotos necesitas permiso para editar esta página.';
+    $('.g-foto-help').textContent = !assets ? 'Para guardar fotos necesitas permiso para editar esta página.'
+      : puedeLeer ? 'Saca la foto y Claude anota el total por ti. Tú solo revisas.' : 'Puedes sacarla ahora o elegirla de tus fotos. Es opcional.';
     $('.mp-g-form').hidden = false;
     $('.mp-g-form').scrollIntoView({ block: 'start' });
   });
-  $('.mp-g-cancel').addEventListener('click', () => { $('.mp-g-form').hidden = true; fotoNueva = null; });
+  $('.mp-g-cancel').addEventListener('click', () => { if (lecturaCtl) lecturaCtl.abort(); $('.mp-g-form').hidden = true; fotoNueva = null; lectura(); });
   $('.mp-g-save').addEventListener('click', async () => {
     const monto = numero('#g-monto');
     const descripcion = $('#g-desc').value.trim();
@@ -945,7 +995,8 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
       catch (e) { btn.disabled = false; btn.textContent = 'Guardar'; return falla(e && e.code === 'too_large' ? 'La foto es muy grande. Prueba con otra.' : 'No se pudo subir la foto. Revisa tu internet e intenta de nuevo.'); }
     }
     btn.textContent = 'Guardando…';
-    const ok = await guardar(db.collection('gastos').add({ monto, descripcion, fecha, foto, creado: Date.now() }), 'Se guardó el gasto.');
+    const leido = $('#g-monto').classList.contains('is-auto');
+    const ok = await guardar(db.collection('gastos').add({ monto, descripcion, fecha, foto, leido_de_foto: leido, creado: Date.now() }), 'Se guardó el gasto.');
     btn.disabled = false; btn.textContent = 'Guardar';
     if (ok) { mesGas = claveDe(fecha); fotoNueva = null; $('.mp-g-form').hidden = true; render(); $('#inicio').scrollIntoView({ block: 'start' }); }
   });
@@ -1321,6 +1372,8 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     leer('gastos', (xs) => { gastos = xs.map(limpiarGasto); });
     assets = await window.claude.use('assets');
     downloads = await window.claude.use('downloads');
+    sample = await window.claude.use('sample');
+    if (sample) { const lim = await sample.limits().catch(() => null); puedeLeer = !!(lim && lim.images); }
     if (!downloads) { $$('#r-pdf, #r-xlsx').forEach((b) => { b.disabled = true; }); estado('Las descargas no están disponibles en esta vista.'); }
   })();
   ponerPeriodo('mes');
