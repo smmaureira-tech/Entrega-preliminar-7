@@ -159,10 +159,36 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
 /* Reporte */
 .mp-report { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: .75rem; display: grid; gap: .6rem; }
 .mp-report .mp-status { font-size: .86rem; color: var(--muted); min-height: 1.2rem; }
-.mp-foot { margin-top: 1.5rem; font-size: .8rem; color: var(--muted); text-align: center; }
+.mp-foot { margin-top: 1.5rem; font-size: .8rem; color: var(--muted); text-align: center; display: grid; gap: .3rem; justify-items: center; }
+
+/* Candado con clave */
+.mp.is-locked > :not(#candado) { display: none !important; }
+.mp:not(.is-locked) > #candado { display: none; }
+#candado { --acc: var(--acc-meta); max-width: 20rem; margin: 2rem auto 0; padding: 1.4rem 1rem 1.2rem; border-radius: 18px; background: color-mix(in srgb, var(--acc) 14%, var(--bg)); border: 1px solid color-mix(in srgb, var(--acc) 32%, var(--bg)); display: grid; gap: 1rem; justify-items: center; text-align: center; }
+.mp-lock-title { font-size: 1.2rem; font-weight: 700; text-wrap: balance; }
+.mp-lock-help { font-size: .9rem; color: var(--muted); min-height: 1.4rem; }
+.mp-lock-help.is-bad { color: var(--bad); font-weight: 700; }
+.mp-dots { display: flex; gap: .8rem; }
+.mp-dots span { width: .95rem; height: .95rem; border-radius: 50%; border: 2px solid var(--fg); }
+.mp-dots span.is-on { background: var(--fg); }
+.mp-keys { display: grid; grid-template-columns: repeat(3, 3.6rem); gap: .6rem; }
+.mp-keys button { height: 3.2rem; border-radius: 14px; border: 1px solid var(--line); background: var(--bg); font-size: 1.3rem; font-weight: 700; cursor: pointer; }
+.mp-keys button.is-small { font-size: .82rem; }
+.mp-keys button:disabled { opacity: .4; }
 </style>
 
-<div class="mp" id="inicio">
+<div class="mp is-locked" id="inicio">
+  <section id="candado" aria-live="polite">
+    <p class="mp-lock-title">Cargando…</p>
+    <div class="mp-dots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <p class="mp-lock-help"></p>
+    <div class="mp-keys" role="group" aria-label="Teclado de la clave">
+      <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+      <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+      <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+      <button type="button" class="is-small" data-k="cancelar" hidden>Cancelar</button><button type="button" data-k="0">0</button><button type="button" class="is-small" data-k="borrar">Borrar</button>
+    </div>
+  </section>
   <nav class="mp-tabs" role="tablist" aria-label="Hojas">
     <button type="button" role="tab" id="tab-pagos" data-tab="pagos" aria-selected="true">Pagos</button>
     <button type="button" role="tab" id="tab-ingresos" data-tab="ingresos" aria-selected="false">Ingresos</button>
@@ -425,7 +451,13 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     </div>
   </section>
 
-  <p class="mp-foot">Tus datos se guardan solos cada vez que tocas Guardar o Pagar.</p>
+  <div class="mp-foot">
+    <p>Tus datos se guardan solos cada vez que tocas Guardar o Pagar.</p>
+    <div class="mp-row">
+      <button type="button" class="mp-more" id="bloquear">Bloquear ahora</button>
+      <button type="button" class="mp-more" id="cambiar-clave">Cambiar clave</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
@@ -1169,6 +1201,96 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     }
   }
 
+  /* ================= Clave de 4 números ================= */
+  // La clave se guarda como huella (SHA-256 con sal), nunca el número.
+  const LARGO = 4, BLOQUEO_MS = 60 * 1000;
+  let clave = undefined;                 // undefined = cargando, null = sin clave, {hash, salt}
+  let modo = 'cargando', escrito = '', nuevaClave = '', fallos = 0, esperarHasta = 0, ocultaDesde = 0;
+  const aHex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  const huella = async (salt, pin) => aHex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + ':' + pin)));
+  const TEXTOS = {
+    cargando: ['Cargando…', ''],
+    crear: ['Crea tu clave', 'Elige 4 números que recuerdes.'],
+    confirmar: ['Repite tu clave', 'Escribe los mismos 4 números.'],
+    entrar: ['Escribe tu clave', ''],
+    actual: ['Escribe tu clave actual', 'Para cambiarla, primero la de ahora.'],
+    sinconexion: ['No se pudo abrir', 'Abre esta página con tu cuenta de Claude y con internet.'],
+  };
+  function pintarCandado(msg, malo) {
+    const [t, h] = TEXTOS[modo];
+    $('.mp-lock-title').textContent = t;
+    const help = $('.mp-lock-help');
+    help.textContent = msg || h;
+    help.classList.toggle('is-bad', !!malo);
+    $$('.mp-dots span').forEach((d, i) => d.classList.toggle('is-on', i < escrito.length));
+    const quieto = modo === 'cargando' || modo === 'sinconexion' || Date.now() < esperarHasta;
+    $$('.mp-keys button').forEach((b) => { b.disabled = quieto && b.dataset.k !== 'cancelar'; });
+    $('.mp-keys [data-k="cancelar"]').hidden = !(modo === 'actual' || ((modo === 'crear' || modo === 'confirmar') && clave));
+  }
+  function bloquear() {
+    escrito = ''; nuevaClave = '';
+    modo = clave === undefined ? (db ? 'cargando' : 'sinconexion') : clave ? 'entrar' : 'crear';
+    $('#inicio').classList.add('is-locked');
+    pintarCandado();
+  }
+  function abrir() {
+    escrito = ''; fallos = 0;
+    $('#inicio').classList.remove('is-locked');
+    render();
+  }
+  async function guardarClave(pin) {
+    const salt = aHex(crypto.getRandomValues(new Uint8Array(16)));
+    const ok = await guardar(db.doc('ajustes/clave').set({ salt, hash: await huella(salt, pin), cambiada: Date.now() }));
+    if (ok) { clave = { salt, hash: await huella(salt, pin) }; abrir(); avisar('Listo. Tu clave quedó guardada.'); }
+    else { modo = 'crear'; escrito = ''; pintarCandado('No se pudo guardar la clave. Revisa tu internet.', true); }
+  }
+  async function completo() {
+    const pin = escrito;
+    escrito = '';
+    if (modo === 'crear') { nuevaClave = pin; modo = 'confirmar'; return pintarCandado(); }
+    if (modo === 'confirmar') {
+      if (pin !== nuevaClave) { modo = 'crear'; nuevaClave = ''; return pintarCandado('No coinciden. Empecemos de nuevo.', true); }
+      return guardarClave(pin);
+    }
+    const bien = clave && (await huella(clave.salt, pin)) === clave.hash;
+    if (bien) {
+      if (modo === 'actual') { modo = 'crear'; return pintarCandado('Ahora elige la clave nueva.'); }
+      return abrir();
+    }
+    fallos += 1;
+    if (fallos >= 5) {
+      esperarHasta = Date.now() + 30000; fallos = 0;
+      pintarCandado('Muchos intentos. Espera 30 segundos.', true);
+      setTimeout(() => pintarCandado(), 30000);
+      return;
+    }
+    pintarCandado('Esa no es la clave. Intenta de nuevo.', true);
+  }
+  $$('.mp-keys button').forEach((b) => b.addEventListener('click', () => {
+    const k = b.dataset.k;
+    if (k === 'borrar') { escrito = escrito.slice(0, -1); return pintarCandado(); }
+    if (k === 'cancelar') { abrir(); return; }
+    if (escrito.length >= LARGO) return;
+    escrito += k;
+    pintarCandado();
+    if (escrito.length === LARGO) setTimeout(completo, 120);
+  }));
+  $('#bloquear').addEventListener('click', bloquear);
+  $('#cambiar-clave').addEventListener('click', () => { bloquear(); if (clave) { modo = 'actual'; pintarCandado(); } });
+  // Si la app queda en segundo plano más de un minuto, se vuelve a bloquear
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) ocultaDesde = Date.now();
+    else if (ocultaDesde && Date.now() - ocultaDesde > BLOQUEO_MS) bloquear();
+  });
+  function escucharClave() {
+    db.doc('ajustes/clave').onSnapshot((snap) => {
+      const d = snap.exists ? snap.data() : null;
+      const antes = clave;
+      clave = d && d.hash && d.salt ? { hash: d.hash, salt: d.salt } : null;
+      if (antes === undefined || modo === 'cargando') bloquear();
+    }, () => { modo = 'sinconexion'; pintarCandado(); });
+  }
+
   /* ================= Carga ================= */
   function render() {
     renderPagos(); renderIngresos(); renderGastos(); renderMeta(); renderAviso();
@@ -1186,9 +1308,10 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
   render();
   (async () => {
     const use = window.claude && window.claude.use;
-    if (!use) { renderAviso(); return; }
+    if (!use) { renderAviso(); modo = 'sinconexion'; pintarCandado(); return; }
     db = await window.claude.use('db');
-    if (!db) { renderAviso(); return; }
+    if (!db) { renderAviso(); modo = 'sinconexion'; pintarCandado(); return; }
+    escucharClave();
     leer('pagos', (xs) => { pagos = xs.map(limpiarPago); });
     leer('trabajos', (xs) => { trabajos = xs.map(limpiarTrabajo); });
     leer('gastos', (xs) => { gastos = xs.map(limpiarGasto); });
@@ -1197,5 +1320,6 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     if (!downloads) { $$('#r-pdf, #r-xlsx').forEach((b) => { b.disabled = true; }); estado('Las descargas no están disponibles en esta vista.'); }
   })();
   ponerPeriodo('mes');
+  pintarCandado();
 })();
 </script>
