@@ -392,7 +392,7 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
       </div>
       <div class="mp-field">
         <label for="g-monto">2. ¿Cuánto gastaste?</label>
-        <span class="mp-help">Solo números. Ejemplo: 15990</span>
+        <span class="mp-help">Solo números. Si sacaste foto, puedes dejarlo vacío.</span>
         <input id="g-monto" type="text" inputmode="numeric" autocomplete="off" maxlength="12">
       </div>
       <div class="mp-field">
@@ -851,13 +851,25 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
   /* ================= GASTOS ================= */
   function filaGasto(g) {
     const borrar = editG ? boton('mp-del', 'Borrar', () => { borrandoG = g.id; render(); }) : null;
+    const sub = g.por_leer ? 'Claude anotará el total esta noche'
+      : g.revisar ? 'Claude lo leyó · tócalo para revisar'
+      : fechaFmt.format(fechaLocal(g.fecha)) + (g.foto ? ' · con boleta' : '');
     const li = fila({
-      clave: 'g:' + g.id, thumb: g.foto || null, titulo: g.descripcion, valor: money.format(g.monto),
-      sub: fechaFmt.format(fechaLocal(g.fecha)) + (g.foto ? ' · con boleta' : ''), borrar,
+      clave: 'g:' + g.id, thumb: g.foto || null, titulo: g.descripcion, valor: g.por_leer ? 'Por leer' : money.format(g.monto),
+      sub, borrar,
       detalle: () => {
         const partes = [];
         if (g.foto) { const im = el('img'); im.src = '/_blob/' + g.foto; im.alt = 'Boleta de ' + g.descripcion; partes.push(im); }
         else partes.push(el('p', 'mp-note2', 'Este gasto no tiene foto.'));
+        if (g.revisar) {
+          partes.push(el('p', null, 'Claude leyó ' + money.format(g.monto) + ' del ' + fechaFmt.format(fechaLocal(g.fecha)) + '. Mira la boleta: ¿es el mismo total?'));
+          const row = el('div', 'mp-row');
+          row.append(
+            boton('mp-btn is-main', 'Sí, está bien', () => guardar(db.doc('gastos/' + g.id).update({ revisar: false }), 'Listo, gasto revisado.')),
+            boton('mp-btn', 'No, corregir', () => { corrigiendo = g; render(); }));
+          partes.push(row);
+        }
+        if (corrigiendo && corrigiendo.id === g.id) partes.push(formCorregir(g));
         return partes;
       },
     });
@@ -870,6 +882,24 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
       () => { borrandoG = null; render(); }));
     return li;
   }
+  let corrigiendo = null;
+  function formCorregir(g) {
+    const box = el('div', 'mp-field');
+    const lbl = el('label', null, 'Total correcto');
+    lbl.htmlFor = 'g-corr-' + g.id;
+    const inp = el('input'); inp.type = 'text'; inp.id = 'g-corr-' + g.id; inp.inputMode = 'numeric'; inp.value = String(g.monto || '');
+    const row = el('div', 'mp-row');
+    row.append(
+      boton('mp-btn is-main', 'Guardar', async () => {
+        const v = Number(inp.value.replace(/[^0-9]/g, ''));
+        if (!v) { inp.focus(); return; }
+        corrigiendo = null;
+        await guardar(db.doc('gastos/' + g.id).update({ monto: v, revisar: false, por_leer: false }), 'Total corregido.');
+      }),
+      boton('mp-btn', 'Cancelar', () => { corrigiendo = null; render(); }));
+    box.append(lbl, inp, row);
+    return box;
+  }
   function renderGastos() {
     $('.mp-g-month').textContent = mesLargo(mesGas);
     if (!listo.gastos) return;
@@ -880,7 +910,13 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     box.replaceChildren(
       el('span', 'mp-hero-lbl', 'Gastaste en ' + nombreMes(mesGas)),
       el('span', 'mp-hero-num', money.format(d3.sum(lista, (g) => g.monto))),
-      el('span', 'mp-hero-sub', lista.length ? lista.length + (lista.length === 1 ? ' gasto' : ' gastos') + (conFoto ? ' · ' + conFoto + ' con boleta' : '') : 'Sin gastos anotados'));
+      el('span', 'mp-hero-sub', lista.length ? lista.length + (lista.length === 1 ? ' gasto' : ' gastos') + (conFoto ? ' · ' + conFoto + ' con boleta' : '') : 'Sin gastos anotados'),
+      ...(() => {
+        const porLeer = lista.filter((g) => g.por_leer).length, porRevisar = lista.filter((g) => g.revisar).length;
+        const t = [porLeer ? porLeer + (porLeer === 1 ? ' boleta la leerá Claude esta noche.' : ' boletas las leerá Claude esta noche.') : '',
+          porRevisar ? porRevisar + (porRevisar === 1 ? ' boleta leída por Claude espera que la revises.' : ' boletas leídas por Claude esperan que las revises.') : ''].filter(Boolean).join(' ');
+        return t ? [el('p', 'mp-msg', t)] : [];
+      })());
     const ul = $('.mp-g-list');
     if (!lista.length) { ul.className = 'mp-list mp-g-list'; ul.replaceChildren(el('li', 'mp-empty', 'Todavía no anotas gastos en este mes. Toca "Agregar gasto".')); }
     else { ul.className = 'mp-rows mp-g-list'; ul.replaceChildren(...lista.slice().reverse().map(filaGasto)); }
@@ -922,7 +958,8 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
   async function leerBoleta() {
     if (!fotoNueva) return;
     if (!puedeLeer) {
-      lectura(el('span', null, 'No pude leer la boleta: ' + (MOTIVOS[porQueNo] || 'la lectura no está disponible aquí.') + ' Mientras tanto, escribe el total en el paso 2.'),
+      lectura(el('span', null, 'No pude leer la boleta: ' + (MOTIVOS[porQueNo] || 'la lectura no está disponible aquí.') + ''),
+        el('span', null, 'También puedes tocar Guardar sin escribir el total: Claude lo anotará esta noche.'),
         boton('mp-more', 'Intentar leer otra vez', async () => { await prepararLectura(); leerBoleta(); }));
       return;
     }
@@ -991,7 +1028,7 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     $$('#g-monto, #g-fecha, #g-desc').forEach((i) => i.classList.remove('is-auto'));
     $('.g-foto-btns').hidden = !assets;
     $('.g-foto-help').textContent = !assets ? 'Para guardar fotos necesitas permiso para editar esta página.'
-      : puedeLeer ? 'Saca la foto y Claude anota el total por ti. Tú solo revisas.' : 'Puedes sacarla ahora o elegirla de tus fotos. Es opcional.';
+      : puedeLeer ? 'Saca la foto y Claude anota el total por ti. Tú solo revisas.' : 'Saca la foto. Si no escribes el total, Claude lo anota esta noche.';
     $('.mp-g-form').hidden = false;
     $('.mp-g-form').scrollIntoView({ block: 'start' });
   });
@@ -1001,8 +1038,9 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     const descripcion = $('#g-desc').value.trim();
     const fecha = $('#g-fecha').value;
     const falla = (texto, sel) => { $('.mp-g-err').textContent = texto; if (sel) $(sel).focus(); };
-    if (!monto) return falla('Falta el paso 2: escribe cuánto gastaste.', '#g-monto');
-    if (!descripcion) return falla('Falta el paso 3: escribe en qué gastaste.', '#g-desc');
+    const porLeer = !monto && !!fotoNueva && !!assets;
+    if (!monto && !porLeer) return falla('Falta el paso 2: escribe cuánto gastaste, o saca una foto a la boleta.', '#g-monto');
+    if (!descripcion && !porLeer) return falla('Falta el paso 3: escribe en qué gastaste.', '#g-desc');
     if (!fecha || !$('#g-fecha').validity.valid) return falla('Falta el paso 4: elige la fecha.', '#g-fecha');
     const btn = $('.mp-g-save');
     btn.disabled = true;
@@ -1014,7 +1052,8 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     }
     btn.textContent = 'Guardando…';
     const leido = $('#g-monto').classList.contains('is-auto');
-    const ok = await guardar(db.collection('gastos').add({ monto, descripcion, fecha, foto, leido_de_foto: leido, creado: Date.now() }), 'Se guardó el gasto.');
+    const ok = await guardar(db.collection('gastos').add({ monto: porLeer ? null : monto, descripcion: descripcion || 'Boleta por leer', fecha, foto, leido_de_foto: leido, por_leer: porLeer, revisar: false, creado: Date.now() }),
+      porLeer ? 'Guardado. Claude anotará el total esta noche.' : 'Se guardó el gasto.');
     btn.disabled = false; btn.textContent = 'Guardar';
     if (ok) { mesGas = claveDe(fecha); fotoNueva = null; $('.mp-g-form').hidden = true; render(); $('#inicio').scrollIntoView({ block: 'start' }); }
   });
@@ -1376,7 +1415,7 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     () => avisar('No se pudieron leer tus datos. Revisa tu internet y vuelve a abrir la página.', true));
   const limpiarPago = (r) => Object.assign(r, { monto: Number(r.monto) || 0, dia: Number(r.dia) || 1, cuotas_total: Number(r.cuotas_total) || 0 });
   const limpiarTrabajo = (r) => Object.assign(r, { cliente: String(r.cliente || 'Sin nombre'), maquinaria: String(r.maquinaria || 'Equipo'), fecha: String(r.fecha || hoyISO).slice(0, 10), tipo: ['hora', 'dia', 'trato'].includes(r.tipo) ? r.tipo : 'hora', cantidad: Number(r.cantidad) || 1, valor: Number(r.valor) || 0, con_iva: r.con_iva !== false });
-  const limpiarGasto = (r) => Object.assign(r, { descripcion: String(r.descripcion || 'Gasto'), fecha: String(r.fecha || hoyISO).slice(0, 10), monto: Number(r.monto) || 0, foto: r.foto || null });
+  const limpiarGasto = (r) => Object.assign(r, { descripcion: String(r.descripcion || 'Gasto'), fecha: String(r.fecha || hoyISO).slice(0, 10), monto: Number(r.monto) || 0, foto: r.foto || null, por_leer: r.por_leer === true && !!r.foto, revisar: r.revisar === true });
 
   render();
   (async () => {
