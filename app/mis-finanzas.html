@@ -87,6 +87,9 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
 .mp-check .mp-mark { font-size: .95rem; line-height: 1; }
 .mp-check[aria-pressed="true"] { border-color: var(--ok); color: var(--ok); }
 .mp-del { min-height: 2.25rem; border-radius: 18px; border: 2px solid var(--bad); background: var(--bg); color: var(--bad); font-weight: 700; font-size: .8rem; cursor: pointer; padding: 0 .65rem; }
+.mp-edit-btns { display: flex; gap: .35rem; flex-wrap: wrap; justify-content: flex-end; }
+.mp-rows > li > .mp-edit-btns { margin-right: .6rem; }
+.mp-chg { min-height: 2.25rem; border-radius: 18px; border: 2px solid var(--fg); background: var(--bg); color: var(--fg); font-weight: 700; font-size: .8rem; cursor: pointer; padding: 0 .65rem; }
 .mp-confirm { grid-column: 1 / -1; display: grid; gap: .45rem; padding: .45rem .1rem .1rem; border-top: 1px solid var(--line); font-size: .92rem; }
 .mp-row { display: flex; gap: .5rem; flex-wrap: wrap; }
 .mp-row > button { flex: 1 1 7rem; }
@@ -225,7 +228,7 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     </div>
 
     <div class="mp-form mp-p-form" id="agregar-pago" hidden>
-      <h2>Nuevo pago</h2>
+      <h2 class="p-form-title">Nuevo pago</h2>
       <div class="mp-field">
         <label for="p-nombre">1. ¿Qué vas a pagar?</label>
         <span class="mp-help">Ejemplo: Luz</span>
@@ -291,7 +294,7 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     </div>
 
     <div class="mp-form mp-i-form" id="agregar-trabajo" hidden>
-      <h2>Nuevo trabajo</h2>
+      <h2 class="i-form-title">Nuevo trabajo</h2>
       <div class="mp-field">
         <label for="i-cliente">1. Cliente</label>
         <span class="mp-help">Ejemplo: Constructora Andes</span>
@@ -374,7 +377,7 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     </div>
 
     <div class="mp-form mp-g-form" id="agregar-gasto" hidden>
-      <h2>Nuevo gasto</h2>
+      <h2 class="g-form-title">Nuevo gasto</h2>
       <div class="mp-field">
         <span class="mp-lbl">1. Foto de la boleta o factura</span>
         <span class="mp-help g-foto-help">Saca la foto y Claude anota el total por ti.</span>
@@ -530,6 +533,9 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     $('.mp-' + pre + '-prev').addEventListener('click', () => { set(get() - 1); render(); });
     $('.mp-' + pre + '-next').addEventListener('click', () => { set(get() + 1); render(); });
   };
+  const botonesEditar = (cambiar, borrar) => { const d = el('div', 'mp-edit-btns'); d.append(boton('mp-chg', 'Cambiar', cambiar), boton('mp-del', 'Borrar', borrar)); return d; };
+  const abrirForm = (sel, foco) => { $(sel).hidden = false; $(sel).scrollIntoView({ block: 'start' }); if (foco) $(foco).focus(); };
+  let editandoP = null, editandoI = null, editandoG = null;
   function confirmar(nombre, siFn, noFn) {
     const c = el('div', 'mp-confirm');
     c.appendChild(el('p', null, '¿Borrar ' + nombre + ' para siempre?'));
@@ -629,7 +635,7 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     info.appendChild(el('div', 'mp-when', w.texto));
     li.appendChild(info);
     if (editP) {
-      li.appendChild(boton('mp-del', 'Borrar', () => { borrandoP = p.id; render(); }));
+      li.appendChild(botonesEditar(() => abrirFormPago(p), () => { borrandoP = p.id; render(); }));
       if (borrandoP === p.id) li.appendChild(confirmar('"' + p.nombre + '"',
         async () => { borrandoP = null; await guardar(db.doc('pagos/' + p.id).delete(), 'Se borró ' + p.nombre + '.'); },
         () => { borrandoP = null; render(); }));
@@ -672,7 +678,7 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     $('.mp-p-todo').replaceChildren(...(falta.length ? falta.sort(orden).map((p) => tarjetaPago(p, c)) : [el('li', 'mp-empty', lista.length ? 'Nada pendiente.' : 'Aquí aparecerán tus pagos del mes.')]));
     $('.mp-p-done').replaceChildren(...(listos.length ? listos.sort(orden).map((p) => tarjetaPago(p, c)) : [el('li', 'mp-empty', 'Todavía nada.')]));
     $('.mp-p-edit').textContent = editP ? 'Listo' : 'Editar';
-    $('.mp-p-sub').textContent = editP ? 'Modo editar: puedes borrar pagos.' : 'Toca "Pagar" cuando pagues algo.';
+    $('.mp-p-sub').textContent = editP ? 'Modo editar: toca Cambiar para corregir, o Borrar para quitar.' : 'Toca "Pagar" cuando pagues algo. Si te equivocas, tócalo otra vez.';
   }
 
   const ponerCuotas = (si) => {
@@ -683,15 +689,21 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
   };
   $('#p-c-si').addEventListener('click', () => ponerCuotas(true));
   $('#p-c-no').addEventListener('click', () => ponerCuotas(false));
-  $('.mp-p-add').addEventListener('click', () => {
-    ['#p-nombre', '#p-monto', '#p-dia', '#p-act', '#p-tot'].forEach((s) => { $(s).value = ''; });
+  function abrirFormPago(p) {
+    editandoP = p || null;
+    $('.p-form-title').textContent = p ? 'Cambiar pago' : 'Nuevo pago';
+    $('.mp-p-save').textContent = p ? 'Guardar cambios' : 'Guardar';
+    $('#p-nombre').value = p ? p.nombre : '';
+    $('#p-monto').value = p ? String(p.monto) : '';
+    $('#p-dia').value = p ? String(p.dia) : '';
+    $('#p-tot').value = p && esCuota(p) ? String(p.cuotas_total) : '';
+    $('#p-act').value = p && esCuota(p) ? String(Math.min(p.cuotas_total, Math.max(1, cuotaEn(p, claveHoy)))) : '';
     $('.mp-p-err').textContent = '';
-    ponerCuotas(false);
-    $('.mp-p-form').hidden = false;
-    $('.mp-p-form').scrollIntoView({ block: 'start' });
-    $('#p-nombre').focus();
-  });
-  $('.mp-p-cancel').addEventListener('click', () => { $('.mp-p-form').hidden = true; });
+    ponerCuotas(!!(p && esCuota(p)));
+    abrirForm('.mp-p-form', '#p-nombre');
+  }
+  $('.mp-p-add').addEventListener('click', () => abrirFormPago(null));
+  $('.mp-p-cancel').addEventListener('click', () => { editandoP = null; $('.mp-p-form').hidden = true; });
   $('.mp-p-save').addEventListener('click', async () => {
     const nombre = $('#p-nombre').value.trim();
     const monto = numero('#p-monto'), dia = numero('#p-dia'), act = numero('#p-act'), tot = numero('#p-tot');
@@ -701,19 +713,23 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     if (!(dia >= 1 && dia <= 31)) return falla('Paso 3: el día debe ser un número del 1 al 31.', '#p-dia');
     if (enCuotas && !tot) return falla('Falta el paso 6: cuántas cuotas son en total.', '#p-tot');
     if (enCuotas && !(act >= 1 && act <= tot)) return falla('Paso 5: la cuota de este mes debe ser de 1 a ' + tot + '.', '#p-act');
-    const doc = { nombre, monto, dia, pagados: {}, creado: Date.now() };
-    if (enCuotas) { doc.cuotas_total = tot; doc.inicio = claveTxt(claveHoy - (act - 1)); } else { doc.desde = claveTxt(claveHoy); }
+    const p0 = editandoP;
+    const doc = { nombre, monto, dia };
+    if (enCuotas) { doc.cuotas_total = tot; doc.inicio = claveTxt(claveHoy - (act - 1)); }
+    else { doc.cuotas_total = 0; doc.inicio = null; doc.desde = (p0 && p0.desde) || claveTxt(claveHoy); }
     $('.mp-p-save').disabled = true;
-    const ok = await guardar(db.collection('pagos').add(doc), 'Se agregó ' + nombre + '.');
+    const ok = p0
+      ? await guardar(db.doc('pagos/' + p0.id).update(doc), 'Listo, se corrigió ' + nombre + '.')
+      : await guardar(db.collection('pagos').add(Object.assign(doc, { pagados: {}, creado: Date.now() })), 'Se agregó ' + nombre + '.');
     $('.mp-p-save').disabled = false;
-    if (ok) { $('.mp-p-form').hidden = true; $('#inicio').scrollIntoView({ block: 'start' }); }
+    if (ok) { editandoP = null; $('.mp-p-form').hidden = true; $('#inicio').scrollIntoView({ block: 'start' }); }
   });
-  $('.mp-p-edit').addEventListener('click', () => { editP = !editP; borrandoP = null; $('.mp-p-form').hidden = true; render(); });
+  $('.mp-p-edit').addEventListener('click', () => { editP = !editP; borrandoP = null; editandoP = null; $('.mp-p-form').hidden = true; render(); });
   navMes('p', () => mesPag, (v) => { mesPag = v; });
 
   /* ================= INGRESOS ================= */
   function filaTrabajo(t, n) {
-    const borrar = editI ? boton('mp-del', 'Borrar', () => { borrandoI = t.id; render(); }) : null;
+    const borrar = editI ? botonesEditar(() => abrirFormTrabajo(t), () => { borrandoI = t.id; render(); }) : null;
     const li = fila({
       clave: 't:' + t.id, badge: 'N° ' + n, titulo: t.cliente, valor: money.format(neto(t)),
       sub: fechaFmt.format(fechaLocal(t.fecha)) + ' · ' + t.maquinaria, borrar,
@@ -785,7 +801,7 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
   }
   $$('.mp-i-vista button').forEach((b) => b.addEventListener('click', () => { vistaI = b.dataset.vista; if (vistaI === 'cliente') editI = false; render(); }));
   navMes('i', () => mesIng, (v) => { mesIng = v; });
-  $('.mp-i-edit').addEventListener('click', () => { editI = !editI; if (editI) vistaI = 'fecha'; borrandoI = null; $('.mp-i-form').hidden = true; render(); });
+  $('.mp-i-edit').addEventListener('click', () => { editI = !editI; if (editI) vistaI = 'fecha'; borrandoI = null; editandoI = null; $('.mp-i-form').hidden = true; render(); });
 
   const vistaPrevia = () => {
     const cant = tipo === 'trato' ? 1 : decimal('#i-cant');
@@ -820,16 +836,24 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
   $('#i-cant').addEventListener('input', vistaPrevia);
   $('#i-valor').addEventListener('input', vistaPrevia);
   const fechaInicial = (c) => (c === claveHoy ? hoyISO : claveTxt(c) + '-01');
-  $('.mp-i-add').addEventListener('click', () => {
-    ['#i-cliente', '#i-otro', '#i-cant', '#i-valor'].forEach((s) => { $(s).value = ''; });
-    $('#i-fecha').value = fechaInicial(mesIng);
+  function abrirFormTrabajo(t) {
+    editandoI = t || null;
+    $('.i-form-title').textContent = t ? 'Cambiar trabajo' : 'Nuevo trabajo';
+    $('.mp-i-save').textContent = t ? 'Guardar cambios' : 'Guardar';
+    $('#i-cliente').value = t ? t.cliente : '';
+    $('#i-fecha').value = t ? t.fecha : fechaInicial(mesIng);
+    const fija = t && (t.maquinaria === 'Camión' || t.maquinaria === 'Miniexcavadora');
+    $('#i-otro').value = t && !fija ? t.maquinaria : '';
+    $('#i-cant').value = t && t.tipo !== 'trato' ? String(t.cantidad).replace('.', ',') : '';
+    $('#i-valor').value = t ? String(t.valor) : '';
     $('.mp-i-err').textContent = '';
-    ponerMaq(null); ponerTipo('hora'); ponerIva(true);
-    $('.mp-i-form').hidden = false;
-    $('.mp-i-form').scrollIntoView({ block: 'start' });
-    $('#i-cliente').focus();
-  });
-  $('.mp-i-cancel').addEventListener('click', () => { $('.mp-i-form').hidden = true; });
+    ponerMaq(t ? (fija ? t.maquinaria : '') : null);
+    ponerTipo(t ? t.tipo : 'hora');
+    ponerIva(t ? t.con_iva : true);
+    abrirForm('.mp-i-form', '#i-cliente');
+  }
+  $('.mp-i-add').addEventListener('click', () => abrirFormTrabajo(null));
+  $('.mp-i-cancel').addEventListener('click', () => { editandoI = null; $('.mp-i-form').hidden = true; });
   $('.mp-i-save').addEventListener('click', async () => {
     const cliente = $('#i-cliente').value.trim();
     const fecha = $('#i-fecha').value;
@@ -844,14 +868,18 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     if (!(cantidad > 0)) return falla('Falta el paso 5: escribe ' + (tipo === 'dia' ? 'los días.' : 'las horas.'), '#i-cant');
     if (!valor) return falla('Falta el paso ' + (tipo === 'trato' ? 5 : 6) + ': escribe el valor.', '#i-valor');
     $('.mp-i-save').disabled = true;
-    const ok = await guardar(db.collection('trabajos').add({ cliente, fecha, maquinaria, tipo, cantidad, valor, con_iva: conIva, creado: Date.now() }), 'Se agregó el trabajo para ' + cliente + '.');
+    const datos = { cliente, fecha, maquinaria, tipo, cantidad, valor, con_iva: conIva };
+    const t0 = editandoI;
+    const ok = t0
+      ? await guardar(db.doc('trabajos/' + t0.id).update(datos), 'Listo, se corrigió el trabajo.')
+      : await guardar(db.collection('trabajos').add(Object.assign(datos, { creado: Date.now() })), 'Se agregó el trabajo para ' + cliente + '.');
     $('.mp-i-save').disabled = false;
-    if (ok) { mesIng = claveDe(fecha); $('.mp-i-form').hidden = true; render(); $('#inicio').scrollIntoView({ block: 'start' }); }
+    if (ok) { editandoI = null; mesIng = claveDe(fecha); $('.mp-i-form').hidden = true; render(); $('#inicio').scrollIntoView({ block: 'start' }); }
   });
 
   /* ================= GASTOS ================= */
   function filaGasto(g) {
-    const borrar = editG ? boton('mp-del', 'Borrar', () => { borrandoG = g.id; render(); }) : null;
+    const borrar = editG ? botonesEditar(() => abrirFormGasto(g), () => { borrandoG = g.id; render(); }) : null;
     const diferencia = g.revisar && g.monto_boleta > 0 && g.monto_boleta !== g.monto;
     const sub = g.por_leer ? 'Claude anotará el total esta noche'
       : g.por_completar ? 'Claude completará la fecha y el comercio esta noche'
@@ -935,7 +963,7 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     $('#g-descs').replaceChildren(...[...new Set(gastos.map((g) => g.descripcion))].map((v) => { const o = document.createElement('option'); o.value = v; return o; }));
   }
   navMes('g', () => mesGas, (v) => { mesGas = v; });
-  $('.mp-g-edit').addEventListener('click', () => { editG = !editG; borrandoG = null; $('.mp-g-form').hidden = true; render(); });
+  $('.mp-g-edit').addEventListener('click', () => { editG = !editG; borrandoG = null; editandoG = null; $('.mp-g-form').hidden = true; render(); });
 
   // Foto: se achica antes de subir (las fotos del celular pesan mucho)
   const achicar = (file) => new Promise((resolve) => {
@@ -956,8 +984,8 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     const box = $('.mp-photo');
     box.hidden = !fotoNueva;
     const conFoto = !!fotoNueva && !!assets;
-    $$('.g-sin-foto').forEach((x) => { x.hidden = conFoto && !$('#g-desc').classList.contains('is-auto'); });
-    $('.g-con-foto').hidden = !conFoto;
+    $$('.g-sin-foto').forEach((x) => { x.hidden = conFoto && !editandoG && !$('#g-desc').classList.contains('is-auto'); });
+    $('.g-con-foto').hidden = !conFoto || !!editandoG;
     $('.g-monto-help').textContent = conFoto ? 'Mira el TOTAL en la boleta y escríbelo. Si no puedes, déjalo vacío.' : 'Solo números. Ejemplo: 14900';
     if (fotoNueva) box.querySelector('img').src = URL.createObjectURL(fotoNueva);
   };
@@ -1037,26 +1065,38 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
   $('#g-cam-input').addEventListener('change', (e) => elegirFoto(e.target));
   $('#g-gal-input').addEventListener('change', (e) => elegirFoto(e.target));
   $('.g-quitar').addEventListener('click', () => { if (lecturaCtl) lecturaCtl.abort(); fotoNueva = null; mostrarFoto(); lectura(); });
-  $('.mp-g-add').addEventListener('click', () => {
-    ['#g-monto', '#g-desc'].forEach((s) => { $(s).value = ''; });
-    $('#g-fecha').value = fechaInicial(mesGas);
+  function abrirFormGasto(g) {
+    editandoG = g || null;
+    $('.g-form-title').textContent = g ? 'Cambiar gasto' : 'Nuevo gasto';
+    $('.mp-g-save').textContent = g ? 'Guardar cambios' : 'Guardar';
+    $('#g-monto').value = g && g.monto ? String(g.monto) : '';
+    $('#g-desc').value = g ? g.descripcion : '';
+    $('#g-fecha').value = g ? g.fecha : fechaInicial(mesGas);
     $('.mp-g-err').textContent = '';
     fotoNueva = null; mostrarFoto(); lectura();
     $$('#g-monto, #g-fecha, #g-desc').forEach((i) => i.classList.remove('is-auto'));
     $('.g-foto-btns').hidden = !assets;
     $('.g-foto-help').textContent = !assets ? 'Para guardar fotos necesitas permiso para editar esta página.'
+      : g ? (g.foto ? 'Este gasto ya tiene su foto. Saca otra solo si quieres cambiarla.' : 'Puedes agregarle una foto de la boleta.')
       : puedeLeer ? 'Saca la foto y Claude anota el total por ti. Tú solo revisas.' : 'Saca la foto. Si no escribes el total, Claude lo anota esta noche.';
-    $('.mp-g-form').hidden = false;
-    $('.mp-g-form').scrollIntoView({ block: 'start' });
-  });
-  $('.mp-g-cancel').addEventListener('click', () => { if (lecturaCtl) lecturaCtl.abort(); $('.mp-g-form').hidden = true; fotoNueva = null; lectura(); });
+    mostrarFoto();
+    abrirForm('.mp-g-form');
+  }
+  $('.mp-g-add').addEventListener('click', () => abrirFormGasto(null));
+  $('.mp-g-cancel').addEventListener('click', () => { if (lecturaCtl) lecturaCtl.abort(); editandoG = null; $('.mp-g-form').hidden = true; fotoNueva = null; lectura(); });
   $('.mp-g-save').addEventListener('click', async () => {
     const monto = numero('#g-monto');
     const descripcion = $('#g-desc').value.trim();
     const fecha = $('#g-fecha').value;
     const falla = (texto, sel) => { $('.mp-g-err').textContent = texto; if (sel) $(sel).focus(); };
+    const g0 = editandoG;
     const conFoto = !!fotoNueva && !!assets;
     const leidoEnVivo = $('#g-monto').classList.contains('is-auto');
+    if (g0) {
+      if (!monto && !conFoto) return falla('Escribe cuánto gastaste.', '#g-monto');
+      if (!descripcion) return falla('Escribe en qué gastaste.', '#g-desc');
+      if (!fecha || !$('#g-fecha').validity.valid) return falla('Elige la fecha.', '#g-fecha');
+    }
     // Con foto: Claude completa en la noche lo que falte (y comprueba el monto escrito)
     const porLeer = conFoto && !monto;
     const porCompletar = conFoto && !!monto && !leidoEnVivo;
@@ -1073,6 +1113,19 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     }
     btn.textContent = 'Guardando…';
     const fechaFinal = fecha && $('#g-fecha').validity.valid ? fecha : fechaInicial(mesGas);
+    if (g0) {
+      // Corregir: lo que la persona escribe manda; una foto nueva reemplaza la anterior
+      const cambios = { monto: monto || null, descripcion, fecha: fechaFinal, revisar: false, monto_boleta: 0 };
+      if (foto) Object.assign(cambios, { foto, por_leer: !monto, por_completar: !!monto && !leidoEnVivo, leido_de_foto: leidoEnVivo });
+      else Object.assign(cambios, { por_leer: false, por_completar: false });
+      const okE = await guardar(db.doc('gastos/' + g0.id).update(cambios), 'Listo, se corrigió el gasto.');
+      btn.disabled = false; btn.textContent = 'Guardar cambios';
+      if (okE) {
+        if (foto && g0.foto && assets) assets.delete(g0.foto).catch(() => {});
+        editandoG = null; mesGas = claveDe(fechaFinal); fotoNueva = null; $('.mp-g-form').hidden = true; render(); $('#inicio').scrollIntoView({ block: 'start' });
+      }
+      return;
+    }
     const ok = await guardar(db.collection('gastos').add({
       monto: porLeer ? null : monto, descripcion: descripcion || 'Gasto con boleta', fecha: fechaFinal, foto,
       leido_de_foto: leidoEnVivo, por_leer: porLeer, por_completar: porCompletar, revisar: false, creado: Date.now() }),
