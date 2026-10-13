@@ -1211,13 +1211,14 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
   const TEXTOS = {
     cargando: ['Cargando…', ''],
     crear: ['Crea tu clave', 'Elige 4 números que recuerdes.'],
+    crearPrimera: ['Crea tu clave', 'Elige 4 números que recuerdes. Puedes hacerlo después con "Ahora no".'],
     confirmar: ['Repite tu clave', 'Escribe los mismos 4 números.'],
     entrar: ['Escribe tu clave', ''],
     actual: ['Escribe tu clave actual', 'Para cambiarla, primero la de ahora.'],
     sinconexion: ['No se pudo abrir', 'Abre esta página con tu cuenta de Claude y con internet.'],
   };
   function pintarCandado(msg, malo) {
-    const [t, h] = TEXTOS[modo];
+    const [t, h] = TEXTOS[modo === 'crear' && !clave ? 'crearPrimera' : modo];
     $('.mp-lock-title').textContent = t;
     const help = $('.mp-lock-help');
     help.textContent = msg || h;
@@ -1225,7 +1226,10 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     $$('.mp-dots span').forEach((d, i) => d.classList.toggle('is-on', i < escrito.length));
     const quieto = modo === 'cargando' || modo === 'sinconexion' || Date.now() < esperarHasta;
     $$('.mp-keys button').forEach((b) => { b.disabled = quieto && b.dataset.k !== 'cancelar'; });
-    $('.mp-keys [data-k="cancelar"]').hidden = !(modo === 'actual' || ((modo === 'crear' || modo === 'confirmar') && clave));
+    // Sin clave creada todavía: se puede entrar con "Ahora no"; se volverá a pedir en cada apertura
+    const cancelar = $('.mp-keys [data-k="cancelar"]');
+    cancelar.hidden = !(modo === 'actual' || modo === 'crear' || modo === 'confirmar');
+    cancelar.textContent = clave ? 'Cancelar' : 'Ahora no';
   }
   function bloquear() {
     escrito = ''; nuevaClave = '';
