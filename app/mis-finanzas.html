@@ -1,0 +1,1201 @@
+<title>Mis Finanzas del Mes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Una columna para celular: pestañas de color arriba, una hoja a la vez; número grande primero, detalle al tocar. */
+:root {
+  --bg: #fafaf7; --panel: #f1f2ef; --fg: #24262b; --muted: #5f6670; --line: #dcdfe2;
+  --ok: #2c7a4b; --warn: #9a5b00; --bad: #b3261e;
+  --acc-pagos: #8fb3e0; --acc-ingresos: #8cc9a8; --acc-gastos: #e8b98c; --acc-meta: #b9a6e0;
+  --on-acc: #1f1f1f;
+  --font: "Atkinson Hyperlegible", "Verdana", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #16181b; --panel: #1f2226; --fg: #eceef0; --muted: #a7adb5; --line: #33383e;
+  --ok: #74d29b; --warn: #f2b65c; --bad: #ff8f85; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #16181b; --panel: #1f2226; --fg: #eceef0; --muted: #a7adb5; --line: #33383e;
+  --ok: #74d29b; --warn: #f2b65c; --bad: #ff8f85; color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
+.mp { max-width: 32rem; margin-inline: auto; font-family: var(--font); font-size: 1rem; line-height: 1.5; letter-spacing: .01em; word-spacing: .06em; padding-block: .5rem 1.5rem; }
+.mp h1, .mp h2, .mp h3, .mp p { margin: 0; }
+.mp button, .mp input { font: inherit; letter-spacing: inherit; color: inherit; }
+.mp button:focus-visible, .mp input:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+.mp button:disabled { opacity: .55; cursor: default; }
+
+/* Pestañas y hojas */
+#pagos, #tab-pagos { --acc: var(--acc-pagos); }
+#ingresos, #tab-ingresos { --acc: var(--acc-ingresos); }
+#gastos, #tab-gastos { --acc: var(--acc-gastos); }
+#meta, #tab-meta { --acc: var(--acc-meta); }
+.mp-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+.mp-tabs button { min-height: 2.3rem; border: 0; border-bottom: 4px solid color-mix(in srgb, var(--acc) 55%, transparent); border-radius: 9px 9px 4px 4px; background: transparent; cursor: pointer; font-weight: 700; font-size: .84rem; color: var(--muted); padding: 0 .2rem; }
+.mp-tabs button[aria-selected="true"] { background: color-mix(in srgb, var(--acc) 30%, var(--bg)); border-bottom-color: var(--acc); color: var(--fg); }
+.mp-page { --tint: color-mix(in srgb, var(--acc) 14%, var(--bg)); --tint2: color-mix(in srgb, var(--acc) 32%, var(--bg)); --acc-strong: color-mix(in srgb, var(--acc) 75%, var(--fg) 25%); background: var(--tint); border: 1px solid var(--tint2); border-radius: 16px; padding: .1rem .75rem 1rem; margin-top: .4rem; }
+
+.mp-head { padding: .9rem 0 .5rem; }
+.mp-title { font-size: 1.3rem; font-weight: 700; line-height: 1.25; text-wrap: balance; }
+.mp-sub { color: var(--muted); font-size: .9rem; }
+.mp-h { display: flex; align-items: center; gap: .5rem; font-size: 1rem; font-weight: 700; margin: 1.1rem 0 .5rem; }
+.mp-h .mp-n { flex: none; width: 1.55rem; height: 1.55rem; border-radius: 50%; background: var(--acc); color: var(--on-acc); display: grid; place-items: center; font-size: .8rem; }
+.mp-h small { font-weight: 400; color: var(--muted); font-size: .8rem; }
+
+/* Aviso superior */
+.mp-banner { margin-top: .5rem; padding: .55rem .75rem; border-radius: 10px; border: 1px dashed var(--line); background: var(--panel); font-size: .88rem; display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; justify-content: space-between; }
+.mp-banner button { min-height: 2.2rem; border-radius: 9px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; font-weight: 700; font-size: .82rem; padding: 0 .7rem; }
+.mp-toast { min-height: 1.4rem; margin-top: .35rem; font-size: .9rem; color: var(--ok); font-weight: 700; text-align: center; }
+.mp-toast.is-bad { color: var(--bad); }
+
+/* Resumen y número grande */
+.mp-sum { background: var(--bg); border: 1px solid var(--line); border-radius: 14px; padding: .85rem 1rem; display: grid; gap: .45rem; }
+.mp-sum.is-loading { min-height: 6rem; }
+.mp-big { font-size: 1.15rem; font-weight: 700; line-height: 1.3; }
+.mp-hero-lbl { font-size: .9rem; color: var(--muted); }
+.mp-hero-num { font-size: 2rem; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.mp-hero-sub { font-size: .86rem; color: var(--muted); }
+.mp-cheer { font-size: .92rem; font-weight: 700; }
+.mp-more { justify-self: start; background: transparent; border: 0; padding: .2rem 0; cursor: pointer; font-size: .85rem; font-weight: 700; color: var(--muted); }
+.mp-bar { height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; }
+.mp-bar > span { display: block; height: 100%; width: 0; border-radius: 5px; background: var(--ok); }
+.mp-bar.is-short > span { background: var(--warn); }
+.mp-nums { display: grid; grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr)); gap: .4rem; }
+.mp-num small { display: block; font-size: .8rem; color: var(--muted); }
+.mp-num b { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.mp-msg { font-size: .92rem; padding: .5rem .7rem; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); }
+.mp-msg.is-late { border-color: var(--warn); }
+.mp-kv { list-style: none; margin: 0; padding: 0; }
+.mp-kv li { display: flex; justify-content: space-between; gap: .75rem; padding: .35rem .2rem; border-bottom: 1px solid var(--line); font-size: .9rem; }
+.mp-kv li:last-child { border-bottom: 0; }
+.mp-kv b { font-variant-numeric: tabular-nums; text-align: right; }
+
+/* Listas de tarjetas (Pagos) */
+.mp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.mp-empty { color: var(--muted); font-size: .9rem; }
+.mp-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .3rem .7rem; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: .6rem .75rem; }
+.mp-card.is-late { border: 2px solid var(--warn); }
+.mp-card.is-paid { background: transparent; border-style: dashed; }
+.mp-card.is-paid .mp-name, .mp-card.is-paid .mp-amt { color: var(--muted); }
+.mp-name { font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
+.mp-amt { font-variant-numeric: tabular-nums; }
+.mp-when, .mp-fin { font-size: .84rem; color: var(--muted); }
+.mp-card.is-late .mp-when { color: var(--warn); font-weight: 700; }
+.mp-cuota { display: inline-block; margin: .15rem 0; font-size: .8rem; font-weight: 700; padding: 0 .45rem; border-radius: 6px; border: 1px solid var(--line); }
+.mp-check { min-width: 3.9rem; min-height: 2.25rem; border-radius: 18px; border: 2px solid var(--line); background: var(--bg); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: .3rem; padding: 0 .55rem; font-size: .8rem; font-weight: 700; }
+.mp-check .mp-mark { font-size: .95rem; line-height: 1; }
+.mp-check[aria-pressed="true"] { border-color: var(--ok); color: var(--ok); }
+.mp-del { min-height: 2.25rem; border-radius: 18px; border: 2px solid var(--bad); background: var(--bg); color: var(--bad); font-weight: 700; font-size: .8rem; cursor: pointer; padding: 0 .65rem; }
+.mp-confirm { grid-column: 1 / -1; display: grid; gap: .45rem; padding: .45rem .1rem .1rem; border-top: 1px solid var(--line); font-size: .92rem; }
+.mp-row { display: flex; gap: .5rem; flex-wrap: wrap; }
+.mp-row > button { flex: 1 1 7rem; }
+
+/* Filas simples que se abren (Ingresos, Gastos, Meta) */
+.mp-rows { list-style: none; margin: 0; padding: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; }
+.mp-rows > li { border-top: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.mp-rows > li:first-child { border-top: 0; }
+.mp-rows > li.is-open { background: var(--tint); }
+.mp-rowbtn { width: 100%; min-width: 0; text-align: left; background: transparent; border: 0; cursor: pointer; padding: .55rem .7rem; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0 .55rem; align-items: center; }
+.mp-badge { grid-row: span 2; min-width: 1.8rem; height: 1.8rem; border-radius: 8px; background: var(--tint2); font-weight: 700; font-size: .76rem; display: grid; place-items: center; padding: 0 .2rem; }
+.mp-thumb { grid-row: span 2; width: 2.4rem; height: 2.4rem; border-radius: 8px; object-fit: cover; background: var(--tint2); display: grid; place-items: center; font-size: .7rem; color: var(--muted); }
+.mp-r-main { font-size: .95rem; font-weight: 700; overflow-wrap: anywhere; }
+.mp-r-val { font-size: .95rem; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.mp-r-sub { grid-column: 2 / -1; font-size: .8rem; color: var(--muted); }
+.mp-rowbtn.no-badge .mp-r-sub { grid-column: 1 / -1; }
+.mp-rows > li > .mp-del { margin-right: .6rem; }
+.mp-r-detail { grid-column: 1 / -1; padding: 0 .7rem .6rem; min-width: 0; }
+.mp-r-detail .mp-kv li, .mp-r-detail .mp-dl li { font-size: .84rem; }
+.mp-r-detail img { display: block; width: 100%; max-height: 22rem; object-fit: contain; border-radius: 10px; background: var(--panel); margin-bottom: .4rem; }
+.mp-dl { list-style: none; margin: 0 0 .3rem; padding: 0; font-size: .88rem; }
+.mp-dl li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .6rem; padding: .25rem 0; border-bottom: 1px dashed var(--line); }
+.mp-dl li:last-child { border-bottom: 0; }
+.mp-dl .mp-v { font-variant-numeric: tabular-nums; text-align: right; }
+.mp-note2 { color: var(--muted); font-size: .8rem; }
+
+/* Botones generales y selectores */
+.mp-btn { min-height: 2.4rem; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); font-weight: 700; font-size: .88rem; cursor: pointer; padding: .2rem .7rem; }
+.mp-btn.is-main { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.mp-btn.is-danger { border-color: var(--bad); color: var(--bad); }
+.mp-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: 1rem; }
+.mp-monthnav { display: grid; grid-template-columns: 2.3rem minmax(0, 1fr) 2.3rem; align-items: center; gap: .4rem; }
+.mp-monthnav button { min-height: 2.3rem; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; font-size: 1.05rem; font-weight: 700; }
+.mp-monthnav span { text-align: center; font-weight: 700; }
+.mp-choice { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; }
+.mp-choice-3 { grid-template-columns: repeat(3, 1fr); }
+.mp-choice button { min-height: 2.3rem; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); cursor: pointer; font-weight: 700; font-size: .84rem; padding: .2rem .3rem; line-height: 1.2; }
+.mp-choice button[aria-pressed="true"] { border-color: var(--fg); border-width: 3px; background: var(--tint2); }
+.mp-vista { margin-bottom: .6rem; }
+
+/* Formularios */
+.mp-form { margin-top: 1rem; background: var(--bg); border: 2px solid var(--fg); border-radius: 14px; padding: .9rem; display: grid; gap: .8rem; }
+.mp-form h2 { font-size: 1.05rem; font-weight: 700; }
+.mp-field { display: grid; gap: .2rem; min-width: 0; }
+.mp-field label, .mp-lbl { font-weight: 700; font-size: .94rem; }
+.mp-help { font-size: .8rem; color: var(--muted); }
+.mp-field input[type="text"], .mp-field input[type="date"] { min-height: 2.4rem; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); padding: .3rem .7rem; width: 100%; box-sizing: border-box; }
+.mp-preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: .3rem; padding: .55rem .7rem; border-radius: 10px; background: var(--tint); border: 1px solid var(--line); }
+.mp-preview small { display: block; font-size: .76rem; color: var(--muted); }
+.mp-preview b { font-size: .92rem; font-variant-numeric: tabular-nums; }
+.mp-photo { display: grid; gap: .4rem; }
+.mp-photo img { max-width: 100%; max-height: 14rem; border-radius: 10px; object-fit: contain; background: var(--panel); justify-self: start; }
+.mp-err { color: var(--bad); font-weight: 700; font-size: .9rem; }
+.mp-err:empty { display: none; }
+.mp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Gráfico */
+.mp-chartbox { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: .6rem .6rem .5rem; }
+.mp-chart { min-height: 170px; }
+.mp-chart svg { display: block; }
+.mp-chart text { font-family: var(--font); }
+.mp-chart .mp-col { cursor: pointer; }
+.mp-chart .mp-col:focus { outline: none; }
+.mp-chart .mp-col:focus-visible .mp-hit { stroke: var(--fg); stroke-width: 2; }
+.mp-key { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .8rem; color: var(--muted); margin-top: .3rem; padding-left: .2rem; }
+.mp-key span { display: inline-flex; align-items: center; gap: .35rem; }
+.mp-key-bar { width: .7rem; height: .7rem; border-radius: 3px; background: var(--acc-strong); display: inline-block; }
+.mp-key-line { width: 1rem; border-top: 2px dashed var(--muted); display: inline-block; }
+
+/* Reporte */
+.mp-report { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: .75rem; display: grid; gap: .6rem; }
+.mp-report .mp-status { font-size: .86rem; color: var(--muted); min-height: 1.2rem; }
+.mp-foot { margin-top: 1.5rem; font-size: .8rem; color: var(--muted); text-align: center; }
+</style>
+
+<div class="mp" id="inicio">
+  <nav class="mp-tabs" role="tablist" aria-label="Hojas">
+    <button type="button" role="tab" id="tab-pagos" data-tab="pagos" aria-selected="true">Pagos</button>
+    <button type="button" role="tab" id="tab-ingresos" data-tab="ingresos" aria-selected="false">Ingresos</button>
+    <button type="button" role="tab" id="tab-gastos" data-tab="gastos" aria-selected="false">Gastos</button>
+    <button type="button" role="tab" id="tab-meta" data-tab="meta" aria-selected="false">Mi meta</button>
+  </nav>
+  <div class="mp-banner" id="aviso" hidden></div>
+  <p class="mp-toast" aria-live="polite"></p>
+
+  <!-- PAGOS -->
+  <section class="mp-page" id="pagos" role="tabpanel" aria-labelledby="tab-pagos">
+    <header class="mp-head">
+      <h1 class="mp-title">Mis pagos</h1>
+      <p class="mp-sub mp-p-sub">Toca "Pagar" cuando pagues algo.</p>
+    </header>
+    <div class="mp-monthnav">
+      <button type="button" class="mp-p-prev" aria-label="Mes anterior">‹</button>
+      <span class="mp-p-month">—</span>
+      <button type="button" class="mp-p-next" aria-label="Mes siguiente">›</button>
+    </div>
+    <h2 class="mp-h"><span class="mp-n">1</span>Resumen del mes</h2>
+    <div class="mp-sum is-loading mp-p-sum"><p class="mp-hero-lbl">Cargando tus pagos…</p></div>
+    <h2 class="mp-h"><span class="mp-n">2</span>Por pagar</h2>
+    <ul class="mp-list mp-p-todo"></ul>
+    <h2 class="mp-h"><span class="mp-n">3</span>Ya pagados</h2>
+    <ul class="mp-list mp-p-done"></ul>
+    <div class="mp-actions">
+      <button type="button" class="mp-btn is-main mp-p-add">+ Agregar pago</button>
+      <button type="button" class="mp-btn mp-p-edit">Editar</button>
+    </div>
+
+    <div class="mp-form mp-p-form" id="agregar-pago" hidden>
+      <h2>Nuevo pago</h2>
+      <div class="mp-field">
+        <label for="p-nombre">1. ¿Qué vas a pagar?</label>
+        <span class="mp-help">Ejemplo: Luz</span>
+        <input id="p-nombre" type="text" autocomplete="off" maxlength="40">
+      </div>
+      <div class="mp-field">
+        <label for="p-monto">2. ¿Cuánto cuesta?</label>
+        <span class="mp-help">Solo números. Ejemplo: 25000</span>
+        <input id="p-monto" type="text" inputmode="numeric" autocomplete="off" maxlength="12">
+      </div>
+      <div class="mp-field">
+        <label for="p-dia">3. ¿Qué día del mes se paga?</label>
+        <span class="mp-help">Un número del 1 al 31</span>
+        <input id="p-dia" type="text" inputmode="numeric" autocomplete="off" maxlength="2">
+      </div>
+      <div class="mp-field">
+        <span class="mp-lbl">4. ¿Es en cuotas?</span>
+        <div class="mp-choice" role="group" aria-label="¿Es en cuotas?">
+          <button type="button" id="p-c-no" aria-pressed="true">No, todos los meses</button>
+          <button type="button" id="p-c-si" aria-pressed="false">Sí, en cuotas</button>
+        </div>
+      </div>
+      <div class="mp-field p-cuotas" hidden>
+        <label for="p-act">5. ¿Qué cuota toca este mes?</label>
+        <span class="mp-help">Si vas en la 3 de 6, escribe 3</span>
+        <input id="p-act" type="text" inputmode="numeric" autocomplete="off" maxlength="3">
+      </div>
+      <div class="mp-field p-cuotas" hidden>
+        <label for="p-tot">6. ¿Cuántas cuotas son en total?</label>
+        <span class="mp-help">Ejemplo: 6</span>
+        <input id="p-tot" type="text" inputmode="numeric" autocomplete="off" maxlength="3">
+      </div>
+      <p class="mp-err mp-p-err" role="alert"></p>
+      <div class="mp-row">
+        <button type="button" class="mp-btn is-main mp-p-save">Guardar</button>
+        <button type="button" class="mp-btn mp-p-cancel">Cancelar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- INGRESOS -->
+  <section class="mp-page" id="ingresos" role="tabpanel" aria-labelledby="tab-ingresos" hidden>
+    <header class="mp-head">
+      <h1 class="mp-title">Mis ingresos</h1>
+      <p class="mp-sub">Anota cada trabajo que hiciste.</p>
+    </header>
+    <div class="mp-monthnav">
+      <button type="button" class="mp-i-prev" aria-label="Mes anterior">‹</button>
+      <span class="mp-i-month">—</span>
+      <button type="button" class="mp-i-next" aria-label="Mes siguiente">›</button>
+    </div>
+    <h2 class="mp-h"><span class="mp-n">1</span>Lo que ganaste</h2>
+    <div class="mp-sum is-loading mp-i-sum"><p class="mp-hero-lbl">Cargando tus trabajos…</p></div>
+    <h2 class="mp-h"><span class="mp-n">2</span>Trabajos <small class="mp-i-orden"></small></h2>
+    <div class="mp-choice mp-vista mp-i-vista" role="group" aria-label="Ver trabajos">
+      <button type="button" data-vista="cliente" aria-pressed="false">Ver por cliente</button>
+      <button type="button" data-vista="fecha" aria-pressed="true">Ver por fecha</button>
+    </div>
+    <ul class="mp-rows mp-i-list"></ul>
+    <div class="mp-actions">
+      <button type="button" class="mp-btn is-main mp-i-add">+ Agregar trabajo</button>
+      <button type="button" class="mp-btn mp-i-edit">Editar</button>
+    </div>
+
+    <div class="mp-form mp-i-form" id="agregar-trabajo" hidden>
+      <h2>Nuevo trabajo</h2>
+      <div class="mp-field">
+        <label for="i-cliente">1. Cliente</label>
+        <span class="mp-help">Ejemplo: Constructora Andes</span>
+        <input id="i-cliente" type="text" autocomplete="off" maxlength="50" list="i-clientes">
+        <datalist id="i-clientes"></datalist>
+      </div>
+      <div class="mp-field">
+        <label for="i-fecha">2. Fecha</label>
+        <input id="i-fecha" type="date" min="2000-01-01" max="2099-12-31">
+      </div>
+      <div class="mp-field">
+        <span class="mp-lbl">3. Maquinaria</span>
+        <div class="mp-choice mp-choice-3" role="group" aria-label="Maquinaria">
+          <button type="button" class="i-maq-btn" data-maq="Camión" aria-pressed="false">Camión</button>
+          <button type="button" class="i-maq-btn" data-maq="Miniexcavadora" aria-pressed="false">Mini&shy;excavadora</button>
+          <button type="button" class="i-maq-btn" data-maq="" aria-pressed="false">Otro equipo</button>
+        </div>
+      </div>
+      <div class="mp-field i-otro-box" hidden>
+        <label for="i-otro">¿Qué equipo?</label>
+        <span class="mp-help">Ejemplo: Placa compactadora</span>
+        <input id="i-otro" type="text" autocomplete="off" maxlength="40" list="i-otros">
+        <datalist id="i-otros"></datalist>
+      </div>
+      <div class="mp-field">
+        <span class="mp-lbl">4. ¿Cómo cobras este trabajo?</span>
+        <div class="mp-choice mp-choice-3" role="group" aria-label="Forma de cobro">
+          <button type="button" class="i-tipo-btn" data-tipo="hora" aria-pressed="true">Por hora</button>
+          <button type="button" class="i-tipo-btn" data-tipo="dia" aria-pressed="false">Por día</button>
+          <button type="button" class="i-tipo-btn" data-tipo="trato" aria-pressed="false">Por trato</button>
+        </div>
+      </div>
+      <div class="mp-field i-cant-box">
+        <label for="i-cant" class="i-cant-lbl">5. ¿Cuántas horas?</label>
+        <input id="i-cant" type="text" inputmode="decimal" autocomplete="off" maxlength="5">
+      </div>
+      <div class="mp-field">
+        <label for="i-valor" class="i-valor-lbl">6. Valor por hora, sin IVA</label>
+        <span class="mp-help">Solo números. Ejemplo: 35000</span>
+        <input id="i-valor" type="text" inputmode="numeric" autocomplete="off" maxlength="10">
+      </div>
+      <div class="mp-field">
+        <span class="mp-lbl i-iva-lbl">7. ¿Lleva IVA?</span>
+        <div class="mp-choice" role="group" aria-label="¿Lleva IVA?">
+          <button type="button" id="i-iva-si" aria-pressed="true">Con IVA</button>
+          <button type="button" id="i-iva-no" aria-pressed="false">Sin IVA</button>
+        </div>
+      </div>
+      <div class="mp-preview" aria-live="polite">
+        <div><small>Neto</small><b class="i-pv-neto">—</b></div>
+        <div><small class="i-pv-iva-lbl">IVA 19%</small><b class="i-pv-iva">—</b></div>
+        <div><small>Total a facturar</small><b class="i-pv-total">—</b></div>
+      </div>
+      <p class="mp-err mp-i-err" role="alert"></p>
+      <div class="mp-row">
+        <button type="button" class="mp-btn is-main mp-i-save">Guardar</button>
+        <button type="button" class="mp-btn mp-i-cancel">Cancelar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GASTOS -->
+  <section class="mp-page" id="gastos" role="tabpanel" aria-labelledby="tab-gastos" hidden>
+    <header class="mp-head">
+      <h1 class="mp-title">Mis gastos</h1>
+      <p class="mp-sub">Saca una foto a la boleta y anota cuánto gastaste.</p>
+    </header>
+    <div class="mp-monthnav">
+      <button type="button" class="mp-g-prev" aria-label="Mes anterior">‹</button>
+      <span class="mp-g-month">—</span>
+      <button type="button" class="mp-g-next" aria-label="Mes siguiente">›</button>
+    </div>
+    <h2 class="mp-h"><span class="mp-n">1</span>Lo que gastaste</h2>
+    <div class="mp-sum is-loading mp-g-sum"><p class="mp-hero-lbl">Cargando tus gastos…</p></div>
+    <h2 class="mp-h"><span class="mp-n">2</span>Gastos <small>(el más nuevo arriba)</small></h2>
+    <ul class="mp-rows mp-g-list"></ul>
+    <div class="mp-actions">
+      <button type="button" class="mp-btn is-main mp-g-add">+ Agregar gasto</button>
+      <button type="button" class="mp-btn mp-g-edit">Editar</button>
+    </div>
+
+    <div class="mp-form mp-g-form" id="agregar-gasto" hidden>
+      <h2>Nuevo gasto</h2>
+      <div class="mp-field">
+        <span class="mp-lbl">1. Foto de la boleta o factura</span>
+        <span class="mp-help g-foto-help">Puedes sacarla ahora o elegirla de tus fotos. Es opcional.</span>
+        <div class="mp-choice g-foto-btns">
+          <button type="button" id="g-cam">Sacar foto</button>
+          <button type="button" id="g-gal">Elegir de mis fotos</button>
+        </div>
+        <input id="g-cam-input" class="mp-sr" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
+        <input id="g-gal-input" class="mp-sr" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
+        <div class="mp-photo" hidden>
+          <img alt="Foto de la boleta elegida">
+          <button type="button" class="mp-more g-quitar">Quitar foto</button>
+        </div>
+      </div>
+      <div class="mp-field">
+        <label for="g-monto">2. ¿Cuánto gastaste?</label>
+        <span class="mp-help">Solo números. Ejemplo: 15990</span>
+        <input id="g-monto" type="text" inputmode="numeric" autocomplete="off" maxlength="12">
+      </div>
+      <div class="mp-field">
+        <label for="g-desc">3. ¿En qué?</label>
+        <span class="mp-help">Ejemplo: Bencina camión</span>
+        <input id="g-desc" type="text" autocomplete="off" maxlength="50" list="g-descs">
+        <datalist id="g-descs"></datalist>
+      </div>
+      <div class="mp-field">
+        <label for="g-fecha">4. Fecha</label>
+        <input id="g-fecha" type="date" min="2000-01-01" max="2099-12-31">
+      </div>
+      <p class="mp-err mp-g-err" role="alert"></p>
+      <div class="mp-row">
+        <button type="button" class="mp-btn is-main mp-g-save">Guardar</button>
+        <button type="button" class="mp-btn mp-g-cancel">Cancelar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- META -->
+  <section class="mp-page" id="meta" role="tabpanel" aria-labelledby="tab-meta" hidden>
+    <header class="mp-head">
+      <h1 class="mp-title">Mi meta</h1>
+      <p class="mp-sub">Lo que necesitas para tus pagos, comparado con lo que ganas.</p>
+    </header>
+    <div class="mp-monthnav">
+      <button type="button" class="mp-m-prev" aria-label="Mes anterior">‹</button>
+      <span class="mp-m-month">—</span>
+      <button type="button" class="mp-m-next" aria-label="Mes siguiente">›</button>
+    </div>
+    <h2 class="mp-h"><span class="mp-n">1</span>Tu meta del mes</h2>
+    <div class="mp-sum is-loading mp-m-sum"><p class="mp-hero-lbl">Cargando…</p></div>
+    <h2 class="mp-h"><span class="mp-n">2</span>Tus próximos meses <small>(toca un mes)</small></h2>
+    <div class="mp-chartbox">
+      <div class="mp-chart" id="grafico-meses"></div>
+      <div class="mp-key" aria-hidden="true">
+        <span><i class="mp-key-bar"></i>Lo que ganaste</span>
+        <span><i class="mp-key-line"></i>Lo que necesitas</span>
+      </div>
+    </div>
+    <h2 class="mp-h"><span class="mp-n">3</span>Qué incluye <small>(toca para ver)</small></h2>
+    <ul class="mp-rows mp-m-list"></ul>
+
+    <h2 class="mp-h" id="reporte"><span class="mp-n">4</span>Reporte para imprimir</h2>
+    <div class="mp-report">
+      <div class="mp-choice" role="group" aria-label="Período del reporte">
+        <button type="button" id="r-mes" aria-pressed="true">Del mes</button>
+        <button type="button" id="r-dia" aria-pressed="false">De un día</button>
+      </div>
+      <p class="mp-help r-mes-help"></p>
+      <div class="mp-field r-dia-box" hidden>
+        <label for="r-fecha">¿Qué día?</label>
+        <input id="r-fecha" type="date" min="2000-01-01" max="2099-12-31">
+      </div>
+      <div class="mp-choice">
+        <button type="button" id="r-pdf">Descargar PDF</button>
+        <button type="button" id="r-xlsx">Descargar Excel</button>
+      </div>
+      <p class="mp-status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <p class="mp-foot">Tus datos se guardan solos cada vez que tocas Guardar o Pagar.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => document.querySelectorAll(s);
+  const money = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
+  const numFmt = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 1 });
+  const fechaFmt = new Intl.DateTimeFormat('es-CL', { weekday: 'short', day: 'numeric', month: 'short' });
+  const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const IVA = 0.19;
+
+  const hoy = new Date();
+  const diaHoy = hoy.getDate();
+  const claveHoy = hoy.getFullYear() * 12 + hoy.getMonth();
+  const pad = (n) => String(n).padStart(2, '0');
+  const hoyISO = hoy.getFullYear() + '-' + pad(hoy.getMonth() + 1) + '-' + pad(diaHoy);
+  const nombreMes = (c) => MESES[((c % 12) + 12) % 12];
+  const anio = (c) => Math.floor(c / 12);
+  const Mayus = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  const mesLargo = (c) => Mayus(nombreMes(c)) + ' ' + anio(c);
+  const claveTxt = (c) => anio(c) + '-' + pad((c % 12) + 1);          // "2026-10"
+  const claveDe = (txt) => { const [y, m] = String(txt).split('-').map(Number); return y * 12 + (m - 1); };
+  const fechaLocal = (iso) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+
+  /* ---------- Estado ---------- */
+  let db = null, assets = null, downloads = null;
+  let pagos = [], trabajos = [], gastos = [];
+  const listo = { pagos: false, trabajos: false, gastos: false };
+  let mesPag = claveHoy, mesIng = claveHoy, mesGas = claveHoy, mesMeta = claveHoy;
+  let editP = false, borrandoP = null, enCuotas = false;
+  let editI = false, borrandoI = null, conIva = true, tipo = 'hora', maq = null, vistaI = 'fecha';
+  let editG = false, borrandoG = null, fotoNueva = null;
+  const abiertos = new Set();
+  let heroIng = false, heroMeta = false;
+  let rPeriodo = 'mes';
+
+  /* ---------- Utilidades ---------- */
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+  const boton = (cls, text, fn) => { const b = el('button', cls, text); b.type = 'button'; b.addEventListener('click', fn); return b; };
+  const dato = (label, valor, cls) => { const d = el('div', cls); d.append(el('small', null, label), el('b', null, valor)); return d; };
+  const filaKV = (label, valor) => { const li = el('li'); li.append(el('span', null, label), el('b', null, valor)); return li; };
+  const barra = (parte, total, corto) => {
+    const b = el('div', 'mp-bar' + (corto ? ' is-short' : ''));
+    const f = el('span');
+    f.style.width = Math.min(100, total ? (parte / total) * 100 : 0) + '%';
+    b.appendChild(f);
+    return b;
+  };
+  const avisar = (texto, malo) => {
+    const t = $('.mp-toast');
+    t.textContent = texto;
+    t.classList.toggle('is-bad', !!malo);
+    clearTimeout(avisar.t);
+    avisar.t = setTimeout(() => { t.textContent = ''; }, malo ? 6000 : 3000);
+  };
+  const numero = (sel) => Number($(sel).value.replace(/[^0-9]/g, ''));
+  const decimal = (sel) => Number($(sel).value.replace(',', '.').replace(/[^0-9.]/g, ''));
+  const fallo = () => avisar('No se pudo guardar. Revisa tu internet e intenta de nuevo.', true);
+  const guardar = async (promesa, ok) => { try { await promesa; if (ok) avisar(ok); return true; } catch (e) { fallo(); return false; } };
+  const ponerPresionado = (sel, activo) => $$(sel).forEach((b) => b.setAttribute('aria-pressed', String(activo(b))));
+  const navMes = (pre, get, set) => {
+    $('.mp-' + pre + '-prev').addEventListener('click', () => { set(get() - 1); render(); });
+    $('.mp-' + pre + '-next').addEventListener('click', () => { set(get() + 1); render(); });
+  };
+  function confirmar(nombre, siFn, noFn) {
+    const c = el('div', 'mp-confirm');
+    c.appendChild(el('p', null, '¿Borrar ' + nombre + ' para siempre?'));
+    const row = el('div', 'mp-row');
+    row.append(boton('mp-btn is-danger', 'Sí, borrar', siFn), boton('mp-btn', 'No', noFn));
+    c.appendChild(row);
+    return c;
+  }
+
+  /* ---------- Cálculos: pagos ---------- */
+  const esCuota = (p) => p.cuotas_total > 0;
+  const cuotaEn = (p, c) => c - claveDe(p.inicio) + 1;
+  const pagosDelMes = (c) => pagos.filter((p) => (esCuota(p)
+    ? cuotaEn(p, c) >= 1 && cuotaEn(p, c) <= p.cuotas_total
+    : !p.desde || c >= claveDe(p.desde)));
+  const pagadoEn = (p, c) => !!(p.pagados && p.pagados[claveTxt(c)]);
+  const necesitoMes = (c) => d3.sum(pagosDelMes(c), (p) => p.monto);
+
+  /* ---------- Cálculos: trabajos y gastos ---------- */
+  const neto = (t) => (t.tipo === 'trato' ? t.valor : t.cantidad * t.valor);
+  const iva = (t) => (t.con_iva ? neto(t) * IVA : 0);
+  const totalFactura = (t) => neto(t) + iva(t);
+  const UNIDAD = { hora: ['hora', 'horas'], dia: ['día', 'días'] };
+  const unidades = (t) => numFmt.format(t.cantidad) + ' ' + (t.cantidad === 1 ? UNIDAD[t.tipo][0] : UNIDAD[t.tipo][1]);
+  const comoSeCobra = (t) => (t.tipo === 'trato' ? 'Por trato' : unidades(t) + ' × ' + money.format(t.valor));
+  const delMes = (lista, c) => lista.filter((x) => claveDe(x.fecha) === c).sort((a, b) => d3.ascending(a.fecha, b.fecha) || d3.ascending(a.creado || 0, b.creado || 0));
+  const trabajosDelMes = (c) => delMes(trabajos, c);
+  const gastosDelMes = (c) => delMes(gastos, c);
+  const generoMes = (c) => d3.sum(trabajosDelMes(c), neto);
+  const cuantoTrabajado = (lista) => {
+    const partes = [];
+    const h = d3.sum(lista.filter((t) => t.tipo === 'hora'), (t) => t.cantidad);
+    const d = d3.sum(lista.filter((t) => t.tipo === 'dia'), (t) => t.cantidad);
+    const tr = lista.filter((t) => t.tipo === 'trato').length;
+    if (h) partes.push(numFmt.format(h) + (h === 1 ? ' hora' : ' horas'));
+    if (d) partes.push(numFmt.format(d) + (d === 1 ? ' día' : ' días'));
+    if (tr) partes.push(tr + (tr === 1 ? ' trato' : ' tratos'));
+    return partes.join(' · ') || '—';
+  };
+
+  /* ---------- Pestañas ---------- */
+  const HOJAS = ['pagos', 'ingresos', 'gastos', 'meta'];
+  const mostrarTab = (nombre) => {
+    $$('.mp-tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === nombre)));
+    $$('.mp-page').forEach((p) => { p.hidden = p.id !== nombre; });
+    if (nombre === 'meta') dibujarGrafico();
+  };
+  $$('.mp-tabs button').forEach((b) => b.addEventListener('click', () => mostrarTab(b.dataset.tab)));
+  if (HOJAS.includes(location.hash.slice(1))) mostrarTab(location.hash.slice(1));
+
+  /* ---------- Filas que se abren ---------- */
+  function fila({ clave, badge, thumb, titulo, valor, sub, detalle, borrar }) {
+    const li = el('li');
+    const abierto = abiertos.has(clave);
+    if (abierto) li.classList.add('is-open');
+    const b = el('button', 'mp-rowbtn' + (badge || thumb !== undefined ? '' : ' no-badge'));
+    b.type = 'button';
+    b.setAttribute('aria-expanded', String(abierto));
+    if (badge) b.appendChild(el('span', 'mp-badge', badge));
+    if (thumb !== undefined) {
+      if (thumb) { const im = el('img', 'mp-thumb'); im.src = '/_blob/' + thumb; im.alt = ''; im.loading = 'lazy'; b.appendChild(im); }
+      else b.appendChild(el('span', 'mp-thumb', 'sin foto'));
+    }
+    b.append(el('span', 'mp-r-main', titulo), el('span', 'mp-r-val', valor), el('span', 'mp-r-sub', sub + (abierto ? '  ▲' : '  ▼')));
+    b.addEventListener('click', () => { if (abierto) abiertos.delete(clave); else abiertos.add(clave); render(); });
+    li.appendChild(b);
+    li.appendChild(borrar || el('span'));
+    if (abierto) { const d = el('div', 'mp-r-detail'); d.append(...detalle()); li.appendChild(d); }
+    return li;
+  }
+
+  /* ================= PAGOS ================= */
+  const cuando = (p, c, pagado) => {
+    if (pagado) return { texto: 'Pagado', tarde: false };
+    if (c < claveHoy) return { texto: 'No se marcó como pagado', tarde: true };
+    if (c > claveHoy) return { texto: 'Se paga el día ' + p.dia, tarde: false };
+    if (p.dia < diaHoy) return { texto: 'Pendiente: era el día ' + p.dia, tarde: true };
+    if (p.dia === diaHoy) return { texto: 'Se paga hoy', tarde: false };
+    const faltan = p.dia - diaHoy;
+    if (faltan <= 3) return { texto: 'Día ' + p.dia + ' (faltan ' + faltan + (faltan === 1 ? ' día)' : ' días)'), tarde: false };
+    return { texto: 'Se paga el día ' + p.dia, tarde: false };
+  };
+
+  function tarjetaPago(p, c) {
+    const pagado = pagadoEn(p, c);
+    const w = cuando(p, c, pagado);
+    const li = el('li', 'mp-card' + (pagado ? ' is-paid' : '') + (w.tarde ? ' is-late' : ''));
+    const info = el('div');
+    info.appendChild(el('div', 'mp-name', p.nombre));
+    info.appendChild(el('div', 'mp-amt', money.format(p.monto)));
+    if (esCuota(p)) {
+      const n = cuotaEn(p, c);
+      info.appendChild(el('div', 'mp-cuota', 'Cuota ' + n + ' de ' + p.cuotas_total));
+      const resto = p.cuotas_total - n;
+      info.appendChild(el('div', 'mp-fin', resto === 0 ? 'Es la última cuota' : 'Termina en ' + nombreMes(c + resto)));
+    }
+    info.appendChild(el('div', 'mp-when', w.texto));
+    li.appendChild(info);
+    if (editP) {
+      li.appendChild(boton('mp-del', 'Borrar', () => { borrandoP = p.id; render(); }));
+      if (borrandoP === p.id) li.appendChild(confirmar('"' + p.nombre + '"',
+        async () => { borrandoP = null; await guardar(db.doc('pagos/' + p.id).delete(), 'Se borró ' + p.nombre + '.'); },
+        () => { borrandoP = null; render(); }));
+    } else {
+      const b = boton('mp-check', null, async () => {
+        const nuevo = !pagado;
+        const mapa = Object.assign({}, p.pagados || {});
+        if (nuevo) mapa[claveTxt(c)] = true; else delete mapa[claveTxt(c)];
+        const quedan = pagosDelMes(c).filter((x) => x.id !== p.id && !pagadoEn(x, c)).length;
+        await guardar(db.doc('pagos/' + p.id).update({ pagados: mapa }),
+          nuevo ? (quedan ? '¡Bien hecho! ' + p.nombre + ' pagado. Te quedan ' + quedan + '.' : '¡Excelente! Pagaste todo el mes.') : p.nombre + ' volvió a "Por pagar".');
+      });
+      b.setAttribute('aria-pressed', String(pagado));
+      b.setAttribute('aria-label', (pagado ? 'Desmarcar ' : 'Marcar como pagado: ') + p.nombre);
+      b.append(el('span', 'mp-mark', pagado ? '✓' : '○'), el('span', null, pagado ? 'Pagado' : 'Pagar'));
+      li.appendChild(b);
+    }
+    return li;
+  }
+
+  function renderPagos() {
+    const c = mesPag;
+    $('.mp-p-month').textContent = mesLargo(c) + (c === claveHoy ? ' (este mes)' : '');
+    if (!listo.pagos) return;
+    const box = $('.mp-p-sum');
+    box.classList.remove('is-loading');
+    const lista = pagosDelMes(c);
+    const listos = lista.filter((p) => pagadoEn(p, c));
+    const falta = lista.filter((p) => !pagadoEn(p, c));
+    const tarde = c === claveHoy ? falta.filter((p) => p.dia < diaHoy) : c < claveHoy ? falta : [];
+    const nums = el('div', 'mp-nums');
+    nums.append(dato('Falta pagar', money.format(d3.sum(falta, (p) => p.monto)), 'mp-num'), dato('Ya pagaste', money.format(d3.sum(listos, (p) => p.monto)), 'mp-num'));
+    let texto, late = false;
+    if (!lista.length) texto = 'Toca "Agregar pago" para anotar tu primer pago.';
+    else if (!falta.length) texto = '¡Excelente! Pagaste todo este mes.';
+    else if (tarde.length) { late = true; texto = (tarde.length === 1 ? 'Te quedó pendiente ' + tarde[0].nombre + '.' : 'Te quedaron ' + tarde.length + ' pagos pendientes.') + (c === claveHoy ? ' Si puedes, págalo hoy y quedas al día.' : ''); }
+    else { const prox = falta.slice().sort((a, b) => a.dia - b.dia)[0]; texto = (listos.length ? 'Vas bien: ya pagaste ' + listos.length + '. ' : '') + 'Próximo pago: ' + prox.nombre + ', día ' + prox.dia + '.'; }
+    box.replaceChildren(el('p', 'mp-big', lista.length ? 'Pagaste ' + listos.length + ' de ' + lista.length : 'Todavía no tienes pagos'), barra(listos.length, lista.length), nums, el('p', 'mp-msg' + (late ? ' is-late' : ''), texto));
+    const orden = (a, b) => a.dia - b.dia;
+    $('.mp-p-todo').replaceChildren(...(falta.length ? falta.sort(orden).map((p) => tarjetaPago(p, c)) : [el('li', 'mp-empty', lista.length ? 'Nada pendiente.' : 'Aquí aparecerán tus pagos del mes.')]));
+    $('.mp-p-done').replaceChildren(...(listos.length ? listos.sort(orden).map((p) => tarjetaPago(p, c)) : [el('li', 'mp-empty', 'Todavía nada.')]));
+    $('.mp-p-edit').textContent = editP ? 'Listo' : 'Editar';
+    $('.mp-p-sub').textContent = editP ? 'Modo editar: puedes borrar pagos.' : 'Toca "Pagar" cuando pagues algo.';
+  }
+
+  const ponerCuotas = (si) => {
+    enCuotas = si;
+    $('#p-c-si').setAttribute('aria-pressed', String(si));
+    $('#p-c-no').setAttribute('aria-pressed', String(!si));
+    $$('.p-cuotas').forEach((x) => { x.hidden = !si; });
+  };
+  $('#p-c-si').addEventListener('click', () => ponerCuotas(true));
+  $('#p-c-no').addEventListener('click', () => ponerCuotas(false));
+  $('.mp-p-add').addEventListener('click', () => {
+    ['#p-nombre', '#p-monto', '#p-dia', '#p-act', '#p-tot'].forEach((s) => { $(s).value = ''; });
+    $('.mp-p-err').textContent = '';
+    ponerCuotas(false);
+    $('.mp-p-form').hidden = false;
+    $('.mp-p-form').scrollIntoView({ block: 'start' });
+    $('#p-nombre').focus();
+  });
+  $('.mp-p-cancel').addEventListener('click', () => { $('.mp-p-form').hidden = true; });
+  $('.mp-p-save').addEventListener('click', async () => {
+    const nombre = $('#p-nombre').value.trim();
+    const monto = numero('#p-monto'), dia = numero('#p-dia'), act = numero('#p-act'), tot = numero('#p-tot');
+    const falla = (texto, sel) => { $('.mp-p-err').textContent = texto; $(sel).focus(); };
+    if (!nombre) return falla('Falta el paso 1: escribe qué vas a pagar.', '#p-nombre');
+    if (!monto) return falla('Falta el paso 2: escribe cuánto cuesta.', '#p-monto');
+    if (!(dia >= 1 && dia <= 31)) return falla('Paso 3: el día debe ser un número del 1 al 31.', '#p-dia');
+    if (enCuotas && !tot) return falla('Falta el paso 6: cuántas cuotas son en total.', '#p-tot');
+    if (enCuotas && !(act >= 1 && act <= tot)) return falla('Paso 5: la cuota de este mes debe ser de 1 a ' + tot + '.', '#p-act');
+    const doc = { nombre, monto, dia, pagados: {}, creado: Date.now() };
+    if (enCuotas) { doc.cuotas_total = tot; doc.inicio = claveTxt(claveHoy - (act - 1)); } else { doc.desde = claveTxt(claveHoy); }
+    $('.mp-p-save').disabled = true;
+    const ok = await guardar(db.collection('pagos').add(doc), 'Se agregó ' + nombre + '.');
+    $('.mp-p-save').disabled = false;
+    if (ok) { $('.mp-p-form').hidden = true; $('#inicio').scrollIntoView({ block: 'start' }); }
+  });
+  $('.mp-p-edit').addEventListener('click', () => { editP = !editP; borrandoP = null; $('.mp-p-form').hidden = true; render(); });
+  navMes('p', () => mesPag, (v) => { mesPag = v; });
+
+  /* ================= INGRESOS ================= */
+  function filaTrabajo(t, n) {
+    const borrar = editI ? boton('mp-del', 'Borrar', () => { borrandoI = t.id; render(); }) : null;
+    const li = fila({
+      clave: 't:' + t.id, badge: 'N° ' + n, titulo: t.cliente, valor: money.format(neto(t)),
+      sub: fechaFmt.format(fechaLocal(t.fecha)) + ' · ' + t.maquinaria, borrar,
+      detalle: () => {
+        const kv = el('ul', 'mp-kv');
+        kv.append(filaKV('Cobro', comoSeCobra(t)), filaKV('Neto', money.format(neto(t))),
+          filaKV('IVA', t.con_iva ? money.format(iva(t)) : 'No lleva'), filaKV('Total a facturar', money.format(totalFactura(t))));
+        return [kv];
+      },
+    });
+    if (editI && borrandoI === t.id) li.appendChild(confirmar('el trabajo N° ' + n + ' (' + t.cliente + ')',
+      async () => { borrandoI = null; await guardar(db.doc('trabajos/' + t.id).delete(), 'Se borró el trabajo.'); },
+      () => { borrandoI = null; render(); }));
+    return li;
+  }
+  function filaCliente([cliente, suyos]) {
+    return fila({
+      clave: 'c:' + cliente, titulo: cliente, valor: money.format(d3.sum(suyos, neto)),
+      sub: suyos.length + (suyos.length === 1 ? ' trabajo · ' : ' trabajos · ') + cuantoTrabajado(suyos),
+      detalle: () => {
+        const ul = el('ul', 'mp-dl');
+        suyos.slice().reverse().forEach((t) => {
+          const li = el('li');
+          li.append(el('span', null, fechaFmt.format(fechaLocal(t.fecha)) + ' · ' + t.maquinaria + ' · ' + (t.tipo === 'trato' ? 'trato' : unidades(t))), el('span', 'mp-v', money.format(neto(t))));
+          ul.appendChild(li);
+        });
+        const kv = el('ul', 'mp-kv');
+        const iv = d3.sum(suyos, iva);
+        kv.append(filaKV('IVA', iv ? money.format(iv) : 'No lleva'), filaKV('Total a facturar', money.format(d3.sum(suyos, totalFactura))));
+        return [ul, kv];
+      },
+    });
+  }
+  function renderIngresos() {
+    $('.mp-i-month').textContent = mesLargo(mesIng);
+    if (!listo.trabajos) return;
+    const lista = trabajosDelMes(mesIng);
+    const box = $('.mp-i-sum');
+    box.classList.remove('is-loading');
+    const partes = [
+      el('span', 'mp-hero-lbl', 'Ganaste en ' + nombreMes(mesIng) + ' (neto)'),
+      el('span', 'mp-hero-num', money.format(d3.sum(lista, neto))),
+      el('span', 'mp-hero-sub', 'A facturar con IVA: ' + money.format(d3.sum(lista, totalFactura))),
+    ];
+    if (lista.length) {
+      partes.push(boton('mp-more', heroIng ? 'Ocultar detalle ▲' : 'Ver detalle ▼', () => { heroIng = !heroIng; render(); }));
+      if (heroIng) {
+        const sin = lista.filter((t) => !t.con_iva).length;
+        const kv = el('ul', 'mp-kv');
+        kv.append(filaKV('Trabajos', String(lista.length)), filaKV('Trabajado', cuantoTrabajado(lista)), filaKV('IVA 19%', money.format(d3.sum(lista, iva))));
+        if (sin) kv.appendChild(filaKV('Sin IVA', sin + (sin === 1 ? ' trabajo' : ' trabajos')));
+        partes.push(kv);
+      }
+    }
+    box.replaceChildren(...partes);
+    ponerPresionado('.mp-i-vista button', (b) => b.dataset.vista === vistaI);
+    $('.mp-i-orden').textContent = vistaI === 'fecha' ? '(el más nuevo arriba)' : '(el que más aporta arriba)';
+    const ul = $('.mp-i-list');
+    if (!lista.length) { ul.className = 'mp-list mp-i-list'; ul.replaceChildren(el('li', 'mp-empty', 'Todavía no anotas trabajos en este mes. Toca "Agregar trabajo".')); }
+    else {
+      ul.className = 'mp-rows mp-i-list';
+      if (vistaI === 'fecha') ul.replaceChildren(...lista.map((t, i) => filaTrabajo(t, i + 1)).reverse());
+      else ul.replaceChildren(...d3.groups(lista, (t) => t.cliente).sort((a, b) => d3.sum(b[1], neto) - d3.sum(a[1], neto)).map(filaCliente));
+    }
+    $('.mp-i-edit').textContent = editI ? 'Listo' : 'Editar';
+    const opciones = (sel, valores) => $(sel).replaceChildren(...[...new Set(valores)].map((v) => { const o = document.createElement('option'); o.value = v; return o; }));
+    opciones('#i-clientes', trabajos.map((t) => t.cliente));
+    opciones('#i-otros', trabajos.map((t) => t.maquinaria).filter((m) => m !== 'Camión' && m !== 'Miniexcavadora'));
+  }
+  $$('.mp-i-vista button').forEach((b) => b.addEventListener('click', () => { vistaI = b.dataset.vista; if (vistaI === 'cliente') editI = false; render(); }));
+  navMes('i', () => mesIng, (v) => { mesIng = v; });
+  $('.mp-i-edit').addEventListener('click', () => { editI = !editI; if (editI) vistaI = 'fecha'; borrandoI = null; $('.mp-i-form').hidden = true; render(); });
+
+  const vistaPrevia = () => {
+    const cant = tipo === 'trato' ? 1 : decimal('#i-cant');
+    const n = cant * numero('#i-valor');
+    const i = conIva ? n * IVA : 0;
+    $('.i-pv-neto').textContent = n ? money.format(n) : '—';
+    $('.i-pv-iva-lbl').textContent = conIva ? 'IVA 19%' : 'IVA';
+    $('.i-pv-iva').textContent = !n ? '—' : conIva ? money.format(i) : 'No lleva';
+    $('.i-pv-total').textContent = n ? money.format(n + i) : '—';
+  };
+  const ponerIva = (si) => { conIva = si; $('#i-iva-si').setAttribute('aria-pressed', String(si)); $('#i-iva-no').setAttribute('aria-pressed', String(!si)); vistaPrevia(); };
+  const ponerMaq = (valor) => {
+    maq = valor;
+    ponerPresionado('.i-maq-btn', (b) => b.dataset.maq === valor);
+    $('.i-otro-box').hidden = valor !== '';
+    if (valor === '') $('#i-otro').focus();
+  };
+  const ponerTipo = (valor) => {
+    tipo = valor;
+    ponerPresionado('.i-tipo-btn', (b) => b.dataset.tipo === valor);
+    $('.i-cant-box').hidden = valor === 'trato';
+    $('.i-cant-lbl').textContent = '5. ' + (valor === 'dia' ? '¿Cuántos días?' : '¿Cuántas horas?');
+    const n = valor === 'trato' ? 5 : 6;
+    $('.i-valor-lbl').textContent = n + '. ' + (valor === 'hora' ? 'Valor por hora' : valor === 'dia' ? 'Valor por día' : 'Valor total del trato') + ', sin IVA';
+    $('.i-iva-lbl').textContent = (n + 1) + '. ¿Lleva IVA?';
+    vistaPrevia();
+  };
+  $('#i-iva-si').addEventListener('click', () => ponerIva(true));
+  $('#i-iva-no').addEventListener('click', () => ponerIva(false));
+  $$('.i-maq-btn').forEach((b) => b.addEventListener('click', () => ponerMaq(b.dataset.maq)));
+  $$('.i-tipo-btn').forEach((b) => b.addEventListener('click', () => ponerTipo(b.dataset.tipo)));
+  $('#i-cant').addEventListener('input', vistaPrevia);
+  $('#i-valor').addEventListener('input', vistaPrevia);
+  const fechaInicial = (c) => (c === claveHoy ? hoyISO : claveTxt(c) + '-01');
+  $('.mp-i-add').addEventListener('click', () => {
+    ['#i-cliente', '#i-otro', '#i-cant', '#i-valor'].forEach((s) => { $(s).value = ''; });
+    $('#i-fecha').value = fechaInicial(mesIng);
+    $('.mp-i-err').textContent = '';
+    ponerMaq(null); ponerTipo('hora'); ponerIva(true);
+    $('.mp-i-form').hidden = false;
+    $('.mp-i-form').scrollIntoView({ block: 'start' });
+    $('#i-cliente').focus();
+  });
+  $('.mp-i-cancel').addEventListener('click', () => { $('.mp-i-form').hidden = true; });
+  $('.mp-i-save').addEventListener('click', async () => {
+    const cliente = $('#i-cliente').value.trim();
+    const fecha = $('#i-fecha').value;
+    const maquinaria = maq === '' ? $('#i-otro').value.trim() : maq;
+    const cantidad = tipo === 'trato' ? 1 : decimal('#i-cant');
+    const valor = numero('#i-valor');
+    const falla = (texto, sel) => { $('.mp-i-err').textContent = texto; if (sel) $(sel).focus(); };
+    if (!cliente) return falla('Falta el paso 1: escribe el cliente.', '#i-cliente');
+    if (!fecha || !$('#i-fecha').validity.valid) return falla('Falta el paso 2: elige la fecha.', '#i-fecha');
+    if (maq == null) return falla('Falta el paso 3: elige la maquinaria.');
+    if (!maquinaria) return falla('Paso 3: escribe qué equipo usaste.', '#i-otro');
+    if (!(cantidad > 0)) return falla('Falta el paso 5: escribe ' + (tipo === 'dia' ? 'los días.' : 'las horas.'), '#i-cant');
+    if (!valor) return falla('Falta el paso ' + (tipo === 'trato' ? 5 : 6) + ': escribe el valor.', '#i-valor');
+    $('.mp-i-save').disabled = true;
+    const ok = await guardar(db.collection('trabajos').add({ cliente, fecha, maquinaria, tipo, cantidad, valor, con_iva: conIva, creado: Date.now() }), 'Se agregó el trabajo para ' + cliente + '.');
+    $('.mp-i-save').disabled = false;
+    if (ok) { mesIng = claveDe(fecha); $('.mp-i-form').hidden = true; render(); $('#inicio').scrollIntoView({ block: 'start' }); }
+  });
+
+  /* ================= GASTOS ================= */
+  function filaGasto(g) {
+    const borrar = editG ? boton('mp-del', 'Borrar', () => { borrandoG = g.id; render(); }) : null;
+    const li = fila({
+      clave: 'g:' + g.id, thumb: g.foto || null, titulo: g.descripcion, valor: money.format(g.monto),
+      sub: fechaFmt.format(fechaLocal(g.fecha)) + (g.foto ? ' · con boleta' : ''), borrar,
+      detalle: () => {
+        const partes = [];
+        if (g.foto) { const im = el('img'); im.src = '/_blob/' + g.foto; im.alt = 'Boleta de ' + g.descripcion; partes.push(im); }
+        else partes.push(el('p', 'mp-note2', 'Este gasto no tiene foto.'));
+        return partes;
+      },
+    });
+    if (editG && borrandoG === g.id) li.appendChild(confirmar('"' + g.descripcion + '"' + (g.foto ? ' y su foto' : ''),
+      async () => {
+        borrandoG = null;
+        const ok = await guardar(db.doc('gastos/' + g.id).delete(), 'Se borró el gasto.');
+        if (ok && g.foto && assets) assets.delete(g.foto).catch(() => {});
+      },
+      () => { borrandoG = null; render(); }));
+    return li;
+  }
+  function renderGastos() {
+    $('.mp-g-month').textContent = mesLargo(mesGas);
+    if (!listo.gastos) return;
+    const lista = gastosDelMes(mesGas);
+    const box = $('.mp-g-sum');
+    box.classList.remove('is-loading');
+    const conFoto = lista.filter((g) => g.foto).length;
+    box.replaceChildren(
+      el('span', 'mp-hero-lbl', 'Gastaste en ' + nombreMes(mesGas)),
+      el('span', 'mp-hero-num', money.format(d3.sum(lista, (g) => g.monto))),
+      el('span', 'mp-hero-sub', lista.length ? lista.length + (lista.length === 1 ? ' gasto' : ' gastos') + (conFoto ? ' · ' + conFoto + ' con boleta' : '') : 'Sin gastos anotados'));
+    const ul = $('.mp-g-list');
+    if (!lista.length) { ul.className = 'mp-list mp-g-list'; ul.replaceChildren(el('li', 'mp-empty', 'Todavía no anotas gastos en este mes. Toca "Agregar gasto".')); }
+    else { ul.className = 'mp-rows mp-g-list'; ul.replaceChildren(...lista.slice().reverse().map(filaGasto)); }
+    $('.mp-g-edit').textContent = editG ? 'Listo' : 'Editar';
+    $('#g-descs').replaceChildren(...[...new Set(gastos.map((g) => g.descripcion))].map((v) => { const o = document.createElement('option'); o.value = v; return o; }));
+  }
+  navMes('g', () => mesGas, (v) => { mesGas = v; });
+  $('.mp-g-edit').addEventListener('click', () => { editG = !editG; borrandoG = null; $('.mp-g-form').hidden = true; render(); });
+
+  // Foto: se achica antes de subir (las fotos del celular pesan mucho)
+  const achicar = (file) => new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const max = 1600, k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(img.naturalWidth * k); cv.height = Math.round(img.naturalHeight * k);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url);
+      cv.toBlob((b) => resolve(b || file), 'image/jpeg', 0.82);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+  const mostrarFoto = () => {
+    const box = $('.mp-photo');
+    box.hidden = !fotoNueva;
+    if (fotoNueva) box.querySelector('img').src = URL.createObjectURL(fotoNueva);
+  };
+  const elegirFoto = async (input) => {
+    const f = input.files && input.files[0];
+    input.value = '';
+    if (!f) return;
+    fotoNueva = await achicar(f);
+    mostrarFoto();
+  };
+  $('#g-cam').addEventListener('click', () => $('#g-cam-input').click());
+  $('#g-gal').addEventListener('click', () => $('#g-gal-input').click());
+  $('#g-cam-input').addEventListener('change', (e) => elegirFoto(e.target));
+  $('#g-gal-input').addEventListener('change', (e) => elegirFoto(e.target));
+  $('.g-quitar').addEventListener('click', () => { fotoNueva = null; mostrarFoto(); });
+  $('.mp-g-add').addEventListener('click', () => {
+    ['#g-monto', '#g-desc'].forEach((s) => { $(s).value = ''; });
+    $('#g-fecha').value = fechaInicial(mesGas);
+    $('.mp-g-err').textContent = '';
+    fotoNueva = null; mostrarFoto();
+    $('.g-foto-btns').hidden = !assets;
+    $('.g-foto-help').textContent = assets ? 'Puedes sacarla ahora o elegirla de tus fotos. Es opcional.' : 'Para guardar fotos necesitas permiso para editar esta página.';
+    $('.mp-g-form').hidden = false;
+    $('.mp-g-form').scrollIntoView({ block: 'start' });
+  });
+  $('.mp-g-cancel').addEventListener('click', () => { $('.mp-g-form').hidden = true; fotoNueva = null; });
+  $('.mp-g-save').addEventListener('click', async () => {
+    const monto = numero('#g-monto');
+    const descripcion = $('#g-desc').value.trim();
+    const fecha = $('#g-fecha').value;
+    const falla = (texto, sel) => { $('.mp-g-err').textContent = texto; if (sel) $(sel).focus(); };
+    if (!monto) return falla('Falta el paso 2: escribe cuánto gastaste.', '#g-monto');
+    if (!descripcion) return falla('Falta el paso 3: escribe en qué gastaste.', '#g-desc');
+    if (!fecha || !$('#g-fecha').validity.valid) return falla('Falta el paso 4: elige la fecha.', '#g-fecha');
+    const btn = $('.mp-g-save');
+    btn.disabled = true;
+    let foto = null;
+    if (fotoNueva && assets) {
+      btn.textContent = 'Subiendo foto…';
+      try { foto = (await assets.upload(fotoNueva, { type: 'image/jpeg' })).id; }
+      catch (e) { btn.disabled = false; btn.textContent = 'Guardar'; return falla(e && e.code === 'too_large' ? 'La foto es muy grande. Prueba con otra.' : 'No se pudo subir la foto. Revisa tu internet e intenta de nuevo.'); }
+    }
+    btn.textContent = 'Guardando…';
+    const ok = await guardar(db.collection('gastos').add({ monto, descripcion, fecha, foto, creado: Date.now() }), 'Se guardó el gasto.');
+    btn.disabled = false; btn.textContent = 'Guardar';
+    if (ok) { mesGas = claveDe(fecha); fotoNueva = null; $('.mp-g-form').hidden = true; render(); $('#inicio').scrollIntoView({ block: 'start' }); }
+  });
+
+  /* ================= MI META ================= */
+  navMes('m', () => mesMeta, (v) => { mesMeta = Math.max(claveHoy, Math.min(claveHoy + 11, v)); });
+  function renderMeta() {
+    const c = mesMeta;
+    $('.mp-m-month').textContent = mesLargo(c) + (c === claveHoy ? ' (este mes)' : '');
+    $('.mp-m-prev').style.visibility = c <= claveHoy ? 'hidden' : '';
+    $('.mp-m-next').style.visibility = c >= claveHoy + 11 ? 'hidden' : '';
+    $('.r-mes-help').textContent = 'Mes del reporte: ' + mesLargo(c) + '. Cámbialo con las flechas de arriba.';
+    if (!listo.pagos || !listo.trabajos || !listo.gastos) return;
+    const ps = pagosDelMes(c).sort((a, b) => a.dia - b.dia);
+    const ts = trabajosDelMes(c).reverse();
+    const gs = gastosDelMes(c).reverse();
+    const necesito = d3.sum(ps, (p) => p.monto);
+    const genero = d3.sum(ts, neto);
+    const falta = necesito - genero;
+    const avance = necesito ? genero / necesito : 1;
+
+    const box = $('.mp-m-sum');
+    box.classList.remove('is-loading');
+    const partes = falta > 0
+      ? [el('span', 'mp-hero-lbl', 'Te falta juntar'), el('span', 'mp-hero-num', money.format(falta))]
+      : [el('span', 'mp-hero-lbl', 'Meta cumplida. Te sobran'), el('span', 'mp-hero-num', money.format(-falta))];
+    partes.push(barra(genero, necesito, falta > 0));
+    partes.push(el('span', 'mp-hero-sub', 'Llevas ' + money.format(genero) + ' de ' + money.format(necesito)));
+    partes.push(el('p', 'mp-cheer', falta <= 0 ? '¡Lo lograste! Tus pagos de ' + nombreMes(c) + ' están cubiertos.'
+      : c > claveHoy && genero === 0 ? 'Todavía queda tiempo. Cada trabajo que anotes suma aquí.'
+      : avance >= 0.75 ? '¡Ya casi! Te falta muy poco.'
+      : avance >= 0.5 ? '¡Vas bien! Ya pasaste la mitad.'
+      : 'Paso a paso: cada trabajo te acerca a tu meta.'));
+    partes.push(boton('mp-more', heroMeta ? 'Ocultar detalle ▲' : 'Ver detalle ▼', () => { heroMeta = !heroMeta; render(); }));
+    if (heroMeta) {
+      const kv = el('ul', 'mp-kv');
+      kv.append(filaKV('Avance', Math.round(avance * 100) + '%'));
+      if (falta > 0) {
+        const prom = (tp) => { const xs = trabajos.filter((t) => t.tipo === tp && t.cantidad > 0); return xs.length ? d3.sum(xs, neto) / d3.sum(xs, (t) => t.cantidad) : 0; };
+        const ph = prom('hora'), pd = prom('dia');
+        if (ph) kv.appendChild(filaKV('Equivale a', 'unas ' + Math.ceil(falta / ph) + ' horas'));
+        if (pd) kv.appendChild(filaKV(ph ? 'o a' : 'Equivale a', 'unos ' + Math.ceil(falta / pd) + ' días'));
+      }
+      partes.push(kv);
+    }
+    box.replaceChildren(...partes);
+
+    const ultimas = ps.filter((p) => esCuota(p) && cuotaEn(p, c) === p.cuotas_total);
+    const lista = (items, izq, der) => { const ul = el('ul', 'mp-dl'); items.forEach((x) => { const li = el('li'); li.append(izq(x), el('span', 'mp-v', der(x))); ul.appendChild(li); }); return ul; };
+    $('.mp-m-list').replaceChildren(
+      fila({ clave: 'm:pagos', titulo: 'Pagos del mes', valor: money.format(necesito),
+        sub: ps.length + (ps.length === 1 ? ' pago' : ' pagos') + (ultimas.length ? ' · termina ' + ultimas.map((p) => p.nombre).join(', ') : ''),
+        detalle: () => [lista(ps, (p) => { const s = el('span', null, 'Día ' + p.dia + ' · ' + p.nombre + ' '); if (esCuota(p)) s.appendChild(el('span', 'mp-note2', '(cuota ' + cuotaEn(p, c) + ' de ' + p.cuotas_total + ')')); return s; }, (p) => money.format(p.monto))] }),
+      fila({ clave: 'm:ganado', titulo: 'Lo que ganaste (neto)', valor: money.format(genero),
+        sub: ts.length ? ts.length + (ts.length === 1 ? ' trabajo · ' : ' trabajos · ') + cuantoTrabajado(ts) : 'Todavía no hay trabajos anotados',
+        detalle: () => (ts.length ? [lista(ts, (t) => el('span', null, fechaFmt.format(fechaLocal(t.fecha)) + ' · ' + t.cliente), (t) => money.format(neto(t)))] : [el('p', 'mp-empty', 'Anótalos en la hoja Ingresos.')]) }),
+      fila({ clave: 'm:gastos', titulo: 'Gastos anotados', valor: money.format(d3.sum(gs, (g) => g.monto)),
+        sub: gs.length ? gs.length + (gs.length === 1 ? ' gasto' : ' gastos') + ' con boleta o sin ella' : 'Todavía no hay gastos anotados',
+        detalle: () => (gs.length ? [lista(gs, (g) => el('span', null, fechaFmt.format(fechaLocal(g.fecha)) + ' · ' + g.descripcion), (g) => money.format(g.monto))] : [el('p', 'mp-empty', 'Anótalos en la hoja Gastos.')]) }),
+    );
+    dibujarGrafico();
+  }
+
+  // Barras: lo ganado (neto) por mes. Línea punteada: lo que se necesita. Tocar = elegir ese mes.
+  function dibujarGrafico() {
+    const cont = $('.mp-chart');
+    const W = cont.clientWidth;
+    if (!W || !listo.pagos || !listo.trabajos) return;
+    const inicio = mesMeta - claveHoy <= 5 ? claveHoy : mesMeta - 5;
+    const datos = d3.range(inicio, inicio + 6).map((c) => ({ c, nec: necesitoMes(c), gen: generoMes(c) }));
+    const H = 170, m = { t: 22, r: 4, b: 26, l: 4 };
+    const x = d3.scaleBand(datos.map((d) => d.c), [m.l, W - m.r]).paddingInner(0.3).paddingOuter(0.15);
+    const y = d3.scaleLinear([0, d3.max(datos, (d) => Math.max(d.nec, d.gen)) || 1], [H - m.b, m.t]).nice();
+    const svg = d3.create('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`)
+      .attr('role', 'group').attr('aria-label', 'Lo que ganaste y lo que necesitas por mes');
+    svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', 'var(--line)').attr('stroke-width', 1);
+    const elegir = (d) => { mesMeta = d.c; render(); };
+    const col = svg.selectAll('g').data(datos).join('g').attr('class', 'mp-col').attr('tabindex', 0).attr('role', 'button')
+      .attr('aria-label', (d) => mesLargo(d.c) + ': ganaste ' + money.format(d.gen) + ' de ' + money.format(d.nec))
+      .on('click', (e, d) => elegir(d))
+      .on('keydown', (e, d) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); elegir(d); } });
+    col.append('rect').attr('class', 'mp-hit').attr('x', (d) => x(d.c) - x.step() * 0.15).attr('width', x.step()).attr('y', 0).attr('height', H).attr('rx', 8)
+      .attr('fill', (d) => (d.c === mesMeta ? 'var(--tint)' : 'transparent'));
+    const bw = Math.min(x.bandwidth(), 32);
+    const bx = (d) => x(d.c) + (x.bandwidth() - bw) / 2;
+    col.filter((d) => d.gen > 0).append('path')
+      .attr('d', (d) => { const x0 = bx(d), x1 = x0 + bw, y0 = y(0), y1 = y(d.gen), r = Math.min(4, bw / 2, y0 - y1); return `M${x0},${y0}V${y1 + r}Q${x0},${y1} ${x0 + r},${y1}H${x1 - r}Q${x1},${y1} ${x1},${y1 + r}V${y0}Z`; })
+      .attr('fill', 'var(--acc-strong)').attr('opacity', (d) => (d.c === mesMeta ? 1 : 0.55));
+    col.filter((d) => d.nec > 0).append('line')
+      .attr('x1', (d) => bx(d) - 5).attr('x2', (d) => bx(d) + bw + 5).attr('y1', (d) => y(d.nec)).attr('y2', (d) => y(d.nec))
+      .attr('stroke', 'var(--muted)').attr('stroke-width', 2).attr('stroke-dasharray', '4 3');
+    const cubierto = (d) => d.nec > 0 && d.gen >= d.nec;
+    col.filter(cubierto).append('text').attr('x', (d) => x(d.c) + x.bandwidth() / 2).attr('y', (d) => y(Math.max(d.gen, d.nec)) - 6)
+      .attr('text-anchor', 'middle').attr('font-size', 12).attr('font-weight', 700).attr('fill', 'var(--ok)').text('✓');
+    col.filter((d) => d.c === mesMeta && !cubierto(d)).append('text').attr('x', (d) => x(d.c) + x.bandwidth() / 2).attr('y', (d) => y(Math.max(d.gen, d.nec)) - 6)
+      .attr('text-anchor', 'middle').attr('font-size', 11).attr('font-weight', 700).attr('fill', 'var(--fg)')
+      .text((d) => Math.round(d.nec ? (d.gen / d.nec) * 100 : 0) + '%');
+    col.append('text').attr('x', (d) => x(d.c) + x.bandwidth() / 2).attr('y', H - 8).attr('text-anchor', 'middle').attr('font-size', 12)
+      .attr('font-weight', (d) => (d.c === mesMeta ? 700 : 400)).attr('fill', (d) => (d.c === mesMeta ? 'var(--fg)' : 'var(--muted)'))
+      .text((d) => nombreMes(d.c).slice(0, 3));
+    cont.replaceChildren(svg.node());
+  }
+
+  /* ================= REPORTE ================= */
+  const cargarScript = (src) => (cargarScript.c[src] = cargarScript.c[src] || new Promise((ok, no) => {
+    const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s);
+  }));
+  cargarScript.c = {};
+  const ponerPeriodo = (p) => {
+    rPeriodo = p;
+    $('#r-mes').setAttribute('aria-pressed', String(p === 'mes'));
+    $('#r-dia').setAttribute('aria-pressed', String(p === 'dia'));
+    $('.r-dia-box').hidden = p !== 'dia';
+    $('.r-mes-help').hidden = p !== 'mes';
+    if (p === 'dia' && !$('#r-fecha').value) $('#r-fecha').value = hoyISO;
+  };
+  $('#r-mes').addEventListener('click', () => ponerPeriodo('mes'));
+  $('#r-dia').addEventListener('click', () => ponerPeriodo('dia'));
+
+  function datosReporte() {
+    if (rPeriodo === 'dia') {
+      const iso = $('#r-fecha').value;
+      if (!iso || !$('#r-fecha').validity.valid) return null;
+      const c = claveDe(iso), d = Number(iso.slice(8, 10));
+      return { titulo: 'Reporte del ' + fechaLocal(iso).toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+        archivo: 'reporte-' + iso, c, dia: true,
+        ps: pagosDelMes(c).filter((p) => p.dia === d), ts: trabajos.filter((t) => t.fecha === iso), gs: gastos.filter((g) => g.fecha === iso) };
+    }
+    const c = mesMeta;
+    return { titulo: 'Reporte de ' + mesLargo(c), archivo: 'reporte-' + nombreMes(c) + '-' + anio(c), c, dia: false,
+      ps: pagosDelMes(c), ts: trabajosDelMes(c), gs: gastosDelMes(c) };
+  }
+  const resumenFilas = (R) => {
+    const nec = d3.sum(R.ps, (p) => p.monto), gen = d3.sum(R.ts, neto), gas = d3.sum(R.gs, (g) => g.monto);
+    const pag = R.ps.filter((p) => pagadoEn(p, R.c)).length;
+    return [
+      [R.dia ? 'Pagos de este día' : 'Necesitas para tus pagos', money.format(nec)],
+      ['Pagos hechos', pag + ' de ' + R.ps.length],
+      ['Ganaste (neto)', money.format(gen)],
+      ['A facturar con IVA', money.format(d3.sum(R.ts, totalFactura))],
+      [gen >= nec ? 'Te sobra' : 'Te falta', money.format(Math.abs(gen - nec))],
+      ['Gastos anotados', money.format(gas)],
+    ];
+  };
+  const tablas = (R) => ({
+    pagos: { cab: ['Día', 'Pago', 'Cuota', 'Monto', 'Estado'], filas: R.ps.slice().sort((a, b) => a.dia - b.dia).map((p) => [p.dia, p.nombre, esCuota(p) ? cuotaEn(p, R.c) + ' de ' + p.cuotas_total : '', p.monto, pagadoEn(p, R.c) ? 'Pagado' : 'Pendiente']) },
+    trabajos: { cab: ['N°', 'Fecha', 'Cliente', 'Equipo', 'Cobro', 'Neto', 'IVA', 'Total'], filas: R.ts.map((t, i) => [i + 1, t.fecha, t.cliente, t.maquinaria, comoSeCobra(t), neto(t), Math.round(iva(t)), Math.round(totalFactura(t))]) },
+    clientes: { cab: ['Cliente', 'Trabajos', 'Trabajado', 'Neto', 'Total a facturar'], filas: d3.groups(R.ts, (t) => t.cliente).sort((a, b) => d3.sum(b[1], neto) - d3.sum(a[1], neto)).map(([c, xs]) => [c, xs.length, cuantoTrabajado(xs), d3.sum(xs, neto), Math.round(d3.sum(xs, totalFactura))]) },
+    gastos: { cab: ['Fecha', 'Detalle', 'Monto', 'Boleta'], filas: R.gs.map((g) => [g.fecha, g.descripcion, g.monto, g.foto ? 'Sí' : 'No']) },
+  });
+  const estado = (t) => { $('.mp-report .mp-status').textContent = t; };
+  const ofrecer = async (filename, data) => {
+    if (!downloads) { estado('Las descargas no están disponibles en esta vista.'); return; }
+    try { await downloads.save({ filename, data }); estado('Listo: ' + filename); }
+    catch (e) { estado(e && e.code === 'declined' ? 'No se descargó.' : 'No se pudo descargar. Intenta de nuevo.'); }
+  };
+  const blobADataURL = (blob) => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsDataURL(blob); });
+  const medidas = (src) => new Promise((ok) => { const i = new Image(); i.onload = () => ok([i.naturalWidth, i.naturalHeight]); i.onerror = () => ok(null); i.src = src; });
+
+  async function reportePDF() {
+    const R = datosReporte();
+    if (!R) return estado('Elige un día válido.');
+    estado('Preparando PDF…');
+    try {
+      await cargarScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+      await cargarScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');
+    } catch (e) { return estado('No se pudo preparar el PDF. Revisa tu internet.'); }
+    const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+    const T = tablas(R);
+    const pesos = (v) => (typeof v === 'number' ? money.format(v) : v);
+    const COL = { pagos: [143, 179, 224], ingresos: [140, 201, 168], gastos: [232, 185, 140], meta: [185, 166, 224] };
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.text(R.titulo, 14, 18);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(95, 102, 112);
+    doc.text('Generado el ' + new Date().toLocaleDateString('es-CL') + ' a las ' + new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }), 14, 24);
+    doc.setTextColor(36, 38, 43);
+    const seccion = (titulo, color, cab, filas, montoCols) => {
+      doc.autoTable({
+        startY: (doc.lastAutoTable ? doc.lastAutoTable.finalY : 28) + 8,
+        head: [[{ content: titulo, colSpan: cab.length, styles: { fillColor: color, textColor: 31, fontStyle: 'bold', fontSize: 12 } }], cab],
+        body: filas.length ? filas.map((f) => f.map((v, i) => (montoCols.includes(i) ? pesos(v) : v))) : [[{ content: 'Sin registros', colSpan: cab.length, styles: { textColor: 120 } }]],
+        styles: { font: 'helvetica', fontSize: 9.5, cellPadding: 2 },
+        headStyles: { fillColor: [241, 242, 239], textColor: 36 },
+        columnStyles: Object.fromEntries(montoCols.map((i) => [i, { halign: 'right' }])),
+        margin: { left: 14, right: 14 },
+      });
+    };
+    seccion('Resumen', COL.meta, ['Concepto', 'Valor'], resumenFilas(R), [1]);
+    seccion('Pagos', COL.pagos, T.pagos.cab, T.pagos.filas, [3]);
+    seccion('Trabajos', COL.ingresos, T.trabajos.cab, T.trabajos.filas, [5, 6, 7]);
+    if (T.clientes.filas.length > 1) seccion('Por cliente', COL.ingresos, T.clientes.cab, T.clientes.filas, [3, 4]);
+    seccion('Gastos', COL.gastos, T.gastos.cab, T.gastos.filas, [2]);
+    // Fotos de boletas, dos por página
+    const conFoto = R.gs.filter((g) => g.foto);
+    let n = 0;
+    for (const g of conFoto) {
+      estado('Agregando fotos de boletas… (' + (n + 1) + ' de ' + conFoto.length + ')');
+      try {
+        const res = await fetch('/_blob/' + g.foto);
+        if (!res.ok) throw new Error('foto');
+        const url = await blobADataURL(await res.blob());
+        const dim = await medidas(url);
+        if (!dim) throw new Error('foto');
+        if (n % 2 === 0) { doc.addPage(); doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.text('Fotos de boletas', 14, 16); }
+        const top = n % 2 === 0 ? 24 : 156, maxW = 182, maxH = 118;
+        const k = Math.min(maxW / dim[0], maxH / dim[1]);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+        doc.text(g.fecha + ' · ' + g.descripcion + ' · ' + money.format(g.monto), 14, top);
+        doc.addImage(url, 'JPEG', 14, top + 3, dim[0] * k, dim[1] * k);
+        n += 1;
+      } catch (e) { /* si una foto no carga, el reporte sigue sin ella */ }
+    }
+    await ofrecer(R.archivo + '.pdf', doc.output('blob'));
+  }
+
+  async function reporteExcel() {
+    const R = datosReporte();
+    if (!R) return estado('Elige un día válido.');
+    estado('Preparando Excel…');
+    try { await cargarScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'); }
+    catch (e) { return estado('No se pudo preparar el Excel. Revisa tu internet.'); }
+    const X = window.XLSX, T = tablas(R), wb = X.utils.book_new();
+    const hoja = (nombre, filas, anchos) => { const ws = X.utils.aoa_to_sheet(filas); ws['!cols'] = anchos.map((w) => ({ wch: w })); X.utils.book_append_sheet(wb, ws, nombre); };
+    hoja('Resumen', [[R.titulo], [], ['Concepto', 'Valor'], ...resumenFilas(R)], [28, 20]);
+    hoja('Pagos', [T.pagos.cab, ...T.pagos.filas], [6, 24, 10, 12, 12]);
+    hoja('Trabajos', [T.trabajos.cab, ...T.trabajos.filas], [5, 12, 24, 18, 24, 12, 10, 12]);
+    hoja('Por cliente', [T.clientes.cab, ...T.clientes.filas], [24, 10, 24, 12, 16]);
+    hoja('Gastos', [T.gastos.cab, ...T.gastos.filas], [12, 28, 12, 8]);
+    const buf = X.write(wb, { bookType: 'xlsx', type: 'array' });
+    await ofrecer(R.archivo + '.xlsx', new Blob([buf]));
+  }
+  const conBoton = (btn, fn) => btn.addEventListener('click', async () => { btn.disabled = true; try { await fn(); } finally { btn.disabled = false; } });
+  conBoton($('#r-pdf'), reportePDF);
+  conBoton($('#r-xlsx'), reporteExcel);
+
+  /* ================= Datos de ejemplo ================= */
+  function renderAviso() {
+    const aviso = $('#aviso');
+    const ejemplos = [...pagos.map((x) => ['pagos', x]), ...trabajos.map((x) => ['trabajos', x]), ...gastos.map((x) => ['gastos', x])].filter(([, x]) => x.ejemplo);
+    if (!db) { aviso.hidden = false; aviso.replaceChildren(el('span', null, 'No se pudo conectar para guardar. Abre esta página con tu cuenta de Claude.')); return; }
+    aviso.hidden = !ejemplos.length;
+    if (!ejemplos.length) return;
+    if (aviso.dataset.confirmando) {
+      aviso.replaceChildren(el('span', null, '¿Borrar los ' + ejemplos.length + ' datos de ejemplo? Lo que tú anotaste se queda.'),
+        boton(null, 'Sí, borrar', async () => {
+          delete aviso.dataset.confirmando;
+          let ok = true;
+          for (const [col, x] of ejemplos) { try { await db.doc(col + '/' + x.id).delete(); } catch (e) { ok = false; } }
+          avisar(ok ? 'Listo. Quedan solo tus datos.' : 'Algunos ejemplos no se borraron. Intenta de nuevo.', !ok);
+        }),
+        boton(null, 'No', () => { delete aviso.dataset.confirmando; renderAviso(); }));
+    } else {
+      aviso.replaceChildren(el('span', null, 'Estás viendo datos de ejemplo.'), boton(null, 'Borrar ejemplos', () => { aviso.dataset.confirmando = '1'; renderAviso(); }));
+    }
+  }
+
+  /* ================= Carga ================= */
+  function render() {
+    renderPagos(); renderIngresos(); renderGastos(); renderMeta(); renderAviso();
+  }
+  let ancho = 0;
+  new ResizeObserver(() => { const w = $('.mp').clientWidth; if (w !== ancho) { ancho = w; dibujarGrafico(); } }).observe($('.mp'));
+
+  const leer = (col, fn) => db.collection(col).onSnapshot(
+    (snap) => { fn(snap.docs.map((d) => Object.assign({ id: d.id }, d.data()))); listo[col] = true; render(); },
+    () => avisar('No se pudieron leer tus datos. Revisa tu internet y vuelve a abrir la página.', true));
+  const limpiarPago = (r) => Object.assign(r, { monto: Number(r.monto) || 0, dia: Number(r.dia) || 1, cuotas_total: Number(r.cuotas_total) || 0 });
+  const limpiarTrabajo = (r) => Object.assign(r, { cliente: String(r.cliente || 'Sin nombre'), maquinaria: String(r.maquinaria || 'Equipo'), fecha: String(r.fecha || hoyISO).slice(0, 10), tipo: ['hora', 'dia', 'trato'].includes(r.tipo) ? r.tipo : 'hora', cantidad: Number(r.cantidad) || 1, valor: Number(r.valor) || 0, con_iva: r.con_iva !== false });
+  const limpiarGasto = (r) => Object.assign(r, { descripcion: String(r.descripcion || 'Gasto'), fecha: String(r.fecha || hoyISO).slice(0, 10), monto: Number(r.monto) || 0, foto: r.foto || null });
+
+  render();
+  (async () => {
+    const use = window.claude && window.claude.use;
+    if (!use) { renderAviso(); return; }
+    db = await window.claude.use('db');
+    if (!db) { renderAviso(); return; }
+    leer('pagos', (xs) => { pagos = xs.map(limpiarPago); });
+    leer('trabajos', (xs) => { trabajos = xs.map(limpiarTrabajo); });
+    leer('gastos', (xs) => { gastos = xs.map(limpiarGasto); });
+    assets = await window.claude.use('assets');
+    downloads = await window.claude.use('downloads');
+    if (!downloads) { $$('#r-pdf, #r-xlsx').forEach((b) => { b.disabled = true; }); estado('Las descargas no están disponibles en esta vista.'); }
+  })();
+  ponerPeriodo('mes');
+})();
+</script>
