@@ -911,11 +911,21 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     if (fotoNueva) box.querySelector('img').src = URL.createObjectURL(fotoNueva);
   };
   // Claude lee la boleta y llena monto, fecha y comercio; la persona solo revisa
-  let sample = null, puedeLeer = false, lecturaCtl = null;
+  let sample = null, puedeLeer = false, lecturaCtl = null, porQueNo = 'cargando';
   const lectura = (...nodos) => { const box = $('.g-lectura'); box.hidden = !nodos.length; box.replaceChildren(...nodos); };
   const marcarAuto = (sel, valor) => { const i = $(sel); i.value = valor; i.classList.add('is-auto'); };
+  const MOTIVOS = {
+    cargando: 'La app todavía estaba cargando. Quita la foto y elígela de nuevo.',
+    sin_permiso: 'La app no tiene permiso para usar a Claude. Cierra y vuelve a abrir la app, y cuando lo pida, toca Permitir.',
+    sin_imagenes: 'En esta pantalla Claude no puede ver fotos. Prueba abriendo la app desde Chrome en vez de la app de Claude, o al revés.',
+  };
   async function leerBoleta() {
-    if (!fotoNueva || !puedeLeer) return;
+    if (!fotoNueva) return;
+    if (!puedeLeer) {
+      lectura(el('span', null, 'No pude leer la boleta: ' + (MOTIVOS[porQueNo] || 'la lectura no está disponible aquí.') + ' Mientras tanto, escribe el total en el paso 2.'),
+        boton('mp-more', 'Intentar leer otra vez', async () => { await prepararLectura(); leerBoleta(); }));
+      return;
+    }
     if (lecturaCtl) lecturaCtl.abort();
     lecturaCtl = new AbortController();
     lectura(el('span', null, 'Leyendo la boleta… espera unos segundos.'));
@@ -944,12 +954,20 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     } catch (e) {
       if (e && e.code === 'cancelled') return;
       const permanente = ['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed', 'images_unavailable'].includes(e && e.code);
-      if (permanente) puedeLeer = false;
-      lectura(el('span', null, permanente ? 'Aquí no se puede leer la boleta. Escribe el total tú en el paso 2.'
+      lectura(el('span', null, permanente ? (e.code === 'not_granted' ? MOTIVOS.sin_permiso : e.code === 'images_unavailable' ? MOTIVOS.sin_imagenes : 'Aquí no se puede leer la boleta.') + ' Escribe el total tú en el paso 2.'
         : e && e.code === 'rate_limited' ? 'Se usaron muchas lecturas seguidas. Escribe el total tú, o prueba más tarde.'
         : 'No se pudo leer la boleta. Escribe el total tú en el paso 2.'),
-        ...(permanente ? [] : [boton('mp-more', 'Intentar leer otra vez', leerBoleta)]));
+        el('span', 'mp-note2', 'Código: ' + ((e && e.code) || 'desconocido')),
+        boton('mp-more', 'Intentar leer otra vez', leerBoleta));
     }
+  }
+  async function prepararLectura() {
+    if (!window.claude || !window.claude.use) { porQueNo = 'sin_permiso'; return; }
+    sample = await window.claude.use('sample');
+    if (!sample) { porQueNo = 'sin_permiso'; puedeLeer = false; return; }
+    const lim = await sample.limits().catch(() => null);
+    puedeLeer = !!(lim && lim.images);
+    porQueNo = puedeLeer ? '' : 'sin_imagenes';
   }
   const elegirFoto = async (input) => {
     const f = input.files && input.files[0];
@@ -1372,8 +1390,7 @@ body { background: var(--bg); color: var(--fg); padding-inline: 12px; }
     leer('gastos', (xs) => { gastos = xs.map(limpiarGasto); });
     assets = await window.claude.use('assets');
     downloads = await window.claude.use('downloads');
-    sample = await window.claude.use('sample');
-    if (sample) { const lim = await sample.limits().catch(() => null); puedeLeer = !!(lim && lim.images); }
+    await prepararLectura();
     if (!downloads) { $$('#r-pdf, #r-xlsx').forEach((b) => { b.disabled = true; }); estado('Las descargas no están disponibles en esta vista.'); }
   })();
   ponerPeriodo('mes');
