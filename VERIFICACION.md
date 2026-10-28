@@ -19,7 +19,7 @@ El entorno donde trabaja Claude no tiene permiso para abrir estos sitios: la pol
 | 8 | NoDesk | nodesk.co | Tu lista | Tecnología y startups | No verificado | No verificado | — | No se pudo abrir | **Pendiente** |
 | 9 | Jobgether | jobgether.com | Tu lista | Varias; recomendación según perfil | No verificado | No verificado | — | No se pudo abrir | **Pendiente** |
 | 10 | EU Remote Jobs | euremotejobs.com | Tu lista | Varias | Según tu lista, orientado a Europa | No verificado | — | No se pudo abrir | **Pendiente.** Probablemente excluir si solo acepta residentes de Europa |
-| 11 | LinkIT | ¿? | Tu mensaje | — | — | — | — | Falta saber a qué sitio te refieres | **Pendiente** |
+| 11 | LinkIT | Falta la dirección | Tu mensaje (confirmaste que quieres agregarlo) | — | — | — | — | Una búsqueda web no encontró un sitio con este nombre; falta la URL exacta | **Pendiente** |
 | 12 | Get on Board | getonbrd.com | Propuesta | Tecnología | Latinoamérica | No verificado | — | Solo resultados de búsqueda (blog del sitio y prensa) | **Pendiente** |
 | 13 | We Work Remotely | weworkremotely.com | Propuesta | Por comprobar | Por comprobar | No verificado | — | Ninguna | **Pendiente** |
 | 14 | Remotive | remotive.com | Propuesta | Por comprobar | Por comprobar | No verificado | — | Ninguna | **Pendiente** |
