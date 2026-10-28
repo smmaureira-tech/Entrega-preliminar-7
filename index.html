@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trabajo Remoto: directorio de sitios</title>
+<meta name="description" content="Directorio voluntario de sitios de empleo remoto, organizado por área, para mujeres de Latinoamérica.">
+<script>
+/* =====================================================================
+   LISTA DE SITIOS — ESTA ES LA ÚNICA PARTE QUE NECESITAS EDITAR
+   ---------------------------------------------------------------------
+   Para AGREGAR un sitio: copia un bloque { ... }, pégalo dentro de los
+   corchetes [ ] y cambia los textos. Cada bloque termina con una coma.
+   Para QUITAR un sitio: borra su bloque completo, desde { hasta },
+
+   Campos:
+     nombre      Nombre del sitio.
+     url         Enlace completo, empezando con https://
+     descripcion Una o dos frases.
+     areas       Una o más áreas de la lista AREAS (más abajo), entre comillas.
+     idioma      "Español", "Inglés" o ambos.
+     region      "Latinoamérica" (acepta postulantes de LatAm) o "Global".
+     costo       "Gratis" o "De pago" (para quien postula).
+     revisado    Fecha en que comprobaste que el enlace funciona (AAAA-MM).
+
+   Ejemplo de bloque (está desactivado porque va dentro de un comentario):
+   {
+     nombre: "Nombre del sitio",
+     url: "https://...",
+     descripcion: "Qué ofrece y para quién es útil.",
+     areas: ["Diseño UX/UI", "Desarrollo web"],
+     idioma: ["Español", "Inglés"],
+     region: "Latinoamérica",
+     costo: "Gratis",
+     revisado: "2026-10"
+   },
+   ===================================================================== */
+const SITIOS = [
+  // Pega aquí tus sitios.
+];
+
+/* Áreas que aparecen como botones. Puedes renombrarlas, agregar o quitar.
+   Si cambias un nombre aquí, cámbialo también en los sitios. */
+const AREAS = [
+  "Desarrollo web",
+  "Diseño UX/UI",
+  "Análisis de datos",
+  "Producto y proyectos",
+  "Marketing y contenido",
+  "Atención al cliente",
+  "Ventas",
+  "Recursos humanos",
+  "Varias áreas"
+];
+
+/* Enlace opcional a un formulario para sugerir sitios (por ejemplo, Google Forms).
+   Déjalo vacío "" para ocultar el botón. */
+const FORMULARIO_SUGERENCIAS = "";
+</script>
+<style>
+  :root {
+    --bg: #faf7f5; --surface: #ffffff; --text: #1f1a24; --muted: #5b5463;
+    --border: #ddd5dc; --accent: #7a2e8e; --accent-soft: #f3e6f6; --on-accent: #ffffff;
+    --focus: #0b62c4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17141a; --surface: #221e26; --text: #f2eef4; --muted: #b9b0bf;
+      --border: #3c3542; --accent: #d9a3e6; --accent-soft: #3a2a40; --on-accent: #1a1220;
+      --focus: #7fb6ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+  header { padding: 40px 0 16px; }
+  h1 { font-size: clamp(1.7rem, 4vw, 2.3rem); line-height: 1.15; margin: 0 0 8px; }
+  .lead { color: var(--muted); margin: 0 0 4px; max-width: 62ch; }
+  .note { color: var(--muted); font-size: .9rem; margin: 8px 0 0; }
+  a { color: var(--accent); }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+  .skip { position: absolute; left: -999px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .skip:focus { left: 16px; top: 8px; background: var(--surface); padding: 8px 12px; z-index: 10; }
+
+  fieldset { border: 0; padding: 0; margin: 0; }
+  legend, .label { font-weight: 600; font-size: .95rem; margin-bottom: 8px; display: block; }
+  .areas { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 20px; }
+  .chip { font: inherit; font-size: .95rem; padding: 8px 14px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
+  .chip[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+
+  .filters { display: grid; gap: 12px; grid-template-columns: 2fr 1fr 1fr 1fr; align-items: end; }
+  @media (max-width: 760px) { .filters { grid-template-columns: 1fr 1fr; } .filters .search { grid-column: 1 / -1; } }
+  input, select { width: 100%; font: inherit; padding: 10px 12px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+  .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+    gap: 8px; margin: 20px 0 12px; }
+  .count { color: var(--muted); margin: 0; }
+  .btn { font: inherit; font-size: .95rem; padding: 8px 14px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text); text-decoration: none; }
+
+  .grid { list-style: none; padding: 0; margin: 0 0 40px; display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; display: flex; flex-direction: column; gap: 8px; }
+  .card h2 { font-size: 1.15rem; margin: 0; }
+  .card p { margin: 0; color: var(--muted); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 4px 0 0; }
+  .tags li { font-size: .8rem; padding: 2px 8px; border-radius: 6px; background: var(--accent-soft); }
+  .card .go { margin-top: auto; padding-top: 6px; font-weight: 600; }
+  .meta { font-size: .8rem; color: var(--muted); }
+  .empty { background: var(--surface); border: 1px dashed var(--border); border-radius: 12px;
+    padding: 24px; margin-bottom: 40px; }
+  footer { border-top: 1px solid var(--border); padding: 20px 0 40px; color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+<a class="skip" href="#resultados">Saltar a los resultados</a>
+<div class="wrap">
+  <header>
+    <h1>Trabajo remoto: sitios por área</h1>
+    <p class="lead">Una lista de sitios y bolsas de empleo remoto, elegidos y revisados a mano, para encontrar oportunidades según tu área o rol.</p>
+    <p class="note">Recurso voluntario y comunitario, sin fines de lucro. Esta página no publica ofertas: te lleva a cada sitio, donde puedes revisar las condiciones antes de postular.</p>
+  </header>
+
+  <main>
+    <fieldset>
+      <legend>1. Elige tu área o rol</legend>
+      <div class="areas" id="areas"></div>
+    </fieldset>
+
+    <div class="filters" role="search">
+      <div class="search">
+        <label class="label" for="q">2. Busca por palabra (opcional)</label>
+        <input id="q" type="search" placeholder="Ej.: junior, freelance, inglés…" autocomplete="off">
+      </div>
+      <div>
+        <label class="label" for="f-idioma">Idioma</label>
+        <select id="f-idioma"><option value="">Todos</option></select>
+      </div>
+      <div>
+        <label class="label" for="f-region">Región</label>
+        <select id="f-region"><option value="">Todas</option></select>
+      </div>
+      <div>
+        <label class="label" for="f-costo">Costo</label>
+        <select id="f-costo"><option value="">Todos</option></select>
+      </div>
+    </div>
+
+    <div class="bar">
+      <p class="count" id="count" aria-live="polite"></p>
+      <div>
+        <button class="btn" id="reset" type="button">Quitar filtros</button>
+        <button class="btn" id="share" type="button">Copiar enlace de esta búsqueda</button>
+      </div>
+    </div>
+
+    <ul class="grid" id="resultados" tabindex="-1"></ul>
+    <div class="empty" id="empty" hidden></div>
+  </main>
+
+  <footer>
+    <p id="sugerir"></p>
+    <p>Consejo: ninguna empresa seria te cobra por postular. Si una oferta pide pagos o datos bancarios, desconfía.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const list = (v) => Array.isArray(v) ? v : (v ? [v] : []);
+  const norm = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const safeUrl = (u) => /^https?:\/\//i.test(u || "") ? u : "";
+
+  // Mostrar solo las áreas que tienen al menos un sitio (si hay sitios cargados).
+  const usadas = new Set(SITIOS.flatMap((s) => list(s.areas)));
+  const areas = SITIOS.length ? AREAS.filter((a) => usadas.has(a)) : AREAS;
+
+  const state = { area: "", q: "", idioma: "", region: "", costo: "" };
+
+  // Leer filtros del enlace (#area=...&q=...) o, si no hay, del último uso.
+  function fromHash() {
+    const p = new URLSearchParams(location.hash.slice(1));
+    if (![...p.keys()].length) return false;
+    for (const k in state) state[k] = p.get(k) || "";
+    return true;
+  }
+  try {
+    if (!fromHash()) {
+      const saved = JSON.parse(localStorage.getItem("trabajo-remoto-filtros") || "{}");
+      for (const k in state) if (typeof saved[k] === "string") state[k] = saved[k];
+    }
+  } catch (e) { /* sin memoria del navegador: se usan los valores por defecto */ }
+  window.addEventListener("hashchange", () => { if (fromHash()) render(); });
+
+  // Botones de área
+  const areasBox = $("areas");
+  ["", ...areas].forEach((a) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.dataset.area = a;
+    b.textContent = a || "Todas las áreas";
+    b.addEventListener("click", () => { state.area = a; render(); });
+    areasBox.appendChild(b);
+  });
+
+  // Opciones de los filtros, sacadas de los datos
+  const fill = (id, key) => {
+    const vals = [...new Set(SITIOS.flatMap((s) => list(s[key])))].sort();
+    const sel = $(id);
+    vals.forEach((v) => sel.add(new Option(v, v)));
+    sel.addEventListener("change", () => { state[key] = sel.value; render(); });
+  };
+  fill("f-idioma", "idioma"); fill("f-region", "region"); fill("f-costo", "costo");
+
+  $("q").addEventListener("input", (e) => { state.q = e.target.value; render(); });
+  $("reset").addEventListener("click", () => {
+    for (const k in state) state[k] = ""; render(); $("q").focus();
+  });
+  $("share").addEventListener("click", async () => {
+    const btn = $("share");
+    try { await navigator.clipboard.writeText(location.href); btn.textContent = "¡Enlace copiado!"; }
+    catch (e) { btn.textContent = "Copia el enlace desde la barra del navegador"; }
+    setTimeout(() => { btn.textContent = "Copiar enlace de esta búsqueda"; }, 2500);
+  });
+
+  if (FORMULARIO_SUGERENCIAS && safeUrl(FORMULARIO_SUGERENCIAS)) {
+    $("sugerir").innerHTML = '¿Conoces un sitio que debería estar aquí? <a href="' +
+      esc(FORMULARIO_SUGERENCIAS) + '" target="_blank" rel="noopener">Sugiérelo en este formulario</a>.';
+  }
+
+  function matches(s) {
+    if (state.area && !list(s.areas).includes(state.area)) return false;
+    for (const k of ["idioma", "region", "costo"]) {
+      if (state[k] && !list(s[k]).includes(state[k])) return false;
+    }
+    if (state.q) {
+      const hay = norm([s.nombre, s.descripcion, ...list(s.areas), ...list(s.idioma), s.region, s.costo].join(" "));
+      return norm(state.q).split(/\s+/).every((w) => hay.includes(w));
+    }
+    return true;
+  }
+
+  function card(s) {
+    const url = safeUrl(s.url);
+    const tags = [...list(s.areas), ...list(s.idioma), s.region, s.costo].filter(Boolean);
+    return '<li class="card">' +
+      "<h2>" + esc(s.nombre) + "</h2>" +
+      "<p>" + esc(s.descripcion) + "</p>" +
+      '<ul class="tags" aria-label="Etiquetas">' + tags.map((t) => "<li>" + esc(t) + "</li>").join("") + "</ul>" +
+      (s.revisado ? '<span class="meta">Enlace revisado: ' + esc(s.revisado) + "</span>" : "") +
+      (url ? '<a class="go" href="' + esc(url) + '" target="_blank" rel="noopener">Ir a ' + esc(s.nombre) +
+        ' <span aria-hidden="true">↗</span><span class="sr"> (se abre en otra pestaña)</span></a>' : "") +
+      "</li>";
+  }
+
+  function render() {
+    // Sincronizar controles con el estado
+    areasBox.querySelectorAll(".chip").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.area === state.area)));
+    $("q").value = state.q;
+    $("f-idioma").value = state.idioma; $("f-region").value = state.region; $("f-costo").value = state.costo;
+
+    const found = SITIOS.filter(matches)
+      .sort((a, b) => String(a.nombre).localeCompare(String(b.nombre), "es"));
+    $("resultados").innerHTML = found.map(card).join("");
+
+    const empty = $("empty");
+    if (!SITIOS.length) {
+      empty.hidden = false;
+      empty.textContent = "Todavía no hay sitios cargados. Muy pronto estarán aquí.";
+    } else if (!found.length) {
+      empty.hidden = false;
+      empty.textContent = "No hay sitios con esa combinación de filtros. Prueba quitando alguno.";
+    } else { empty.hidden = true; }
+
+    $("count").textContent = SITIOS.length
+      ? found.length + (found.length === 1 ? " sitio" : " sitios") + (state.area ? " para " + state.area : "")
+      : "";
+
+    // Guardar el enlace y la última búsqueda
+    const p = new URLSearchParams();
+    for (const k in state) if (state[k]) p.set(k, state[k]);
+    history.replaceState(null, "", p.toString() ? "#" + p.toString() : location.pathname + location.search);
+    try { localStorage.setItem("trabajo-remoto-filtros", JSON.stringify(state)); } catch (e) {}
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
