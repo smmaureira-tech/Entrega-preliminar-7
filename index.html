@@ -21,7 +21,9 @@
      idioma      "Español", "Inglés" o ambos.
      region      "Latinoamérica" (acepta postulantes de LatAm) o "Global".
      costo       "Gratis" o "De pago" (para quien postula).
-     revisado    Fecha en que comprobaste que el enlace funciona (AAAA-MM).
+     verificado  Fecha en que abriste el sitio y comprobaste ofertas reales (AAAA-MM-DD).
+                 OBLIGATORIO: un sitio sin esta fecha NO se muestra en la página.
+     ultimaOferta Fecha de la oferta más reciente que viste publicada (AAAA-MM-DD).
 
    Ejemplo de bloque (está desactivado porque va dentro de un comentario):
    {
@@ -32,7 +34,8 @@
      idioma: ["Español", "Inglés"],
      region: "Latinoamérica",
      costo: "Gratis",
-     revisado: "2026-10"
+     verificado: "2026-10-28",
+     ultimaOferta: "2026-10-27"
    },
    ===================================================================== */
 const SITIOS = [
@@ -121,7 +124,8 @@ const FORMULARIO_SUGERENCIAS = "";
 <div class="wrap">
   <header>
     <h1>Trabajo remoto: sitios por área</h1>
-    <p class="lead">Una lista de sitios y bolsas de empleo remoto, elegidos y revisados a mano, para encontrar oportunidades según tu área o rol.</p>
+    <p class="lead">Una lista de sitios y bolsas de empleo remoto, elegidos y verificados a mano, para encontrar oportunidades según tu área o rol.</p>
+    <p class="note">Cada sitio muestra la fecha en que se verificó por última vez. Las ofertas cambian a diario: confirma siempre en el sitio que la oferta siga abierta.</p>
     <p class="note">Recurso voluntario y comunitario, sin fines de lucro. Esta página no publica ofertas: te lleva a cada sitio, donde puedes revisar las condiciones antes de postular.</p>
   </header>
 
@@ -177,9 +181,14 @@ const FORMULARIO_SUGERENCIAS = "";
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const safeUrl = (u) => /^https?:\/\//i.test(u || "") ? u : "";
 
+  // Solo se publican sitios con fecha de verificación y enlace válido.
+  const SITIOS_OK = SITIOS.filter((s) => s.verificado && safeUrl(s.url));
+  const fecha = (d) => { const m = /^(\d{4})-(\d{2})(?:-(\d{2}))?$/.exec(d || "");
+    return m ? (m[3] ? m[3] + "/" : "") + m[2] + "/" + m[1] : esc(d); };
+
   // Mostrar solo las áreas que tienen al menos un sitio (si hay sitios cargados).
-  const usadas = new Set(SITIOS.flatMap((s) => list(s.areas)));
-  const areas = SITIOS.length ? AREAS.filter((a) => usadas.has(a)) : AREAS;
+  const usadas = new Set(SITIOS_OK.flatMap((s) => list(s.areas)));
+  const areas = SITIOS_OK.length ? AREAS.filter((a) => usadas.has(a)) : AREAS;
 
   const state = { area: "", q: "", idioma: "", region: "", costo: "" };
 
@@ -210,7 +219,7 @@ const FORMULARIO_SUGERENCIAS = "";
 
   // Opciones de los filtros, sacadas de los datos
   const fill = (id, key) => {
-    const vals = [...new Set(SITIOS.flatMap((s) => list(s[key])))].sort();
+    const vals = [...new Set(SITIOS_OK.flatMap((s) => list(s[key])))].sort();
     const sel = $(id);
     vals.forEach((v) => sel.add(new Option(v, v)));
     sel.addEventListener("change", () => { state[key] = sel.value; render(); });
@@ -252,7 +261,8 @@ const FORMULARIO_SUGERENCIAS = "";
       "<h2>" + esc(s.nombre) + "</h2>" +
       "<p>" + esc(s.descripcion) + "</p>" +
       '<ul class="tags" aria-label="Etiquetas">' + tags.map((t) => "<li>" + esc(t) + "</li>").join("") + "</ul>" +
-      (s.revisado ? '<span class="meta">Enlace revisado: ' + esc(s.revisado) + "</span>" : "") +
+      '<span class="meta">Última verificación: ' + fecha(s.verificado) +
+        (s.ultimaOferta ? " · Oferta más reciente vista: " + fecha(s.ultimaOferta) : "") + "</span>" +
       (url ? '<a class="go" href="' + esc(url) + '" target="_blank" rel="noopener">Ir a ' + esc(s.nombre) +
         ' <span aria-hidden="true">↗</span><span class="sr"> (se abre en otra pestaña)</span></a>' : "") +
       "</li>";
@@ -265,12 +275,12 @@ const FORMULARIO_SUGERENCIAS = "";
     $("q").value = state.q;
     $("f-idioma").value = state.idioma; $("f-region").value = state.region; $("f-costo").value = state.costo;
 
-    const found = SITIOS.filter(matches)
+    const found = SITIOS_OK.filter(matches)
       .sort((a, b) => String(a.nombre).localeCompare(String(b.nombre), "es"));
     $("resultados").innerHTML = found.map(card).join("");
 
     const empty = $("empty");
-    if (!SITIOS.length) {
+    if (!SITIOS_OK.length) {
       empty.hidden = false;
       empty.textContent = "Todavía no hay sitios cargados. Muy pronto estarán aquí.";
     } else if (!found.length) {
@@ -278,7 +288,7 @@ const FORMULARIO_SUGERENCIAS = "";
       empty.textContent = "No hay sitios con esa combinación de filtros. Prueba quitando alguno.";
     } else { empty.hidden = true; }
 
-    $("count").textContent = SITIOS.length
+    $("count").textContent = SITIOS_OK.length
       ? found.length + (found.length === 1 ? " sitio" : " sitios") + (state.area ? " para " + state.area : "")
       : "";
 

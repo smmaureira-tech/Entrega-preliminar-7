@@ -29,7 +29,8 @@ Para agregar un sitio, copia este bloque dentro de `const SITIOS = [` … `];` y
   idioma: ["Español", "Inglés"],
   region: "Latinoamérica",
   costo: "Gratis",
-  revisado: "2026-10"
+  verificado: "2026-10-28",
+  ultimaOferta: "2026-10-27"
 },
 ```
 
@@ -41,7 +42,9 @@ Reglas:
 
 Para editar desde GitHub, sin descargar nada: abre `index.html`, pulsa el lápiz (**Edit**), haz los cambios y pulsa **Commit changes**. Si la página está publicada, se actualiza en uno o dos minutos.
 
-**Mantenimiento sugerido:** una vez al mes, abre los enlaces, quita los que ya no funcionen y actualiza la fecha de `revisado`.
+- `verificado` es **obligatorio**. Si un sitio no tiene esa fecha, la página no lo muestra. Así ningún sitio sin comprobar llega al directorio.
+
+**Mantenimiento:** sigue la rutina de `VERIFICACION.md`.
 
 ## 3. Publicarla gratis con GitHub Pages
 
