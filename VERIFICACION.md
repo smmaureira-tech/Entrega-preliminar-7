@@ -1,31 +1,33 @@
 # Verificación de sitios
 
-## Estado al 29/10/2026: ningún sitio verificado todavía
+## Revisión del 29/10/2026
 
-El entorno donde trabaja Claude no tiene permiso para abrir estos sitios: la política de red de la sesión rechaza la conexión. Por eso **ninguna fila está verificada** y el directorio sigue vacío. Nada de lo que aparece abajo se ha comprobado abriendo el sitio.
+Claude abrió cada sitio con un navegador automático, revisó la lista de ofertas y abrió al menos 2 ofertas concretas. Solo se leyeron páginas públicas, como lo haría una persona. No se copiaron ofertas.
 
-- «Origen: tu lista» = enviado por la autora del recurso (captura de LinkedIn). La descripción de áreas viene de esa publicación, no de una comprobación.
-- «Origen: propuesta» = sitio sugerido por Claude como candidato. Solo es una idea para revisar.
+- «Origen: tu lista» = enviado por la autora del recurso. «Origen: propuesta» = candidato sugerido por Claude.
+- Las fechas «hace X horas/días» se convirtieron a fecha usando el día de la revisión.
 
-| # | Sitio | URL | Origen | Áreas o roles (según la fuente, sin verificar) | Alcance geográfico | Oferta más reciente comprobada | Fecha de revisión | Evidencia | Decisión |
+| # | Sitio | URL | Origen | Áreas o roles vistos | Alcance geográfico visto | Oferta más reciente comprobada | Revisión | Evidencia | Decisión |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | Kickresume (enlace corto) | kickresu.me/ZHTaHiF | Tu lista | Herramienta para crear CV, no es una bolsa de empleo | — | — | — | No verificado. El enlace corto oculta la dirección final y podría ser un enlace de referido | **Excluir** del directorio de empleos (se puede retomar en una futura sección de herramientas) |
-| 2 | Wellfound | wellfound.com | Tu lista | Startups y tecnología | No verificado | No verificado | — | No se pudo abrir | **Pendiente** |
-| 3 | Working Nomads | workingnomads.com | Tu lista | Tech, marketing, diseño, ventas | No verificado | No verificado | — | No se pudo abrir | **Pendiente** |
-| 4 | Jobspresso | jobspresso.co | Tu lista | Tecnología, marketing, atención al cliente, producto | No verificado | No verificado | — | No se pudo abrir | **Pendiente** |
-| 5 | JustRemote | justremote.co | Tu lista | Varias categorías | No verificado | No verificado | — | No se pudo abrir | **Pendiente** |
-| 6 | SkipTheDrive | skipthedrive.com | Tu lista | Tecnología, ventas, finanzas, RR. HH. | No verificado | No verificado | — | No se pudo abrir | **Pendiente** |
-| 7 | RemoteJobs.io | remotejobs.io | Tu lista | Varios sectores y niveles | No verificado | No verificado | — | No se pudo abrir | **Pendiente** |
-| 8 | NoDesk | nodesk.co | Tu lista | Tecnología y startups | No verificado | No verificado | — | No se pudo abrir | **Pendiente** |
-| 9 | Jobgether | jobgether.com | Tu lista | Varias; recomendación según perfil | No verificado | No verificado | — | No se pudo abrir | **Pendiente** |
-| 10 | EU Remote Jobs | euremotejobs.com | Tu lista | Varias | Según tu lista, orientado a Europa | No verificado | — | No se pudo abrir | **Pendiente.** Probablemente excluir si solo acepta residentes de Europa |
-| 11 | LinkIT | linkit-hr.com | Tu mensaje | No verificado | No verificado | No verificado | — | No se pudo abrir (29/10/2026). La búsqueda web no mostró páginas de este dominio; hay empresas con nombres parecidos en otros países, sin relación comprobada | **Pendiente** |
-| 12 | Get on Board | getonbrd.com | Propuesta | Tecnología | Latinoamérica | No verificado | — | Solo resultados de búsqueda (blog del sitio y prensa) | **Pendiente** |
-| 13 | We Work Remotely | weworkremotely.com | Propuesta | Por comprobar | Por comprobar | No verificado | — | Ninguna | **Pendiente** |
-| 14 | Remotive | remotive.com | Propuesta | Por comprobar | Por comprobar | No verificado | — | Ninguna | **Pendiente** |
-| 15 | Himalayas | himalayas.app | Propuesta | Por comprobar | Por comprobar | No verificado | — | Ninguna | **Pendiente** |
-| 16 | Torre | torre.ai | Propuesta | Por comprobar | Por comprobar | No verificado | — | Ninguna | **Pendiente** |
-| 17 | Workana (freelance) | workana.com | Propuesta | Por comprobar | Latinoamérica (por comprobar) | No verificado | — | Ninguna | **Pendiente** |
+| 1 | Jobspresso | jobspresso.co | Tu lista | IA y datos, diseño, ingeniería, marketing, producto, ventas, soporte, redacción | Global; cada oferta indica país o región («Worldwide», EE. UU., Europa…) | 29/10/2026 | 29/10/2026 | 2 ofertas abiertas OK: «Strategic Account Executive» (publicada el 29/10) y «HR Generalist» (23/10, Worldwide) | **Incluir** |
+| 2 | Working Nomads | workingnomads.com | Tu lista | Desarrollo, diseño, atención al cliente, administración, finanzas, educación, consultoría | Global; hay ofertas que incluyen Latinoamérica | 29/10/2026 | 29/10/2026 | 2 ofertas OK: «Senior Magento Developer» (hace 7 horas; Europa, **Latinoamérica**, APAC, EE. UU., Canadá) y «Senior Back-end Developer» (hace 1 día) | **Incluir** |
+| 3 | Wellfound | wellfound.com | Tu lista | Startups: ingeniería, aprendizaje automático, marketing de producto, diseño | Global; cada oferta indica dónde contrata. Las vistas eran de EE. UU. | 28/10/2026 | 29/10/2026 | 2 ofertas OK («Senior ML Engineer» y «Product Marketing Lead», republicadas ayer). Una tercera respondió «oferta cerrada» (410) | **Incluir** |
+| 4 | Jobgether | jobgether.com | Tu lista | Desarrollo, ventas, atención al cliente y muchas más | Global; cada oferta indica «Remote from» (países permitidos) | 29/10/2026 | 29/10/2026 | 2 ofertas OK: «After-Sales CX Specialist» y «Health & Science Sales Specialist» (ambas «Just posted») | **Incluir** |
+| 5 | Get on Board | getonbrd.com | Propuesta | Programación, diseño UX, ventas y otras áreas tech | **Latinoamérica**; cada oferta indica país | 29/10/2026 | 29/10/2026 | 2 ofertas OK: «Senior Account Manager – Devsu» (29/10) y «Senior Go Engineer» (27/10; remoto para Colombia, México o Costa Rica) | **Incluir** |
+| 6 | Remotive | remotive.com | Propuesta | Programación, soporte, diseño, ventas, IA | Global; cada oferta indica país («Worldwide», EE. UU., etc.) | 29/10/2026 | 29/10/2026 | 2 ofertas OK: «Enterprise Account Executive» y «Drupal Engineer» (ambas de hoy). Tiene una parte de pago («Unlock 130,000+ Remote Jobs») | **Incluir** (indicar opciones de pago) |
+| 7 | We Work Remotely | weworkremotely.com | Propuesta | Soporte, diseño, ingeniería, marketing, producto, ventas, operaciones | Global; cada oferta indica región («Anywhere in the World», etc.) | 28/10/2026 | 29/10/2026 | 2 ofertas OK: «Executive Assistant / Project Manager» (27/10, Anywhere in the World) y «Customer Onboarding Specialist» (hace 1 día). Una tercera mostró un control antibots | **Incluir** (indicar opciones de pago para quien busca empleo, por confirmar) |
+| 8 | Workana | workana.com | Propuesta | Freelance: marketing y ventas, programación, e-commerce | **Latinoamérica** (en español y portugués) | 29/10/2026 | 29/10/2026 | 2 proyectos OK: «Experto en Marketing Digital B2B» (28/10) y «Freelancer Tienda Nube» (29/10). Son proyectos freelance, no empleos fijos | **Incluir** (marcar como freelance) |
+| 9 | LinkIT | linkit-hr.com | Tu lista | Consultora de RR. HH. IT: ventas, QA, marketing, desarrollo | Latinoamérica; hay vacantes «LATAM – Remoto (Regional)» y otras presenciales en Argentina | **Sin fecha visible** | 29/10/2026 | Página «Vacantes disponibles» con ofertas reales (p. ej. «Jr. Account Manager», código 1106, LATAM). La oferta no muestra fecha de publicación | **Pendiente**: no cumple «fecha visible». Decide si se incluye con la nota «sin fecha de publicación» |
+| 10 | JustRemote | justremote.co | Tu lista | Varias categorías (diseño, dirección, salud…) | Global, con mucho foco en EE. UU. | **Sin fecha visible** | 29/10/2026 | 2 ofertas abren bien («Revenue Cycle Specialist», «Creative Lead»), pero ninguna muestra fecha | **Pendiente** |
+| 11 | RemoteJobs.io | remotejobs.io | Tu lista | Muchas categorías | Las ofertas vistas eran de EE. UU. (Washington DC, San José…) | **Sin fecha visible** | 29/10/2026 | 2 ofertas abren, pero sin fecha. Su página `/remote-jobs` da error 404 | **Pendiente** |
+| 12 | NoDesk | nodesk.co | Tu lista | Categorías visibles (diseño, soporte, etc.) | — | **No verificado** | 29/10/2026 | La página abre, pero la lista de ofertas no cargó en el navegador automático (parece usar otro servicio externo) | **Pendiente**: revisar a mano |
+| 13 | Himalayas | himalayas.app | Propuesta | — | — | **No verificado** | 29/10/2026 | El sitio muestra un control antibots («Just a moment…») y no deja pasar al navegador automático | **Pendiente**: revisar a mano |
+| 14 | Torre | torre.ai | Propuesta | — | — | **No verificado** | 29/10/2026 | La página de búsqueda carga vacía en el navegador automático | **Pendiente**: revisar a mano |
+| 15 | SkipTheDrive | skipthedrive.com | Tu lista | Atención al cliente, ventas, finanzas, RR. HH., medio tiempo | Las ofertas vistas eran **solo para EE. UU.** («Remote (United States)») | 23/10/2026 | 29/10/2026 | 2 ofertas OK («Director of Customer Service Operations», «Disability Customer Service Representative»), ambas del 23/10 | **Excluir (sugerido)**: poco útil para Latinoamérica |
+| 16 | EU Remote Jobs | euremotejobs.com | Tu lista | TI, producto, marketing, ventas | **Europa** y husos horarios europeos | 28/10/2026 | 29/10/2026 | 2 ofertas OK («IT Administrator», 28/10; «Technical Product Manager», 24/10), ambas para países europeos | **Excluir (sugerido)**: orientado a Europa |
+| 17 | Kickresume (enlace corto) | kickresu.me/ZHTaHiF | Tu lista | Herramienta para crear CV | — | — | — | No es una bolsa de empleo. El enlace corto oculta la dirección final | **Excluir** del directorio (posible sección futura de herramientas) |
+
+**Resumen:** 8 para incluir, 6 pendientes y 3 para excluir.
 
 ---
 
