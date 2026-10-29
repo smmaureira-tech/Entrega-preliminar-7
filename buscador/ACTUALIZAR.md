@@ -3,7 +3,7 @@
 Buscador privado: https://claude.ai/artifact/MxbCJi2eAMmTMZ7WhAKH3E
 Rama de trabajo: `claude/stoic-fermat-jznhyy` del repositorio `smmaureira-tech/entrega-preliminar-7`.
 
-1. Ubícate en la rama `claude/stoic-fermat-jznhyy` (con `git fetch` y `git checkout`) y trae lo último.
+1. Antes de cualquier operación de git, llama a la herramienta `add_repo` (servidor claude-code-remote) con `owner: smmaureira-tech`, `repo: entrega-preliminar-7` y `access: push`. Sin eso, el push da 403. Luego clona o ubícate en la rama `claude/stoic-fermat-jznhyy` y trae lo último.
 2. Reúne las ofertas (tarda unos 5 minutos; respeta las pausas del script):
    `python3 herramientas/actualizar_ofertas.py /tmp/ofertas.json buscador/traducciones.json`
    - Remotive pide máximo 4 consultas al día. Si ya se consultó hoy, usa `SALTAR=Remotive`.
