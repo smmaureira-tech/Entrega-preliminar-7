@@ -1,0 +1,326 @@
+<title>Trabajo Remoto LatAm</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+  /* Layout: una columna de búsqueda arriba y una lista densa de ofertas, pensada para escanear. */
+  :root {
+    --bg: #fbf8f6; --surface: #ffffff; --text: #221b26; --muted: #625a68;
+    --line: #e4dbe2; --accent: #7a2e8e; --accent-soft: #f2e6f5; --on-accent: #ffffff;
+    --ok: #1f6f4a; --ok-soft: #e3f3ea; --warn: #8a5a00; --warn-soft: #fbf0d9; --focus: #0b62c4;
+    --f-display: "Fraunces", Georgia, "Times New Roman", serif;
+    --f-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17131a; --surface: #211c25; --text: #f3eef5; --muted: #b8aebf;
+      --line: #3a3240; --accent: #d7a2e6; --accent-soft: #3a2942; --on-accent: #1b1220;
+      --ok: #7fd3a6; --ok-soft: #1d3329; --warn: #f0c56b; --warn-soft: #3a2f17; --focus: #7fb6ff;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17131a; --surface: #211c25; --text: #f3eef5; --muted: #b8aebf;
+    --line: #3a3240; --accent: #d7a2e6; --accent-soft: #3a2942; --on-accent: #1b1220;
+    --ok: #7fd3a6; --ok-soft: #1d3329; --warn: #f0c56b; --warn-soft: #3a2f17; --focus: #7fb6ff;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 var(--f-body); }
+  .wrap { max-width: 960px; margin: 0 auto; padding-block: 28px 48px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  h1 { font: 600 clamp(1.8rem, 5vw, 2.5rem)/1.1 var(--f-display); margin: 0 0 6px; text-wrap: balance; }
+  h2 { font: 600 1.25rem/1.2 var(--f-display); margin: 0 0 10px; }
+  a { color: var(--accent); }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+  .sub { color: var(--muted); margin: 0; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  .search { margin: 22px 0 12px; display: grid; gap: 6px; }
+  .search label { font-weight: 700; }
+  .search input { font: inherit; font-size: 1.1rem; padding: 14px 16px; border-radius: 10px;
+    border: 2px solid var(--line); background: var(--surface); color: var(--text); width: 100%; }
+  .search input:focus { border-color: var(--accent); outline: none; }
+  .hint { color: var(--muted); font-size: .9rem; margin: 0; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 16px; }
+  .chip { font: inherit; font-size: .92rem; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text); }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .chip.zero { opacity: .5; }
+  .chip .n { opacity: .7; font-variant-numeric: tabular-nums; margin-left: 4px; }
+
+  .filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-items: end; }
+  @media (max-width: 720px) { .filters { grid-template-columns: 1fr 1fr; } }
+  .filters label { display: grid; gap: 4px; font-size: .85rem; font-weight: 700; }
+  select { font: inherit; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--text); width: 100%; }
+  .check { display: flex !important; grid-template-columns: none; align-items: center; gap: 8px;
+    font-weight: 700; padding: 9px 0; }
+  .check input { width: 20px; height: 20px; accent-color: var(--accent); }
+
+  .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;
+    margin: 18px 0 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .count { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .btn { font: inherit; font-size: .92rem; padding: 8px 14px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text); }
+  .btn.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+
+  .list { list-style: none; margin: 0; padding: 0; display: grid; }
+  .job { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; padding: 14px 4px;
+    border-bottom: 1px solid var(--line); }
+  .job h3 { margin: 0; font-size: 1.05rem; line-height: 1.3; min-width: 0; }
+  .job h3 a { color: var(--text); text-decoration: none; }
+  .job h3 a:hover, .job h3 a:focus-visible { color: var(--accent); text-decoration: underline; }
+  .job .when { color: var(--muted); font-size: .85rem; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
+  .job .meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center;
+    color: var(--muted); font-size: .9rem; min-width: 0; }
+  .pill { font-size: .78rem; padding: 2px 8px; border-radius: 6px; background: var(--accent-soft); color: var(--text); }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); font-weight: 700; }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .salary { color: var(--text); font-weight: 700; }
+  .more { display: flex; justify-content: center; margin: 18px 0; }
+  .empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 20px; margin: 12px 0; }
+
+  .also { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--line); }
+  .sites { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; list-style: none; padding: 0; margin: 0; }
+  .sites li { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+  .sites strong { display: block; }
+  .sites span { color: var(--muted); font-size: .88rem; }
+  footer { margin-top: 28px; color: var(--muted); font-size: .85rem; }
+  footer p { margin: 0 0 6px; max-width: 70ch; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Ofertas de trabajo remoto</h1>
+    <p class="sub" id="sub">Cargando ofertas…</p>
+  </header>
+
+  <div class="search">
+    <label for="q">¿Qué cargo buscas?</label>
+    <input id="q" type="search" autocomplete="off" placeholder="Ej.: ejecutiva de ventas, diseñadora UX, analista de datos">
+    <p class="hint">Puedes escribir en español o en inglés. La mayoría de las ofertas están en inglés; el buscador traduce los cargos comunes.</p>
+  </div>
+
+  <div class="chips" id="areas" role="group" aria-label="Áreas"></div>
+
+  <div class="filters">
+    <label class="check"><input type="checkbox" id="latam" checked> Abiertas a Latinoamérica</label>
+    <label>País
+      <select id="pais"><option value="">Todos</option></select>
+    </label>
+    <label>Publicadas
+      <select id="dias">
+        <option value="30">Últimos 30 días</option>
+        <option value="14">Últimos 14 días</option>
+        <option value="7">Últimos 7 días</option>
+        <option value="2">Hoy y ayer</option>
+      </select>
+    </label>
+    <label>Fuente
+      <select id="fuente"><option value="">Todas</option></select>
+    </label>
+  </div>
+
+  <div class="bar">
+    <p class="count" id="count" aria-live="polite"></p>
+    <button class="btn" id="reset" type="button">Quitar filtros</button>
+  </div>
+
+  <ul class="list" id="list"></ul>
+  <div class="empty" id="empty" hidden></div>
+  <div class="more"><button class="btn primary" id="more" type="button" hidden>Ver más ofertas</button></div>
+
+  <section class="also" aria-labelledby="also-h">
+    <h2 id="also-h">Busca también aquí</h2>
+    <p class="sub" style="margin-bottom:12px">Estos sitios no permiten traer sus ofertas automáticamente. Ábrelos para buscar el cargo directamente.</p>
+    <ul class="sites">
+      <li><strong><a href="https://jobs.kaszek.com/jobs" target="_blank" rel="noopener">Kaszek</a></strong><span>Startups latinoamericanas; usa el filtro «Remote».</span></li>
+      <li><strong><a href="https://www.linkit-hr.com/soyTalento" target="_blank" rel="noopener">LinkIT</a></strong><span>Vacantes IT, algunas remotas para LATAM. Sin fecha visible.</span></li>
+      <li><strong><a href="https://jobgether.com/remote-jobs" target="_blank" rel="noopener">Jobgether</a></strong><span>Cada oferta dice desde qué países se postula.</span></li>
+      <li><strong><a href="https://jobspresso.co/remote-work/" target="_blank" rel="noopener">Jobspresso</a></strong><span>Ofertas seleccionadas; muchas «Worldwide».</span></li>
+      <li><strong><a href="https://wellfound.com/location/mexico" target="_blank" rel="noopener">Wellfound</a></strong><span>Startups. Por país:
+        <a href="https://wellfound.com/location/argentina" target="_blank" rel="noopener">AR</a> ·
+        <a href="https://wellfound.com/location/chile" target="_blank" rel="noopener">CL</a> ·
+        <a href="https://wellfound.com/location/colombia" target="_blank" rel="noopener">CO</a> ·
+        <a href="https://wellfound.com/location/brazil" target="_blank" rel="noopener">BR</a></span></li>
+    </ul>
+  </section>
+
+  <footer>
+    <p id="fuentes"></p>
+    <p>Cada enlace lleva a la oferta original. Revisa siempre en la fuente que la oferta siga abierta y desde qué países se puede postular. Ninguna empresa seria cobra por postular.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const norm = (s) => String(s == null ? "" : s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const safeUrl = (u) => /^https?:\/\//i.test(u || "") ? u : "";
+
+  const AREAS = ["Desarrollo web", "Diseño UX/UI", "Análisis de datos", "Producto y proyectos",
+    "Marketing y contenido", "Atención al cliente", "Ventas", "Recursos humanos", "Otras áreas"];
+
+  // Palabras en español (comienzo de palabra, sin tildes) y sus equivalentes en los títulos.
+  const SINONIMOS = [
+    [["ejecutiv"], ["executive", "account manager", "ejecutiv"]],
+    [["vent", "comercial", "vendedor"], ["sales", "account", "business development", "ventas", "comercial", "sdr", "bdr"]],
+    [["disen"], ["design", "disen", "ux", "ui"]],
+    [["desarroll", "program"], ["developer", "engineer", "desarroll", "program", "software"]],
+    [["ingenier"], ["engineer", "ingenier"]],
+    [["analist"], ["analyst", "analista", "analytics"]],
+    [["dato"], ["data", "datos"]],
+    [["soporte", "atencion"], ["support", "customer service", "customer success", "customer care", "soporte", "atencion", "help desk", "helpdesk"]],
+    [["cliente"], ["customer", "client", "cliente"]],
+    [["reclut", "seleccion"], ["recruit", "talent", "reclut", "seleccion"]],
+    [["recursos", "rrhh", "humanos"], ["hr", "human resources", "people", "recursos humanos", "rrhh"]],
+    [["contenido"], ["content", "contenido"]],
+    [["redact", "escritor"], ["writer", "copywriter", "redact", "content"]],
+    [["asistente"], ["assistant", "asistente"]],
+    [["product"], ["product", "producto"]],
+    [["proyect"], ["project", "proyecto", "program manager"]],
+    [["gerente", "jefe", "jefa", "lider"], ["manager", "head", "lead", "director", "gerente", "jefe", "lider"]],
+    [["practica", "pasant"], ["intern", "internship", "practica", "trainee"]],
+    [["contab", "contador"], ["accountant", "accounting", "bookkeep", "contab", "contador"]],
+    [["finanz", "financ"], ["finance", "financial", "finanz", "financ"]],
+    [["traduct"], ["translator", "translation", "traduct"]],
+    [["profesor", "docente", "tutor"], ["teacher", "tutor", "instructor", "profesor", "docente"]],
+    [["calidad"], ["qa", "quality", "tester", "calidad"]],
+    [["legal", "abogad"], ["legal", "lawyer", "counsel", "paralegal", "abogad"]],
+  ];
+  const IGNORAR = ["de", "del", "en", "y", "o", "la", "el", "los", "las", "para", "un", "una", "con",
+    "trabajo", "trabajos", "empleo", "empleos", "remoto", "remota", "remotos", "remotas", "oferta", "ofertas", "job", "jobs", "remote"];
+
+  let DATA = null, shown = 40;
+  const state = { q: "", area: "", latam: true, pais: "", dias: 30, fuente: "" };
+
+  function variantes(w) {
+    const out = new Set([w]);
+    for (const [es, en] of SINONIMOS) if (es.some((r) => w.startsWith(r) || (w.length >= 4 && r.startsWith(w)))) en.forEach((x) => out.add(x));
+    // femenino/masculino: diseñadora -> diseñador
+    if (w.endsWith("ora")) out.add(w.slice(0, -1));
+    if (w.endsWith("a") && w.length > 4) out.add(w.slice(0, -1));
+    return [...out];
+  }
+  const texto = (o) => " " + norm(o.titulo) + " ";
+  const tiene = (t, v) => v.length <= 3 ? new RegExp("[^a-z0-9]" + v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[^a-z0-9]").test(t) : t.includes(v);
+
+  function palabras() {
+    return norm(state.q).split(/[\s,;/]+/).filter((w) => w && !IGNORAR.includes(w));
+  }
+
+  function filtrar() {
+    if (!DATA) return [];
+    const limite = new Date(Date.now() - state.dias * 864e5).toISOString().slice(0, 10);
+    const base = DATA.ofertas.filter((o) =>
+      o.fecha >= limite &&
+      (!state.latam || o.latam) &&
+      (!state.pais || (state.pais === "*" ? o.latam && !o.paises.length && /cualquier/i.test(o.lugar) : o.paises.includes(state.pais))) &&
+      (!state.fuente || o.fuente === state.fuente) &&
+      (!state.area || o.areas.includes(state.area)));
+    const ws = palabras();
+    if (!ws.length) return base;
+    const T = new Map(base.map((o) => [o, texto(o)]));
+    // Una palabra que no aparece en ninguna oferta no descarta resultados (p. ej. «digital»).
+    const util = ws.map((w) => variantes(w)).filter((vs) => base.some((o) => vs.some((v) => tiene(T.get(o), v))));
+    if (!util.length) return [];
+    return base.filter((o) => util.every((vs) => vs.some((v) => tiene(T.get(o), v))));
+  }
+
+  function haceCuanto(f) {
+    const d = Math.round((Date.parse(new Date().toISOString().slice(0, 10)) - Date.parse(f)) / 864e5);
+    if (d <= 0) return "hoy";
+    if (d === 1) return "ayer";
+    return "hace " + d + " días";
+  }
+  const fechaLarga = (f) => f.slice(8, 10) + "/" + f.slice(5, 7) + "/" + f.slice(0, 4);
+
+  function fila(o) {
+    const url = safeUrl(o.url);
+    const lat = o.latam ? (o.paises.length ? (o.paises.length > 4 ? "Abierta a " + o.paises.length + " países de LATAM" : "Abierta a: " + o.paises.join(", ")) : (/cualquier/i.test(o.lugar) ? "Cualquier país" : "Latinoamérica")) : "";
+    const warn = /solo algunos/i.test(o.lugar);
+    return '<li class="job"><h3>' + (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(o.titulo) +
+      '<span class="sr"> (se abre en otra pestaña)</span></a>' : esc(o.titulo)) + "</h3>" +
+      '<span class="when" title="' + fechaLarga(o.fecha) + '">' + haceCuanto(o.fecha) + "</span>" +
+      '<div class="meta">' + (o.empresa ? "<span>" + esc(o.empresa) + "</span>" : "") +
+      (lat ? '<span class="pill ' + (warn ? "warn" : "ok") + '" title="' + esc(o.paises.join(", ")) + '">' + esc(warn ? "LATAM: solo algunos países" : lat) + "</span>" :
+        '<span class="pill">' + esc(o.lugar || "Ver ubicación") + "</span>") +
+      (o.salario ? '<span class="salary">' + esc(o.salario) + "</span>" : "") +
+      '<span class="pill">' + esc(o.areas[0]) + "</span>" +
+      "<span>vía " + esc(o.fuente) + "</span></div></li>";
+  }
+
+  function render() {
+    const res = filtrar();
+    $("list").innerHTML = res.slice(0, shown).map(fila).join("");
+    $("count").textContent = DATA ? res.length + (res.length === 1 ? " oferta" : " ofertas") : "";
+    $("more").hidden = res.length <= shown;
+    const e = $("empty");
+    if (DATA && !res.length) {
+      e.hidden = false;
+      e.textContent = state.q
+        ? "No hay ofertas recientes para «" + state.q + "» con estos filtros. Prueba con otra forma del cargo (por ejemplo «ventas» o «account executive»), amplía la fecha a 30 días o pulsa «Quitar filtros»."
+        : "No hay ofertas con estos filtros. Pulsa «Quitar filtros».";
+    } else e.hidden = true;
+    // contadores por área según los demás filtros
+    const tmp = state.area; state.area = "";
+    const sinArea = filtrar(); state.area = tmp;
+    document.querySelectorAll("#areas .chip").forEach((b) => {
+      const a = b.dataset.area;
+      b.setAttribute("aria-pressed", String(a === state.area));
+      const n = a ? sinArea.filter((o) => o.areas.includes(a)).length : sinArea.length;
+      b.querySelector(".n").textContent = n;
+      b.classList.toggle("zero", n === 0 && a !== state.area);
+    });
+  }
+
+  function sync() {
+    $("q").value = state.q; $("latam").checked = state.latam; $("pais").value = state.pais;
+    $("dias").value = String(state.dias); $("fuente").value = state.fuente;
+  }
+
+  // controles
+  ["", ...AREAS].forEach((a) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.dataset.area = a;
+    b.innerHTML = esc(a || "Todas") + '<span class="n"></span>';
+    b.addEventListener("click", () => { state.area = a; shown = 40; render(); });
+    $("areas").appendChild(b);
+  });
+  let t;
+  $("q").addEventListener("input", (e) => { clearTimeout(t); t = setTimeout(() => { state.q = e.target.value; shown = 40; render(); }, 150); });
+  $("latam").addEventListener("change", (e) => { state.latam = e.target.checked; shown = 40; render(); });
+  $("pais").addEventListener("change", (e) => { state.pais = e.target.value; if (state.pais) state.latam = true; sync(); shown = 40; render(); });
+  $("dias").addEventListener("change", (e) => { state.dias = +e.target.value; shown = 40; render(); });
+  $("fuente").addEventListener("change", (e) => { state.fuente = e.target.value; shown = 40; render(); });
+  $("more").addEventListener("click", () => { shown += 40; render(); });
+  $("reset").addEventListener("click", () => {
+    Object.assign(state, { q: "", area: "", latam: true, pais: "", dias: 30, fuente: "" });
+    sync(); shown = 40; render(); $("q").focus();
+  });
+  render();
+
+  fetch("ofertas.json").then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }).then((d) => {
+    DATA = d;
+    const paises = [...new Set(d.ofertas.flatMap((o) => o.paises))].sort((a, b) => a.localeCompare(b, "es"));
+    $("pais").insertAdjacentHTML("beforeend", '<option value="*">Cualquier país (sin restricción)</option>' +
+      paises.map((p) => '<option value="' + esc(p) + '">' + esc(p) + "</option>").join(""));
+    d.fuentes.filter((f) => f.ofertas).forEach((f) => $("fuente").add(new Option(f.nombre, f.nombre)));
+    const g = d.generado;
+    $("sub").textContent = d.ofertas.length + " ofertas remotas publicadas en los últimos " + d.dias +
+      " días, reunidas el " + fechaLarga(g.slice(0, 10)) + " a las " + g.slice(11, 16) + " UTC.";
+    $("fuentes").innerHTML = "Fuentes: " + d.fuentes.map((f) => '<a href="' + esc(f.web) + '" target="_blank" rel="noopener">' +
+      esc(f.nombre) + "</a> (" + f.ofertas + (f.estado === "ok" ? "" : ", " + esc(f.estado)) + ")").join(" · ") +
+      ". Ofertas de Remotive, Himalayas y las demás fuentes se muestran con enlace a su publicación original.";
+    render();
+  }).catch(() => {
+    $("sub").textContent = "No se pudieron cargar las ofertas. Recarga la página en unos segundos.";
+  });
+})();
+</script>
