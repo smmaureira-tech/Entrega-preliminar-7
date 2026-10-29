@@ -243,6 +243,10 @@ const FORMULARIO_SUGERENCIAS = "";
     <p class="note">Recurso voluntario y comunitario, sin fines de lucro. Esta página no publica ofertas: te lleva a cada sitio, donde puedes revisar las condiciones antes de postular.</p>
   </header>
 
+  <noscript>
+    <p class="empty">Esta vista no está ejecutando la página. Ábrela en un navegador como Chrome, Firefox o Safari para ver los sitios y usar los filtros.</p>
+  </noscript>
+
   <main>
     <fieldset>
       <legend>1. Elige tu área o rol</legend>
@@ -291,7 +295,7 @@ const FORMULARIO_SUGERENCIAS = "";
   const $ = (id) => document.getElementById(id);
   const list = (v) => Array.isArray(v) ? v : (v ? [v] : []);
   const norm = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const safeUrl = (u) => /^https?:\/\//i.test(u || "") ? u : "";
 
@@ -313,12 +317,8 @@ const FORMULARIO_SUGERENCIAS = "";
     for (const k in state) state[k] = p.get(k) || "";
     return true;
   }
-  try {
-    if (!fromHash()) {
-      const saved = JSON.parse(localStorage.getItem("trabajo-remoto-filtros") || "{}");
-      for (const k in state) if (typeof saved[k] === "string") state[k] = saved[k];
-    }
-  } catch (e) { /* sin memoria del navegador: se usan los valores por defecto */ }
+  // Cada visita empieza sin filtros, salvo que el enlace traiga una búsqueda.
+  try { fromHash(); } catch (e) { /* enlace ilegible: se usan los valores por defecto */ }
   window.addEventListener("hashchange", () => { if (fromHash()) render(); });
 
   // Botones de área
@@ -413,8 +413,8 @@ const FORMULARIO_SUGERENCIAS = "";
     // Guardar el enlace y la última búsqueda
     const p = new URLSearchParams();
     for (const k in state) if (state[k]) p.set(k, state[k]);
-    history.replaceState(null, "", p.toString() ? "#" + p.toString() : location.pathname + location.search);
-    try { localStorage.setItem("trabajo-remoto-filtros", JSON.stringify(state)); } catch (e) {}
+    try { history.replaceState(null, "", p.toString() ? "#" + p.toString() : location.pathname + location.search); }
+    catch (e) { /* algunos visores no permiten cambiar la dirección; no afecta los resultados */ }
   }
 
   render();

@@ -4,7 +4,7 @@ Página de un solo archivo (`index.html`) que organiza sitios de empleo remoto p
 
 **Lo que hace:** muestra los sitios con descripción, enlace y etiquetas. Permite elegir un área, buscar por palabra y filtrar por idioma, región y costo. También permite copiar un enlace a una búsqueda (por ejemplo, solo «Diseño UX/UI») para compartirlo.
 
-**Lo que NO hace:** no tiene suscripciones, no envía alertas ni correos y no publica ofertas. Tampoco guarda datos de nadie. Solo recuerda en el navegador de cada persona su último filtro.
+**Lo que NO hace:** no tiene suscripciones, no envía alertas ni correos y no publica ofertas. Tampoco guarda datos de nadie: cada visita empieza sin filtros.
 
 ---
 
