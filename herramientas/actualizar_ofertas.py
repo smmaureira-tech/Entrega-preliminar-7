@@ -110,11 +110,12 @@ def areas(*textos):
     return hits or ["Otras áreas"]
 
 
-def oferta(fuente, titulo, empresa, url, fecha, lugar_txt, categoria="", paises=None, salario=""):
+def oferta(fuente, titulo, empresa, url, fecha, lugar_txt, categoria="", paises=None, salario="", desc=""):
     if not url or not titulo or not fecha or fecha < LIMITE:
         return None
     lat, lat_paises, lugar = region(lugar_txt, paises)
     return {
+        "idioma": idioma_texto(desc) if desc else idioma(titulo),
         "titulo": re.sub(r"\s+", " ", titulo).strip(),
         "empresa": (empresa or "").strip(),
         "url": url,
@@ -156,7 +157,8 @@ def getonbrd():
                     sal = f"USD {a['min_salary']:,}–{a['max_salary']:,} / mes".replace(",", ".")
                 o = oferta("Get on Board", a.get("title"), comp, j.get("links", {}).get("public_url"),
                            datetime.fromtimestamp(a["published_at"], timezone.utc), lugar,
-                           a.get("category_name", ""), salario=sal)
+                           a.get("category_name", ""), salario=sal,
+                           desc=(a.get("description") or "") + " " + (a.get("functions") or ""))
                 if o:
                     out.append(o)
             if page >= d.get("meta", {}).get("total_pages", 1):
@@ -167,7 +169,8 @@ def getonbrd():
 
 def himalayas():
     out = []
-    for pais, paginas in [("CL", 10), ("MX", 5), ("AR", 5), ("CO", 5), ("PE", 3), ("BR", 3), ("UY", 2)]:
+    for pais, paginas in [("CL", 12), ("MX", 10), ("AR", 10), ("CO", 10), ("PE", 6), ("UY", 5), ("EC", 5),
+                          ("CR", 5), ("GT", 3), ("DO", 3), ("VE", 3), ("BO", 3), ("PY", 3), ("PA", 3), ("BR", 3)]:
         for page in range(1, paginas + 1):
             d = get(f"https://himalayas.app/jobs/api/search?country={pais}&sort=recent&page={page}")
             for j in d.get("jobs", []):
@@ -181,7 +184,7 @@ def himalayas():
                            j.get("applicationLink") or j.get("guid"),
                            datetime.fromtimestamp(int(j["pubDate"]), timezone.utc), "",
                            " ".join(j.get("categories") or []), paises=j.get("locationRestrictions") or [],
-                           salario=sal)
+                           salario=sal, desc=j.get("description") or j.get("excerpt") or "")
                 if o:
                     out.append(o)
     return out
@@ -198,10 +201,11 @@ def weworkremotely():
         paises = [x for x in paises if x]
         if "only" in reg.lower():
             o = oferta("We Work Remotely", titulo or f.get("title"), empresa if titulo else "", f.get("link"),
-                       parsedate_to_datetime(f["pubDate"]), reg, f.get("category", ""))
+                       parsedate_to_datetime(f["pubDate"]), reg, f.get("category", ""), desc=f.get("description", ""))
         else:
             o = oferta("We Work Remotely", titulo or f.get("title"), empresa if titulo else "", f.get("link"),
-                       parsedate_to_datetime(f["pubDate"]), "", f.get("category", ""), paises=paises)
+                       parsedate_to_datetime(f["pubDate"]), "", f.get("category", ""), paises=paises,
+                       desc=f.get("description", ""))
         if o:
             out.append(o)
     return out
@@ -211,7 +215,8 @@ def workingnomads():
     out = []
     for j in get("https://www.workingnomads.com/api/exposed_jobs/"):
         o = oferta("Working Nomads", j.get("title"), j.get("company_name"), j.get("url"),
-                   datetime.fromisoformat(j["pub_date"]), j.get("location") or "", j.get("category_name", ""))
+                   datetime.fromisoformat(j["pub_date"]), j.get("location") or "", j.get("category_name", ""),
+                   desc=j.get("description") or "")
         if o:
             out.append(o)
     return out
@@ -223,7 +228,7 @@ def remotive():
         o = oferta("Remotive", j.get("title"), j.get("company_name"), j.get("url"),
                    datetime.fromisoformat(j["publication_date"]).replace(tzinfo=timezone.utc),
                    j.get("candidate_required_location") or "", j.get("category", ""),
-                   salario=j.get("salary") or "")
+                   salario=j.get("salary") or "", desc=j.get("description") or "")
         if o:
             out.append(o)
     return out
@@ -245,6 +250,22 @@ def idioma(titulo):
     return "en"
 
 
+ES_W = set("de la que el en y los las para con una por del se su al lo como más trabajo experiencia empresa "
+           "equipo buscamos conocimientos requisitos beneficios nuestro nuestra serás tendrás".split())
+EN_W = set("the and to of a in for with you we our your is are will on as be this experience team".split())
+PT_W = set("não você com uma vaga experiência nós são trabalho conhecimento".split())
+
+
+def idioma_texto(texto):
+    """Idioma de la descripción, contando palabras frecuentes de cada idioma."""
+    t = re.sub(r"<[^>]+>", " ", texto or "")
+    w = re.findall(r"[a-záéíóúñüãõçê]+", t.lower())[:500]
+    es, en, pt = (sum(x in S for x in w) for S in (ES_W, EN_W, PT_W))
+    if pt > es and pt > en:
+        return "pt"
+    return "es" if es > en else "en"
+
+
 def traducir(ofertas, ruta):
     """Agrega titulo_es usando un diccionario de traducciones (titulo original -> español)."""
     try:
@@ -254,8 +275,8 @@ def traducir(ofertas, ruta):
         tr = {}
     faltan = []
     for o in ofertas:
-        o["idioma"] = idioma(o["titulo"])
-        if o["idioma"] == "es":
+        o.setdefault("idioma", idioma(o["titulo"]))
+        if idioma(o["titulo"]) == "es":  # título ya en español
             continue
         if o["titulo"] in tr:
             o["titulo_es"] = tr[o["titulo"]]
@@ -264,22 +285,61 @@ def traducir(ofertas, ruta):
     return sorted(set(faltan))
 
 
+def jobicy():
+    out, cursor, vueltas = [], "", 0
+    while vueltas < 5:
+        u = "https://jobicy.com/api/v2/remote-jobs?count=100&geo=latam" + (f"&cursor={cursor}" if cursor else "")
+        d = get(u)
+        for j in d.get("jobs", []):
+            sal = ""
+            if j.get("salaryMin") and j.get("salaryCurrency"):
+                sal = f"{j['salaryCurrency']} {int(j['salaryMin']):,}".replace(",", ".") + \
+                      (f"–{int(j['salaryMax']):,}".replace(",", ".") if j.get("salaryMax") else "")
+            o = oferta("Jobicy", j.get("jobTitle"), j.get("companyName"), j.get("url"),
+                       datetime.fromisoformat(j["pubDate"].replace(" ", "T")).replace(tzinfo=timezone.utc)
+                       if "+" not in j["pubDate"] else datetime.fromisoformat(j["pubDate"]),
+                       j.get("jobGeo") or "", " ".join(j.get("jobIndustry") or []), salario=sal,
+                       desc=j.get("jobDescription") or j.get("jobExcerpt") or "")
+            if o:
+                out.append(o)
+        cursor, vueltas = d.get("nextCursor"), vueltas + 1
+        if not d.get("hasMore") or not cursor:
+            break
+    return out
+
+
 FUENTES = [
     ("Get on Board", "https://www.getonbrd.com", getonbrd),
     ("Himalayas", "https://himalayas.app", himalayas),
     ("We Work Remotely", "https://weworkremotely.com", weworkremotely),
     ("Working Nomads", "https://www.workingnomads.com", workingnomads),
     ("Remotive", "https://remotive.com", remotive),
+    ("Jobicy", "https://jobicy.com", jobicy),
 ]
+# Para no consultar de más una fuente (p. ej. Remotive pide máx. 4 consultas al día):
+#   SALTAR=Remotive python3 ...  reutiliza las ofertas de esa fuente del archivo anterior.
 
 
 def main():
     salida = sys.argv[1] if len(sys.argv) > 1 else "ofertas.json"
     todas, resumen = [], []
+    import os
+    saltar = {x.strip() for x in os.environ.get("SALTAR", "").split(",") if x.strip()}
+    try:
+        with open(salida, encoding="utf-8") as f:
+            previas = json.load(f).get("ofertas", [])
+    except (OSError, ValueError):
+        previas = []
     for nombre, web, fn in FUENTES:
         try:
-            lista = fn()
-            estado = "ok"
+            if nombre in saltar:
+                lista = [o for o in previas if o["fuente"] == nombre and o["fecha"] >= LIMITE.strftime("%Y-%m-%d")]
+                for o in lista:
+                    o.pop("titulo_es", None)
+                estado = "ok"
+            else:
+                lista = fn()
+                estado = "ok"
         except Exception as e:  # una fuente caída no detiene a las demás
             lista, estado = [], f"error: {e.__class__.__name__}"
         resumen.append({"nombre": nombre, "web": web, "ofertas": len(lista), "estado": estado})

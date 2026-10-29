@@ -49,9 +49,13 @@
     border: 1px solid var(--line); background: var(--surface); color: var(--text); }
   .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
   .chip.zero { opacity: .5; }
+  .lang { display: inline-flex; border: 2px solid var(--accent); border-radius: 10px; overflow: hidden; margin: 4px 0 6px; flex-wrap: wrap; }
+  .seg { font: inherit; font-weight: 700; padding: 10px 16px; border: 0; background: var(--surface); color: var(--accent); cursor: pointer; }
+  .seg[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+  .seg .n { font-weight: 400; opacity: .8; font-variant-numeric: tabular-nums; }
   .chip .n { opacity: .7; font-variant-numeric: tabular-nums; margin-left: 4px; }
 
-  .filters { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; align-items: end; }
+  .filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-items: end; }
   @media (max-width: 860px) { .filters { grid-template-columns: 1fr 1fr; } }
   .filters label { display: grid; gap: 4px; font-size: .85rem; font-weight: 700; }
   select { font: inherit; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--line);
@@ -104,7 +108,12 @@
   <div class="search">
     <label for="q">¿Qué cargo buscas?</label>
     <input id="q" type="search" autocomplete="off" placeholder="Ej.: ejecutiva de ventas, diseñadora UX, analista de datos">
-    <p class="hint">Escribe en español o en inglés. Los títulos de las ofertas en inglés aparecen traducidos al español, con el original debajo. Ojo: si la oferta está en inglés, normalmente piden ese idioma para postular.</p>
+    <p class="hint">Escribe el cargo en español o en inglés. Las ofertas «en español» son las que están escritas en español; muchas tienen el título en inglés, que verás traducido.</p>
+  </div>
+
+  <div class="lang" role="group" aria-label="Idioma de las ofertas">
+    <button type="button" class="seg" data-idioma="es">Solo en español <span class="n" id="n-es"></span></button>
+    <button type="button" class="seg" data-idioma="">Todos los idiomas <span class="n" id="n-all"></span></button>
   </div>
 
   <div class="chips" id="areas" role="group" aria-label="Áreas"></div>
@@ -125,14 +134,7 @@
     <label>Fuente
       <select id="fuente"><option value="">Todas</option></select>
     </label>
-    <label>Idioma de la oferta
-      <select id="idioma">
-        <option value="">Todos</option>
-        <option value="es">Español</option>
-        <option value="en">Inglés</option>
-        <option value="pt">Portugués</option>
-      </select>
-    </label>
+
   </div>
 
   <div class="bar">
@@ -181,7 +183,7 @@
   // Palabras en español (comienzo de palabra, sin tildes) y sus equivalentes en los títulos.
   const SINONIMOS = [
     [["ejecutiv"], ["executive", "account manager", "ejecutiv"]],
-    [["vent", "comercial", "vendedor"], ["sales", "account", "business development", "ventas", "comercial", "sdr", "bdr"]],
+    [["vent", "comercial", "vendedor"], ["sales", "account executive", "account manager", "business development", "ventas", "comercial", "sdr", "bdr", "ejecutiv"]],
     [["disen"], ["design", "disen", "ux", "ui"]],
     [["desarroll", "program"], ["developer", "engineer", "desarroll", "program", "software"]],
     [["ingenier"], ["engineer", "ingenier"]],
@@ -209,7 +211,7 @@
     "trabajo", "trabajos", "empleo", "empleos", "remoto", "remota", "remotos", "remotas", "oferta", "ofertas", "job", "jobs", "remote"];
 
   let DATA = null, shown = 40;
-  const state = { q: "", area: "", latam: true, pais: "", dias: 30, fuente: "", idioma: "" };
+  const state = { q: "", area: "", latam: true, pais: "", dias: 30, fuente: "", idioma: "es" };
 
   function variantes(w) {
     const out = new Set([w]);
@@ -281,10 +283,15 @@
     if (DATA && !res.length) {
       e.hidden = false;
       e.textContent = state.q
-        ? "No hay ofertas recientes para «" + state.q + "» con estos filtros. Prueba con otra forma del cargo (por ejemplo «ventas» o «account executive»), amplía la fecha a 30 días o pulsa «Quitar filtros»."
+        ? "No hay ofertas recientes para «" + state.q + "» con estos filtros." + (state.idioma === "es" ? " Pocas ofertas remotas se publican en español: prueba «Todos los idiomas», otra forma del cargo o «Quitar filtros»." : " Prueba con otra forma del cargo (por ejemplo «ventas» o «account executive») o pulsa «Quitar filtros».")
         : "No hay ofertas con estos filtros. Pulsa «Quitar filtros».";
     } else e.hidden = true;
-    // contadores por área según los demás filtros
+    // contadores de idioma y de área según los demás filtros
+    const ti = state.idioma; state.idioma = "";
+    const todosIdiomas = filtrar(); state.idioma = ti;
+    $("n-es").textContent = DATA ? "(" + todosIdiomas.filter((o) => o.idioma === "es").length + ")" : "";
+    $("n-all").textContent = DATA ? "(" + todosIdiomas.length + ")" : "";
+    document.querySelectorAll(".seg").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.idioma === state.idioma)));
     const tmp = state.area; state.area = "";
     const sinArea = filtrar(); state.area = tmp;
     document.querySelectorAll("#areas .chip").forEach((b) => {
@@ -298,7 +305,7 @@
 
   function sync() {
     $("q").value = state.q; $("latam").checked = state.latam; $("pais").value = state.pais;
-    $("dias").value = String(state.dias); $("fuente").value = state.fuente; $("idioma").value = state.idioma;
+    $("dias").value = String(state.dias); $("fuente").value = state.fuente;
   }
 
   // controles
@@ -315,10 +322,10 @@
   $("pais").addEventListener("change", (e) => { state.pais = e.target.value; if (state.pais) state.latam = true; sync(); shown = 40; render(); });
   $("dias").addEventListener("change", (e) => { state.dias = +e.target.value; shown = 40; render(); });
   $("fuente").addEventListener("change", (e) => { state.fuente = e.target.value; shown = 40; render(); });
-  $("idioma").addEventListener("change", (e) => { state.idioma = e.target.value; shown = 40; render(); });
+  document.querySelectorAll(".seg").forEach((b) => b.addEventListener("click", () => { state.idioma = b.dataset.idioma; shown = 40; render(); }));
   $("more").addEventListener("click", () => { shown += 40; render(); });
   $("reset").addEventListener("click", () => {
-    Object.assign(state, { q: "", area: "", latam: true, pais: "", dias: 30, fuente: "", idioma: "" });
+    Object.assign(state, { q: "", area: "", latam: true, pais: "", dias: 30, fuente: "", idioma: "es" });
     sync(); shown = 40; render(); $("q").focus();
   });
   render();
@@ -334,7 +341,7 @@
       " días, reunidas el " + fechaLarga(g.slice(0, 10)) + " a las " + g.slice(11, 16) + " UTC.";
     $("fuentes").innerHTML = "Fuentes: " + d.fuentes.map((f) => '<a href="' + esc(f.web) + '" target="_blank" rel="noopener">' +
       esc(f.nombre) + "</a> (" + f.ofertas + (f.estado === "ok" ? "" : ", " + esc(f.estado)) + ")").join(" · ") +
-      ". Ofertas de Remotive, Himalayas y las demás fuentes se muestran con enlace a su publicación original.";
+      ". Cada oferta enlaza a su publicación original en la fuente.";
     render();
   }).catch(() => {
     $("sub").textContent = "No se pudieron cargar las ofertas. Recarga la página en unos segundos.";
