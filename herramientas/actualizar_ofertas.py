@@ -2,7 +2,10 @@
 """Reúne ofertas de empleo remoto desde fuentes que las publican abiertamente
 (API o RSS oficiales) y las guarda en un archivo ofertas.json para el buscador.
 
-Uso:  python3 herramientas/actualizar_ofertas.py salida/ofertas.json
+Uso:  python3 herramientas/actualizar_ofertas.py salida/ofertas.json [traducciones.json]
+
+Las traducciones al español de los títulos se leen de traducciones.json (título -> español).
+Los títulos sin traducción quedan listados en traducciones.json.faltan.txt.
 
 Reglas que respeta:
 - Solo usa canales oficiales (API pública o RSS) y respeta robots.txt.
@@ -226,6 +229,41 @@ def remotive():
     return out
 
 
+# --- Idioma del título y traducción ------------------------------------------
+PT = re.compile(r"(ç|ã|õ|ê|\b(sênior|júnior|pleno|vaga|para pessoas|desenvolvedor\w*|engenheir\w*|segurança|"
+                r"analista de dados|atendimento|vendas|ção|ções)\b)", re.I)
+ES = re.compile(r"(ñ|[áéíóú]|\b(de|para|con|en|del|y|las|los|ejecutiv\w*|analista|desarrollador\w*|"
+                r"ingenier\w*|asistente|jefe|jefa|gerente|vendedor\w*|especialista|coordinador\w*|soporte|"
+                r"ventas|programador\w*|docente|diseñador\w*|técnico\w*|líder|práctica)\b)", re.I)
+
+
+def idioma(titulo):
+    if PT.search(titulo):
+        return "pt"
+    if ES.search(titulo):
+        return "es"
+    return "en"
+
+
+def traducir(ofertas, ruta):
+    """Agrega titulo_es usando un diccionario de traducciones (titulo original -> español)."""
+    try:
+        with open(ruta, encoding="utf-8") as f:
+            tr = json.load(f)
+    except (OSError, ValueError):
+        tr = {}
+    faltan = []
+    for o in ofertas:
+        o["idioma"] = idioma(o["titulo"])
+        if o["idioma"] == "es":
+            continue
+        if o["titulo"] in tr:
+            o["titulo_es"] = tr[o["titulo"]]
+        else:
+            faltan.append(o["titulo"])
+    return sorted(set(faltan))
+
+
 FUENTES = [
     ("Get on Board", "https://www.getonbrd.com", getonbrd),
     ("Himalayas", "https://himalayas.app", himalayas),
@@ -253,6 +291,12 @@ def main():
         if k not in vistos:
             vistos.add(k)
             unicas.append(o)
+    rt = sys.argv[2] if len(sys.argv) > 2 else "traducciones.json"
+    faltan = traducir(unicas, rt)
+    if faltan:
+        with open(rt + ".faltan.txt", "w", encoding="utf-8") as f:
+            f.write("\n".join(faltan))
+        print(f"Títulos sin traducir: {len(faltan)} (lista en {rt}.faltan.txt)", file=sys.stderr)
     with open(salida, "w", encoding="utf-8") as f:
         json.dump({"generado": AHORA.strftime("%Y-%m-%dT%H:%M:%SZ"), "dias": DIAS,
                    "fuentes": resumen, "ofertas": unicas}, f, ensure_ascii=False, separators=(",", ":"))

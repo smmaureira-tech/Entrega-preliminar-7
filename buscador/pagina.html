@@ -51,8 +51,8 @@
   .chip.zero { opacity: .5; }
   .chip .n { opacity: .7; font-variant-numeric: tabular-nums; margin-left: 4px; }
 
-  .filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-items: end; }
-  @media (max-width: 720px) { .filters { grid-template-columns: 1fr 1fr; } }
+  .filters { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; align-items: end; }
+  @media (max-width: 860px) { .filters { grid-template-columns: 1fr 1fr; } }
   .filters label { display: grid; gap: 4px; font-size: .85rem; font-weight: 700; }
   select { font: inherit; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--line);
     background: var(--surface); color: var(--text); width: 100%; }
@@ -80,6 +80,9 @@
   .pill.ok { background: var(--ok-soft); color: var(--ok); font-weight: 700; }
   .pill.warn { background: var(--warn-soft); color: var(--warn); }
   .salary { color: var(--text); font-weight: 700; }
+  .job .orig { display: block; font-weight: 400; font-size: .85rem; color: var(--muted); margin-top: 2px; }
+  .pill.lang { background: transparent; border: 1px solid var(--line); color: var(--muted); }
+  .pill.es { background: var(--accent); color: var(--on-accent); font-weight: 700; }
   .more { display: flex; justify-content: center; margin: 18px 0; }
   .empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 20px; margin: 12px 0; }
 
@@ -101,7 +104,7 @@
   <div class="search">
     <label for="q">¿Qué cargo buscas?</label>
     <input id="q" type="search" autocomplete="off" placeholder="Ej.: ejecutiva de ventas, diseñadora UX, analista de datos">
-    <p class="hint">Puedes escribir en español o en inglés. La mayoría de las ofertas están en inglés; el buscador traduce los cargos comunes.</p>
+    <p class="hint">Escribe en español o en inglés. Los títulos de las ofertas en inglés aparecen traducidos al español, con el original debajo. Ojo: si la oferta está en inglés, normalmente piden ese idioma para postular.</p>
   </div>
 
   <div class="chips" id="areas" role="group" aria-label="Áreas"></div>
@@ -121,6 +124,14 @@
     </label>
     <label>Fuente
       <select id="fuente"><option value="">Todas</option></select>
+    </label>
+    <label>Idioma de la oferta
+      <select id="idioma">
+        <option value="">Todos</option>
+        <option value="es">Español</option>
+        <option value="en">Inglés</option>
+        <option value="pt">Portugués</option>
+      </select>
     </label>
   </div>
 
@@ -198,7 +209,7 @@
     "trabajo", "trabajos", "empleo", "empleos", "remoto", "remota", "remotos", "remotas", "oferta", "ofertas", "job", "jobs", "remote"];
 
   let DATA = null, shown = 40;
-  const state = { q: "", area: "", latam: true, pais: "", dias: 30, fuente: "" };
+  const state = { q: "", area: "", latam: true, pais: "", dias: 30, fuente: "", idioma: "" };
 
   function variantes(w) {
     const out = new Set([w]);
@@ -208,7 +219,7 @@
     if (w.endsWith("a") && w.length > 4) out.add(w.slice(0, -1));
     return [...out];
   }
-  const texto = (o) => " " + norm(o.titulo) + " ";
+  const texto = (o) => " " + norm(o.titulo + " | " + (o.titulo_es || "")) + " ";
   const tiene = (t, v) => v.length <= 3 ? new RegExp("[^a-z0-9]" + v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[^a-z0-9]").test(t) : t.includes(v);
 
   function palabras() {
@@ -223,6 +234,7 @@
       (!state.latam || o.latam) &&
       (!state.pais || (state.pais === "*" ? o.latam && !o.paises.length && /cualquier/i.test(o.lugar) : o.paises.includes(state.pais))) &&
       (!state.fuente || o.fuente === state.fuente) &&
+      (!state.idioma || (o.idioma || "en") === state.idioma) &&
       (!state.area || o.areas.includes(state.area)));
     const ws = palabras();
     if (!ws.length) return base;
@@ -245,13 +257,17 @@
     const url = safeUrl(o.url);
     const lat = o.latam ? (o.paises.length ? (o.paises.length > 4 ? "Abierta a " + o.paises.length + " países de LATAM" : "Abierta a: " + o.paises.join(", ")) : (/cualquier/i.test(o.lugar) ? "Cualquier país" : "Latinoamérica")) : "";
     const warn = /solo algunos/i.test(o.lugar);
-    return '<li class="job"><h3>' + (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(o.titulo) +
-      '<span class="sr"> (se abre en otra pestaña)</span></a>' : esc(o.titulo)) + "</h3>" +
+    const tit = o.titulo_es || o.titulo;
+    const IDI = { en: "Oferta en inglés", pt: "Oferta en portugués" };
+    return '<li class="job"><h3>' + (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(tit) +
+      '<span class="sr"> (se abre en otra pestaña)</span></a>' : esc(tit)) +
+      (o.titulo_es ? '<span class="orig" lang="' + esc(o.idioma || "en") + '">' + esc(o.titulo) + "</span>" : "") + "</h3>" +
       '<span class="when" title="' + fechaLarga(o.fecha) + '">' + haceCuanto(o.fecha) + "</span>" +
       '<div class="meta">' + (o.empresa ? "<span>" + esc(o.empresa) + "</span>" : "") +
       (lat ? '<span class="pill ' + (warn ? "warn" : "ok") + '" title="' + esc(o.paises.join(", ")) + '">' + esc(warn ? "LATAM: solo algunos países" : lat) + "</span>" :
         '<span class="pill">' + esc(o.lugar || "Ver ubicación") + "</span>") +
       (o.salario ? '<span class="salary">' + esc(o.salario) + "</span>" : "") +
+      (IDI[o.idioma || "en"] ? '<span class="pill lang">' + IDI[o.idioma || "en"] + "</span>" : '<span class="pill es">En español</span>') +
       '<span class="pill">' + esc(o.areas[0]) + "</span>" +
       "<span>vía " + esc(o.fuente) + "</span></div></li>";
   }
@@ -282,7 +298,7 @@
 
   function sync() {
     $("q").value = state.q; $("latam").checked = state.latam; $("pais").value = state.pais;
-    $("dias").value = String(state.dias); $("fuente").value = state.fuente;
+    $("dias").value = String(state.dias); $("fuente").value = state.fuente; $("idioma").value = state.idioma;
   }
 
   // controles
@@ -299,9 +315,10 @@
   $("pais").addEventListener("change", (e) => { state.pais = e.target.value; if (state.pais) state.latam = true; sync(); shown = 40; render(); });
   $("dias").addEventListener("change", (e) => { state.dias = +e.target.value; shown = 40; render(); });
   $("fuente").addEventListener("change", (e) => { state.fuente = e.target.value; shown = 40; render(); });
+  $("idioma").addEventListener("change", (e) => { state.idioma = e.target.value; shown = 40; render(); });
   $("more").addEventListener("click", () => { shown += 40; render(); });
   $("reset").addEventListener("click", () => {
-    Object.assign(state, { q: "", area: "", latam: true, pais: "", dias: 30, fuente: "" });
+    Object.assign(state, { q: "", area: "", latam: true, pais: "", dias: 30, fuente: "", idioma: "" });
     sync(); shown = 40; render(); $("q").focus();
   });
   render();
