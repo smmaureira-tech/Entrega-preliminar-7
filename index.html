@@ -24,6 +24,10 @@
      verificado  Fecha en que abriste el sitio y comprobaste ofertas reales (AAAA-MM-DD).
                  OBLIGATORIO: un sitio sin esta fecha NO se muestra en la página.
      ultimaOferta Fecha de la oferta más reciente que viste publicada (AAAA-MM-DD).
+                 Si el sitio no muestra fechas, deja este campo fuera.
+     nota        (Opcional) Aviso breve que se muestra destacado en la ficha.
+     enlaces     (Opcional) Enlaces extra, p. ej. páginas por país:
+                 [{ texto: "México", url: "https://..." }]
 
    Ejemplo de bloque (está desactivado porque va dentro de un comentario):
    {
@@ -39,7 +43,115 @@
    },
    ===================================================================== */
 const SITIOS = [
-  // Pega aquí tus sitios.
+  // Verificados el 29/10/2026. Evidencia en VERIFICACION.md.
+  {
+    nombre: "Get on Board",
+    url: "https://www.getonbrd.com/jobs",
+    descripcion: "Portal de empleos de tecnología en Latinoamérica, con ofertas revisadas antes de publicarse. Muchas son de startups y cada una indica desde qué países se puede postular.",
+    areas: ["Desarrollo web", "Diseño UX/UI", "Ventas"],
+    idioma: ["Español", "Inglés"],
+    region: "Latinoamérica",
+    costo: "Gratis",
+    verificado: "2026-10-29",
+    ultimaOferta: "2026-10-29"
+  },
+  {
+    nombre: "Kaszek: empleos en sus startups",
+    url: "https://jobs.kaszek.com/jobs",
+    descripcion: "Bolsa de empleo de las startups en que invierte Kaszek, fondo latinoamericano (por ejemplo QuintoAndar, Kavak y Nuvemshop). Tiene un filtro de ofertas remotas.",
+    areas: ["Desarrollo web", "Producto y proyectos", "Varias áreas"],
+    idioma: ["Inglés"],
+    region: "Latinoamérica",
+    costo: "Gratis",
+    verificado: "2026-10-29",
+    ultimaOferta: "2026-10-29"
+  },
+  {
+    nombre: "LinkIT",
+    url: "https://www.linkit-hr.com/soyTalento",
+    descripcion: "Consultora de recursos humanos que conecta talento IT con empresas. Publica vacantes, algunas remotas para Latinoamérica y otras presenciales en Argentina.",
+    areas: ["Desarrollo web", "Ventas", "Marketing y contenido"],
+    idioma: ["Español", "Inglés"],
+    region: "Latinoamérica",
+    costo: "Gratis",
+    nota: "Las vacantes no muestran fecha de publicación. Revisa la modalidad (remoto o presencial) de cada una.",
+    verificado: "2026-10-29"
+  },
+  {
+    nombre: "Working Nomads",
+    url: "https://www.workingnomads.com/jobs",
+    descripcion: "Ofertas remotas de todo el mundo, organizadas por categoría. Cada oferta indica las regiones permitidas; algunas incluyen Latinoamérica.",
+    areas: ["Desarrollo web", "Diseño UX/UI", "Atención al cliente", "Varias áreas"],
+    idioma: ["Inglés"],
+    region: "Global",
+    costo: "Gratis",
+    verificado: "2026-10-29",
+    ultimaOferta: "2026-10-29"
+  },
+  {
+    nombre: "Jobspresso",
+    url: "https://jobspresso.co/remote-work/",
+    descripcion: "Empleos remotos seleccionados en tecnología, diseño, marketing, producto, ventas y soporte. Cada oferta indica el país o la región, y algunas son «Worldwide».",
+    areas: ["Desarrollo web", "Diseño UX/UI", "Análisis de datos", "Producto y proyectos", "Marketing y contenido", "Ventas", "Atención al cliente", "Recursos humanos"],
+    idioma: ["Inglés"],
+    region: "Global",
+    costo: "Gratis",
+    verificado: "2026-10-29",
+    ultimaOferta: "2026-10-29"
+  },
+  {
+    nombre: "Jobgether",
+    url: "https://jobgether.com/remote-jobs",
+    descripcion: "Buscador de empleo remoto con muchas categorías. Cada oferta indica en «Remote from» desde qué países se puede postular.",
+    areas: ["Desarrollo web", "Ventas", "Atención al cliente", "Varias áreas"],
+    idioma: ["Inglés"],
+    region: "Global",
+    costo: "Gratis",
+    verificado: "2026-10-29",
+    ultimaOferta: "2026-10-29"
+  },
+  {
+    nombre: "Remotive",
+    url: "https://remotive.com/remote-jobs",
+    descripcion: "Empleos remotos en programación, soporte, diseño y ventas. Cada oferta indica el país permitido o «Worldwide».",
+    areas: ["Desarrollo web", "Diseño UX/UI", "Atención al cliente", "Ventas"],
+    idioma: ["Inglés"],
+    region: "Global",
+    costo: "Gratis, con opciones de pago",
+    nota: "Una parte de las ofertas solo se ve con un plan de pago.",
+    verificado: "2026-10-29",
+    ultimaOferta: "2026-10-29"
+  },
+  {
+    nombre: "We Work Remotely",
+    url: "https://weworkremotely.com",
+    descripcion: "Una de las bolsas de empleo remoto más conocidas: soporte, diseño, programación, marketing, producto y ventas. Cada oferta indica la región, por ejemplo «Anywhere in the World».",
+    areas: ["Atención al cliente", "Diseño UX/UI", "Desarrollo web", "Marketing y contenido", "Producto y proyectos", "Ventas"],
+    idioma: ["Inglés"],
+    region: "Global",
+    costo: "Gratis",
+    verificado: "2026-10-29",
+    ultimaOferta: "2026-10-28"
+  },
+  {
+    nombre: "Wellfound",
+    url: "https://wellfound.com/remote",
+    descripcion: "Empleos en startups, a menudo con salario visible. La portada muestra sobre todo ofertas de EE. UU.: usa las páginas por país para ver las de Latinoamérica.",
+    areas: ["Desarrollo web", "Análisis de datos", "Marketing y contenido"],
+    idioma: ["Inglés"],
+    region: "Global",
+    costo: "Gratis",
+    enlacesTitulo: "Ofertas por país:",
+    enlaces: [
+      { texto: "México", url: "https://wellfound.com/location/mexico" },
+      { texto: "Argentina", url: "https://wellfound.com/location/argentina" },
+      { texto: "Chile", url: "https://wellfound.com/location/chile" },
+      { texto: "Colombia", url: "https://wellfound.com/location/colombia" },
+      { texto: "Brasil", url: "https://wellfound.com/location/brazil" }
+    ],
+    verificado: "2026-10-29",
+    ultimaOferta: "2026-10-28"
+  },
 ];
 
 /* Áreas que aparecen como botones. Puedes renombrarlas, agregar o quitar.
@@ -114,6 +226,8 @@ const FORMULARIO_SUGERENCIAS = "";
   .tags li { font-size: .8rem; padding: 2px 8px; border-radius: 6px; background: var(--accent-soft); }
   .card .go { margin-top: auto; padding-top: 6px; font-weight: 600; }
   .meta { font-size: .8rem; color: var(--muted); }
+  .card .nota { font-size: .85rem; color: var(--text); border-left: 3px solid var(--accent); padding-left: 8px; }
+  .card .extra { font-size: .9rem; }
   .empty { background: var(--surface); border: 1px dashed var(--border); border-radius: 12px;
     padding: 24px; margin-bottom: 40px; }
   footer { border-top: 1px solid var(--border); padding: 20px 0 40px; color: var(--muted); font-size: .9rem; }
@@ -138,7 +252,7 @@ const FORMULARIO_SUGERENCIAS = "";
     <div class="filters" role="search">
       <div class="search">
         <label class="label" for="q">2. Busca por palabra (opcional)</label>
-        <input id="q" type="search" placeholder="Ej.: junior, freelance, inglés…" autocomplete="off">
+        <input id="q" type="search" placeholder="Ej.: startups, junior, Latinoamérica…" autocomplete="off">
       </div>
       <div>
         <label class="label" for="f-idioma">Idioma</label>
@@ -261,8 +375,12 @@ const FORMULARIO_SUGERENCIAS = "";
       "<h2>" + esc(s.nombre) + "</h2>" +
       "<p>" + esc(s.descripcion) + "</p>" +
       '<ul class="tags" aria-label="Etiquetas">' + tags.map((t) => "<li>" + esc(t) + "</li>").join("") + "</ul>" +
+      (s.nota ? '<p class="nota">' + esc(s.nota) + "</p>" : "") +
+      (list(s.enlaces).length ? '<p class="extra">' + esc(s.enlacesTitulo || "Ver también:") + " " +
+        list(s.enlaces).filter((e) => safeUrl(e.url)).map((e) => '<a href="' + esc(e.url) +
+        '" target="_blank" rel="noopener">' + esc(e.texto) + "</a>").join(" · ") + "</p>" : "") +
       '<span class="meta">Última verificación: ' + fecha(s.verificado) +
-        (s.ultimaOferta ? " · Oferta más reciente vista: " + fecha(s.ultimaOferta) : "") + "</span>" +
+        (s.ultimaOferta ? " · Oferta más reciente vista: " + fecha(s.ultimaOferta) : " · Sin fecha de publicación visible") + "</span>" +
       (url ? '<a class="go" href="' + esc(url) + '" target="_blank" rel="noopener">Ir a ' + esc(s.nombre) +
         ' <span aria-hidden="true">↗</span><span class="sr"> (se abre en otra pestaña)</span></a>' : "") +
       "</li>";
