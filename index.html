@@ -168,6 +168,26 @@ const AREAS = [
   "Varias áreas"
 ];
 
+/* Palabras que el buscador asocia a cada área, para que quien escribe un rol
+   (por ejemplo «ejecutiva» o «diseñadora») encuentre los sitios de esa área.
+   Escribe el comienzo de la palabra, sin tildes: "disen" sirve para diseño,
+   diseñadora y diseñador. Puedes agregar palabras entre comillas, separadas por comas. */
+const PALABRAS_POR_AREA = {
+  "Desarrollo web": ["desarroll", "program", "developer", "frontend", "backend", "fullstack", "full stack", "ingenier", "engineer", "software", "web", "qa", "tester", "devops"],
+  "Diseño UX/UI": ["disen", "design", "ux", "ui", "grafic", "creativ", "product design"],
+  "Análisis de datos": ["dato", "data", "analist", "analytics", "bi", "machine learning", "ia", "ai", "cientific"],
+  "Producto y proyectos": ["product", "proyect", "project", "pm", "scrum", "agil", "operacion"],
+  "Marketing y contenido": ["marketing", "contenid", "redact", "copy", "community", "redes", "social media", "seo", "growth", "comunicac"],
+  "Atención al cliente": ["atencion", "cliente", "soporte", "support", "customer", "servicio", "success", "call center"],
+  "Ventas": ["vent", "ejecutiv", "comercial", "account", "sales", "vendedor", "negocio", "business development", "sdr", "bdr", "key account"],
+  "Recursos humanos": ["recursos humanos", "rrhh", "rr.hh", "reclut", "recruit", "talent", "people", "seleccion", "hr"],
+  "Varias áreas": ["administra", "asistente", "assistant", "finanz", "contab", "legal", "educac", "otras"]
+};
+
+/* Palabras que el buscador ignora porque todos los sitios las cumplen. */
+const PALABRAS_IGNORADAS = ["de", "del", "en", "y", "o", "la", "el", "los", "las", "para", "un", "una",
+  "trabajo", "trabajos", "empleo", "empleos", "remoto", "remota", "remotos", "remotas", "oferta", "ofertas"];
+
 /* Enlace opcional a un formulario para sugerir sitios (por ejemplo, Google Forms).
    Déjalo vacío "" para ocultar el botón. */
 const FORMULARIO_SUGERENCIAS = "";
@@ -255,8 +275,8 @@ const FORMULARIO_SUGERENCIAS = "";
 
     <div class="filters" role="search">
       <div class="search">
-        <label class="label" for="q">2. Busca por palabra (opcional)</label>
-        <input id="q" type="search" placeholder="Ej.: startups, junior, Latinoamérica…" autocomplete="off">
+        <label class="label" for="q">2. Busca por rol o palabra (opcional)</label>
+        <input id="q" type="search" placeholder="Ej.: ejecutiva, diseñadora, soporte, datos…" autocomplete="off">
       </div>
       <div>
         <label class="label" for="f-idioma">Idioma</label>
@@ -362,10 +382,21 @@ const FORMULARIO_SUGERENCIAS = "";
       if (state[k] && !list(s[k]).includes(state[k])) return false;
     }
     if (state.q) {
-      const hay = norm([s.nombre, s.descripcion, ...list(s.areas), ...list(s.idioma), s.region, s.costo].join(" "));
-      return norm(state.q).split(/\s+/).every((w) => hay.includes(w));
+      const ignoradas = PALABRAS_IGNORADAS.map(norm);
+      const palabras = norm(state.q).split(/\s+/).filter((w) => w && !ignoradas.includes(w));
+      // Las palabras que no aparecen en ningún sitio (p. ej. «digital») no descartan resultados.
+      const conocidas = palabras.filter((w) => SITIOS_OK.some((x) => coincide(x, w)));
+      if (palabras.length && !conocidas.length) return false;
+      return conocidas.every((w) => coincide(s, w));
     }
     return true;
+  }
+
+  function coincide(s, w) {
+    const hay = norm([s.nombre, s.descripcion, ...list(s.areas), ...list(s.idioma), s.region, s.costo, s.nota].join(" "));
+    if (hay.includes(w)) return true;
+    const raices = list(s.areas).flatMap((a) => list(PALABRAS_POR_AREA[a]).map(norm));
+    return raices.some((r) => w.startsWith(r) || (w.length >= 3 && r.startsWith(w)));
   }
 
   function card(s) {
@@ -403,7 +434,7 @@ const FORMULARIO_SUGERENCIAS = "";
       empty.textContent = "Todavía no hay sitios cargados. Muy pronto estarán aquí.";
     } else if (!found.length) {
       empty.hidden = false;
-      empty.textContent = "No hay sitios con esa combinación de filtros. Prueba quitando alguno.";
+      empty.textContent = "No encontramos sitios para esa búsqueda. Prueba con otra palabra (por ejemplo «ventas», «diseño» o «soporte»), elige un área arriba o pulsa «Quitar filtros».";
     } else { empty.hidden = true; }
 
     $("count").textContent = SITIOS_OK.length
