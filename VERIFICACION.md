@@ -35,7 +35,16 @@ Claude abrió cada sitio con un navegador automático, revisó la lista de ofert
 | 23 | 500 Global: empleos | jobs.500.co | Propuesta (startups) | — | Arabia Saudita | 15/08/2026 | 29/10/2026 | Solo 2 ofertas, de una misma empresa, publicadas en agosto | **Excluir** |
 | 24 | Platanus | platan.us | Propuesta (startups) | — | — | — | 29/10/2026 | Es una aceleradora de startups; su sitio no tiene bolsa de empleo | **Excluir** |
 
-**Resumen:** 9 para incluir, 10 pendientes y 5 para excluir.
+| 25 | Cryptocurrency Jobs | cryptocurrencyjobs.co | Tu lista 2 (startups cripto) | Ingeniería, ventas, operaciones, marketing, soporte, diseño | Global, con página de Latinoamérica (/latin-america/); muchas ofertas «Anywhere» | 19/10/2026 | 29/10/2026 | 2 ofertas OK: «B2B Account Executive – Lisk» (15/10, remoto Anywhere) y «Senior SDET / QA – Startale» (19/10) | **Incluir** (nicho: cripto/blockchain) |
+| 26 | VacantesLat | vacantes.lat (vacanteslat.com redirige aquí) | Tu lista 2 | Legal, operaciones, desarrollo, ventas y más; muestra salarios en USD | **Latinoamérica** | **No verificado** | 29/10/2026 | La portada muestra ofertas remotas para Argentina, Uruguay, Costa Rica, etc. («1.260 vacantes abiertas»), pero sin empresa ni fecha. Para ver las ofertas hay que crear una cuenta | **Pendiente**: requiere registro |
+| 27 | Fundación Wazú | fundacionwazu.cl | Tu lista 2 | Inclusión laboral de personas en situación de discapacidad | Chile | **No verificado** | 29/10/2026 | Tiene una sección «Ofertas laborales» que enlaza a la Bolsa Nacional de Empleo, pero esa página cargó vacía | **Pendiente**: revisar a mano; podría ir en una sección de inclusión |
+| 28 | Voice123, Bodalgo, ACX | voice123.com, bodalgo.com, acx.com | Tu lista 2 | Locución y narración de audiolibros | — | **No verificado** | 29/10/2026 | Son mercados de castings: las ofertas solo se ven con cuenta. La página de trabajos de Bodalgo da 404 | **Pendiente**: posible sección futura «Locución» |
+| 29 | DataAnnotation, Outlier, Appen, Remotasks, TELUS International | (varios) | Tu lista 2 | Trabajo por tareas para IA y datos | — | — | 29/10/2026 | No son portales: cada una contrata para su propia plataforma. Ojo: hay estafas que suplantan a estas marcas | **Excluir** del directorio de portales (posible sección futura, con advertencia) |
+| 30 | 35 empresas individuales | Buda, Chipax, ComunidadFeliz, Houm, Pignus, Chattigo, Koyag, SimpliRoute, Wareclouds, Justo, Wheel the World, Buffer, Civo, DuckDuckGo, Loka, 1se, 10up, 350.org, 37signals, 4D Pipeline, 7pace, HubSpot, Apollo, Livestorm, Loom, Iubenda, ActiveCampaign, Pitch, Eight Sleep, Deel, SimpleTexting, Ahrefs, Audible | Tu lista 2 | — | — | — | 29/10/2026 | Son empresas que contratan para sí mismas, no portales. Notas: la página de empleos de Wareclouds da 404; Wheel the World no abrió; 7pace ahora es parte de Appfire | **Excluir** del directorio de portales (posible sección futura «Empresas que contratan remoto») |
+| 31 | Make School | makeschool.org | Tu lista 2 | — | — | — | 29/10/2026 | Programa universitario ya cerrado; hoy es una fundación sin ofertas | **Excluir** |
+| 32 | Findaway Voices | findawayvoices.com → voicesbyinaudio.com | Tu lista 2 | — | — | — | 29/10/2026 | Redirige a un servicio para que autores distribuyan audiolibros; no publica empleos | **Excluir** |
+
+**Resumen:** 10 para incluir, 13 filas pendientes y 9 filas para excluir (las filas 28 a 30 agrupan varios sitios).
 
 ---
 
